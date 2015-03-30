@@ -1,0 +1,13 @@
+{
+  "name": "Jql",
+  "version": "0.0.0",
+  "description": "Jql",
+  "main": "app.js",
+  "author": {
+    "name": "Tim",
+    "email": ""
+  },
+  "dependencies": {
+    "lazy.js": "^0.4.0"
+  }
+}
