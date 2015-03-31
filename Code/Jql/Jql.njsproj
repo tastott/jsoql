@@ -38,6 +38,7 @@
     <Content Include="jql.jison" />
     <Content Include="package.json" />
     <Content Include="README.md" />
+    <TypeScriptCompile Include="Scripts\parser.ts" />
     <TypeScriptCompile Include="Scripts\typings\lazyjs\lazyjs.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\node\node.d.ts" />
   </ItemGroup>

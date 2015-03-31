@@ -196,3 +196,5 @@ FakesAssemblies/
 *.opt
 /Code/Jql/app.js
 /Code/Jql/app.js.map
+/Code/Jql/Scripts/parser.js
+/Code/Jql/Scripts/parser.js.map

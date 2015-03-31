@@ -35,7 +35,7 @@ expressions
 
 Quoted
     : Quotation
-        { $$ = { Quoted: $1.replace("'", "")}}
+        { $$ = { Quoted: $1.replace(/'/g, "")}}
     ;
 
 Selectable
@@ -69,12 +69,12 @@ FromTarget
 
 FromClause
     : FromTarget
-    | FromTarget 'WHERE' WhereClause
-        { $$ = { Target: $1, Where: $3}}
     ;
 
 
 Stmt
     : SELECT SelectList FROM FromClause
-        { $$ = { SELECT: $2, FROM: $4} }
+        { $$ = { Select: $2, From: $4} }
+	| SELECT SelectList FROM FromClause WHERE WhereClause
+		{ $$ = { Select: $2, From: $4, Where: $6 }}
     ;

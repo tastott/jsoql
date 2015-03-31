@@ -8,6 +8,7 @@
     "email": ""
   },
   "dependencies": {
+    "jison": "^0.4.15",
     "lazy.js": "^0.4.0"
   }
 }
