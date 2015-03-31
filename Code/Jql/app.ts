@@ -30,44 +30,49 @@ function LazyQuery() {
     });
 }
 
-function From(fromClause: any): LazyJS.Sequence<any> {
+export class JqlQuery {
+    constructor(private sequence: LazyJS.Sequence<any>) {
+    }
 
-    if (fromClause.Quoted != undefined && fromClause.Quoted != null) {
-        var file = fromClause.Quoted;
-        if (!fs.existsSync(file)) throw 'File not found: ' + file;
-        else {
-            return lazy.readFile(file, 'utf8')
-                .split('\n')
-                .map(line => {
-                    try {
-                        return JSON.parse(line);
-                    }
-                    catch (err) {
-                        throw 'Failed to parse line: ' + line;
-                    }
-                })
+    private DoSelectable(selectable: any, target: any) {
+        if (selectable.Child) return this.DoSelectable(selectable.Child, target[selectable.Property]);
+        else return [selectable.Property, target[selectable.Property]];
+    }
+
+    Where(whereClause: any): JqlQuery {
+        return this;
+    }
+
+    Select(selectables: any[]): LazyJS.Sequence<any>{
+        return this.sequence
+            .map(item => {
+                return lazy(selectables)
+                    .map(selectable => this.DoSelectable(selectable, item))
+                    .toObject();
+            });
+    }
+
+    static From(fromClause: any): JqlQuery {
+        if (fromClause.Quoted != undefined && fromClause.Quoted != null) {
+            var file = fromClause.Quoted;
+            if (!fs.existsSync(file)) throw 'File not found: ' + file;
+            else {
+                var seq = lazy.readFile(file, 'utf8')
+                    .split('\r\n')
+                    .map(line => {
+                        //line = '{ "name": "banana", "colour": "yellow", "isTasty": true }';
+                        try {
+                            return JSON.parse(line);
+                        }
+                        catch (err) {
+                            throw 'Failed to parse line: ' + line;
+                        }
+                    });
+                return new JqlQuery(seq);
+            }
         }
+        else throw 'Unquoted from clause not supported';
     }
-    else throw 'Unquoted from clause not supported';
-
-}
-
-function Select(selectables: any[]): (source: any) => any {
-
-    return source => {
-        return Lazy(selectables)
-            .map(GetSelectableKeyValue)
-            .toObject();
-    };
-
-}
-
-function GetSelectableKeyValue(selectable: any, source : any) {
-    if (selectable.Child) {
-        var childKv = GetSelectableKeyValue(selectable.Child);
-        return [childKv[0], selectable.Property + '.' + childKv[1]];
-    }
-    else return [selectable.Property, selectable.Property];
 }
 
 interface Statement {
@@ -76,23 +81,16 @@ interface Statement {
     Where: any;
 }
 
-var jql = "SELECT timestamp, curve.Fit FROM './example.log' WHERE Message = 'Finished power curve capture'"
+var jql = "SELECT name, colour, isTasty FROM './example.jsons' WHERE isTasty = true";
 var stmt : Statement = parser.Parse(jql);
 
 
-console.log(stmt + '\n\n');
+console.log(stmt);
 
-From(stmt.From)
-    .first(2)
-    .each(entry => console.log(entry));
+JqlQuery.From(stmt.From)
+    .Select(stmt.Select)
+    .each(item => console.log(item));
 
-var thing = {
-    blah: {
-        wotsit: 0
-    }
-};
-
-console.log(thing['blah.wotsit']);
 
 process.stdin.read();
 

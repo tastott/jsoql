@@ -34,7 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
-    <Content Include="example.log" />
+    <Content Include="example.jsons" />
     <Content Include="jql.jison" />
     <Content Include="package.json" />
     <Content Include="README.md" />
