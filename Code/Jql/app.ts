@@ -1,34 +1,9 @@
 ﻿import fs = require('fs')
 import lazy = require('lazy.js')
 import parser = require('./Scripts/parser')
+import Q = require('q')
 
 var file = './example.log';
-
-function LazyQuery() {
-    lazy.readFile(file, 'utf8')
-    //.tap(chunk => console.log(chunk))
-        .split('\n')
-        .map(line => {
-        try {
-            return JSON.parse(line);
-        }
-        catch (err) {
-            console.log('Failed to parse line: ' + line);
-            return {};
-        }
-    })
-        .filter(entry => entry.message && entry.message.match(/Finished power curve capture/))
-    //.first(3)
-        .map(entry => {
-        return {
-            time: entry.timestamp,
-            curve: entry.curve
-        };
-    })
-        .each(line => {
-        console.log(line);
-    });
-}
 
 export interface WhereClause {
     Operator: string;
@@ -36,7 +11,7 @@ export interface WhereClause {
 };
 
 export interface Group {
-    Items: LazyJS.Sequence<any>;
+    Items: any[];
 }
 
 export class JqlQuery {
@@ -63,9 +38,10 @@ export class JqlQuery {
         return func(args);
     }
 
-    private DoAggregateFunction(name: string, items: LazyJS.Sequence<any>) {
+    private DoAggregateFunction(name: string, items: any[]){
+
         switch (name.toLowerCase()) {
-            case 'count': return items.size();
+            case 'count': return items.length;
             default: throw 'Unrecognized function: ' + name;
         }
     }
@@ -109,12 +85,18 @@ export class JqlQuery {
             });
     }
 
-    Group(): JqlQuery {
-        var group: Group = {
-            Items: this.sequence
-        };
-        return new JqlQuery(lazy([group]));
+    Group(): Q.Promise<JqlQuery> {
+        return (<any>this.sequence
+            .toArray())
+            .then(arr => {
+                var group: Group = {
+                    Items: arr
+                };
+                return new JqlQuery(lazy([group]));
+            });
     }
+
+
     //GroupBy(groupBy: any): LazyJS.Sequence<Group>{
     //    return this.sequence
     //        .groupBy(
@@ -155,7 +137,7 @@ interface Statement {
     Where: WhereClause;
 }
 
-var jql = "SELECT name FROM './example.jsons'"; // WHERE isTasty = false AND colour != 'red'";
+var jql = "SELECT COUNT() FROM './example.jsons' WHERE isTasty = false";
 var stmt : Statement = parser.Parse(jql);
 
 console.log('\n\nQuery:');
@@ -171,10 +153,18 @@ var implicitGroupAll = lazy(stmt.Select)
 var fromWhere = JqlQuery.From(stmt.From)
     .Where(stmt.Where);
 
-if (implicitGroupAll) fromWhere = fromWhere.Group();
-    
-fromWhere.Select(stmt.Select)
+if (implicitGroupAll) {
+    fromWhere.Group()
+        .then(grouped => {
+            grouped.Select(stmt.Select)
+                .each(item => console.log(item));
+        });
+}
+
+else {
+    fromWhere.Select(stmt.Select)
         .each(item => console.log(item));
+}
 
 
 
