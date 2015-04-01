@@ -30,24 +30,62 @@ function LazyQuery() {
     });
 }
 
+export interface WhereClause {
+    Operator: string;
+    Args: any[]
+};
+
 export class JqlQuery {
     constructor(private sequence: LazyJS.Sequence<any>) {
     }
 
-    private DoSelectable(selectable: any, target: any) {
-        if (selectable.Child) return this.DoSelectable(selectable.Child, target[selectable.Property]);
-        else return [selectable.Property, target[selectable.Property]];
+    private DoOperation(operator: string, args: any[]) {
+        var func: (args: any[]) => any;
+
+        switch (operator) {
+            case '=':
+                func = args => args[0] == args[1];
+                break;
+            case '!=':
+                func = args => args[0] !== args[1];
+                break;
+            case 'AND':
+                func = args => args[0] && args[1];
+                break;
+            default:
+                throw 'Unrecognized operator ' + operator;
+        }
+
+        return func(args);
     }
 
-    Where(whereClause: any): JqlQuery {
-        return this;
+    private Evaluate(selectable: any, target: any) {
+        if (selectable.Operator) {
+            var args = selectable.Args.map(arg => this.Evaluate(arg, target)[1]);
+            return ['', this.DoOperation(selectable.Operator, args)];
+        }
+        if (selectable.Property) {
+            if (selectable.Child) return this.Evaluate(selectable.Child, target[selectable.Property]);
+            else return [selectable.Property, target[selectable.Property]];
+        }
+        else if (selectable.Quoted) return ['', selectable.Quoted];
+        else return ['', selectable];
+    }
+
+    Where(whereClause: WhereClause): JqlQuery {
+
+        return new JqlQuery(
+            this.sequence.filter(item => {
+                return this.Evaluate(whereClause, item)[1];
+            })
+        );
     }
 
     Select(selectables: any[]): LazyJS.Sequence<any>{
         return this.sequence
             .map(item => {
                 return lazy(selectables)
-                    .map(selectable => this.DoSelectable(selectable, item))
+                    .map(selectable => this.Evaluate(selectable, item))
                     .toObject();
             });
     }
@@ -78,16 +116,20 @@ export class JqlQuery {
 interface Statement {
     Select: any[];
     From: any;
-    Where: any;
+    Where: WhereClause;
 }
 
-var jql = "SELECT name, colour, isTasty FROM './example.jsons' WHERE isTasty = true";
+var jql = "SELECT name FROM './example.jsons' WHERE isTasty = false AND colour != 'red'";
 var stmt : Statement = parser.Parse(jql);
 
-
+console.log('\n\nQuery:');
+console.log(jql);
+console.log('\n\nParsed:');
 console.log(stmt);
+console.log('\n\nResults:');
 
 JqlQuery.From(stmt.From)
+    .Where(stmt.Where)
     .Select(stmt.Select)
     .each(item => console.log(item));
 

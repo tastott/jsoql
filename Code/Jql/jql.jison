@@ -6,11 +6,15 @@
 
 '.'                   return '.'
 \s*\,\s*                  return ','
+\s*\!\=\s*               return '!='
 \s*\=\s*               return '='
 <<EOF>>               return 'EOF'
 SELECT\s+             return 'SELECT'
 \s+FROM\s+               return 'FROM'
 \s+WHERE\s+               return 'WHERE'
+'true'                      return 'True'
+'false'                     return 'False'
+\s+AND\s+                   return 'AND'
 [^,^\s^\'^\.^=]+              return 'Property'
 \'[^\']+\'               return 'Quotation'
 .                     return 'INVALID'
@@ -19,6 +23,7 @@ SELECT\s+             return 'SELECT'
 
 /* operator associations and precedence */
 
+%left 'AND'
 %left '+' '-'
 %left '*' '/'
 %left '^'
@@ -38,10 +43,18 @@ Quoted
         { $$ = { Quoted: $1.replace(/'/g, "")}}
     ;
 
+Boolean
+    : True
+        { $$ = true}
+    | False
+        { $$ = false }
+    ;
+
 Selectable
     : Property
         { $$ = { Property: $1}}
     | Quoted
+    | Boolean
     | Property '.' Selectable
         { $$ = { Property: $1, Child: $3}}
     ;
@@ -56,6 +69,10 @@ SelectList
 WhereCondition
     : Selectable '=' Selectable
         { $$ = { Operator: '=', Args: [$1, $3]}}
+    | Selectable '!=' Selectable
+        { $$ = { Operator: '!=', Args: [$1, $3]}}
+    | WhereCondition AND WhereCondition
+        { $$ = { Operator: 'AND', Args: [$1, $3]}}
     ;
 
 WhereClause
