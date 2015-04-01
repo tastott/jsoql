@@ -35,6 +35,10 @@ export interface WhereClause {
     Args: any[]
 };
 
+export interface Group {
+    Items: LazyJS.Sequence<any>;
+}
+
 export class JqlQuery {
     constructor(private sequence: LazyJS.Sequence<any>) {
     }
@@ -59,12 +63,23 @@ export class JqlQuery {
         return func(args);
     }
 
+    private DoAggregateFunction(name: string, items: LazyJS.Sequence<any>) {
+        switch (name.toLowerCase()) {
+            case 'count': return items.size();
+            default: throw 'Unrecognized function: ' + name;
+        }
+    }
+
     private Evaluate(selectable: any, target: any) {
+        if (JqlQuery.IsAggregate(selectable)) {
+            var group: Group = target;
+            return [selectable.Call, this.DoAggregateFunction(selectable.Call, group.Items)];
+        }
         if (selectable.Operator) {
             var args = selectable.Args.map(arg => this.Evaluate(arg, target)[1]);
             return ['', this.DoOperation(selectable.Operator, args)];
         }
-        if (selectable.Property) {
+        else if (selectable.Property) {
             if (selectable.Child) return this.Evaluate(selectable.Child, target[selectable.Property]);
             else return [selectable.Property, target[selectable.Property]];
         }
@@ -74,11 +89,15 @@ export class JqlQuery {
 
     Where(whereClause: WhereClause): JqlQuery {
 
-        return new JqlQuery(
-            this.sequence.filter(item => {
-                return this.Evaluate(whereClause, item)[1];
-            })
-        );
+        if (whereClause)
+            return new JqlQuery(
+                this.sequence.filter(item => {
+                    return this.Evaluate(whereClause, item)[1];
+                })
+            );
+        else
+            return new JqlQuery(this.sequence);
+
     }
 
     Select(selectables: any[]): LazyJS.Sequence<any>{
@@ -89,6 +108,17 @@ export class JqlQuery {
                     .toObject();
             });
     }
+
+    Group(): JqlQuery {
+        var group: Group = {
+            Items: this.sequence
+        };
+        return new JqlQuery(lazy([group]));
+    }
+    //GroupBy(groupBy: any): LazyJS.Sequence<Group>{
+    //    return this.sequence
+    //        .groupBy(
+    //}
 
     static From(fromClause: any): JqlQuery {
         if (fromClause.Quoted != undefined && fromClause.Quoted != null) {
@@ -111,6 +141,12 @@ export class JqlQuery {
         }
         else throw 'Unquoted from clause not supported';
     }
+
+    static IsAggregate(expression: any) {
+        return expression
+            && expression.Call
+            && expression.Call.toLowerCase() == 'count';
+    }
 }
 
 interface Statement {
@@ -119,7 +155,7 @@ interface Statement {
     Where: WhereClause;
 }
 
-var jql = "SELECT name FROM './example.jsons' WHERE isTasty = false AND colour != 'red'";
+var jql = "SELECT name FROM './example.jsons'"; // WHERE isTasty = false AND colour != 'red'";
 var stmt : Statement = parser.Parse(jql);
 
 console.log('\n\nQuery:');
@@ -128,10 +164,18 @@ console.log('\n\nParsed:');
 console.log(stmt);
 console.log('\n\nResults:');
 
-JqlQuery.From(stmt.From)
-    .Where(stmt.Where)
-    .Select(stmt.Select)
-    .each(item => console.log(item));
+var implicitGroupAll = lazy(stmt.Select)
+    .filter(exp => JqlQuery.IsAggregate(exp))
+    .size();
+
+var fromWhere = JqlQuery.From(stmt.From)
+    .Where(stmt.Where);
+
+if (implicitGroupAll) fromWhere = fromWhere.Group();
+    
+fromWhere.Select(stmt.Select)
+        .each(item => console.log(item));
+
 
 
 process.stdin.read();

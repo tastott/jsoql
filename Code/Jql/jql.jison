@@ -5,6 +5,8 @@
 %%
 
 '.'                   return '.'
+'('						return '('
+')'						return ')'
 \s*\,\s*                  return ','
 \s*\!\=\s*               return '!='
 \s*\=\s*               return '='
@@ -15,7 +17,7 @@ SELECT\s+             return 'SELECT'
 'true'                      return 'True'
 'false'                     return 'False'
 \s+AND\s+                   return 'AND'
-[^,^\s^\'^\.^=]+              return 'Property'
+[A-Za-z0-9_]+       return 'Identifier'
 \'[^\']+\'               return 'Quotation'
 .                     return 'INVALID'
 
@@ -50,26 +52,32 @@ Boolean
         { $$ = false }
     ;
 
-Selectable
-    : Property
+
+Expression
+	: Identifier '(' ')'
+		{ $$ = { Call: $1}}
+	| Identifier '(' Expression ')'
+		{ $$ = { Call: $1, Arg: $3}}
+    | Identifier
         { $$ = { Property: $1}}
     | Quoted
     | Boolean
-    | Property '.' Selectable
+    | Identifier '.' Identifier
         { $$ = { Property: $1, Child: $3}}
     ;
 
+
 SelectList
-    : Selectable
+    : Expression
         { $$ = [$1]}
-    | SelectList ',' Selectable
+    | SelectList ',' Expression
         { $$ = $1.concat([$3])}
     ;
 
 WhereCondition
-    : Selectable '=' Selectable
+    : Expression '=' Expression
         { $$ = { Operator: '=', Args: [$1, $3]}}
-    | Selectable '!=' Selectable
+    | Expression '!=' Expression
         { $$ = { Operator: '!=', Args: [$1, $3]}}
     | WhereCondition AND WhereCondition
         { $$ = { Operator: 'AND', Args: [$1, $3]}}
@@ -80,7 +88,7 @@ WhereClause
     ;
 
 FromTarget
-    : Property
+    : Identifier
     | Quoted
     ;
 
@@ -91,7 +99,7 @@ FromClause
 
 Stmt
     : SELECT SelectList FROM FromClause
-        { $$ = { Select: $2, From: $4} }
+        { $$ = { Select: $2, From: $4, Test: $1.last_column} }
 	| SELECT SelectList FROM FromClause WHERE WhereClause
-		{ $$ = { Select: $2, From: $4, Where: $6 }}
+		{ $$ = { Select: $2, From: $4, Where: $6 , Parsing: @1}}
     ;
