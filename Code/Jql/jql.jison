@@ -14,6 +14,7 @@
 SELECT\s+             return 'SELECT'
 \s+FROM\s+               return 'FROM'
 \s+WHERE\s+               return 'WHERE'
+\s+GROUP\sBY\s+             return 'GROUPBY'
 'true'                      return 'True'
 'false'                     return 'False'
 \s+AND\s+                   return 'AND'
@@ -67,10 +68,10 @@ Expression
     ;
 
 
-SelectList
+ExpressionList
     : Expression
         { $$ = [$1]}
-    | SelectList ',' Expression
+    | ExpressionList ',' Expression
         { $$ = $1.concat([$3])}
     ;
 
@@ -98,8 +99,10 @@ FromClause
 
 
 Stmt
-    : SELECT SelectList FROM FromClause
-        { $$ = { Select: $2, From: $4, Test: $1.last_column} }
-	| SELECT SelectList FROM FromClause WHERE WhereClause
-		{ $$ = { Select: $2, From: $4, Where: $6 , Parsing: @1}}
+    : SELECT ExpressionList FROM FromClause
+        { $$ = { Select: $2, From: $4} }
+	| SELECT ExpressionList FROM FromClause WHERE WhereClause
+		{ $$ = { Select: $2, From: $4, Where: $6}}
+    | SELECT ExpressionList FROM FromClause GROUPBY ExpressionList
+		{ $$ = { Select: $2, From: $4, GroupBy: $6}}
     ;
