@@ -39,7 +39,7 @@ export class JqlQuery {
         return func(args);
     }
 
-    private DoAggregateFunction(name: string, items: any[]){
+    private DoAggregateFunction(name: string, args: any[], items: any[]){
 
         switch (name.toLowerCase()) {
             case 'count': return items.length;
@@ -47,22 +47,22 @@ export class JqlQuery {
         }
     }
 
-    private Evaluate(selectable: any, target: any) {
-        if (selectable.Operator) {
-            var args = selectable.Args.map(arg => this.Evaluate(arg, target));
-            return this.DoOperation(selectable.Operator, args);
+    private Evaluate(expression: any, target: any) {
+        if (expression.Operator) {
+            var args = expression.Args.map(arg => this.Evaluate(arg, target));
+            return this.DoOperation(expression.Operator, args);
         }
-        else if (selectable.Property) {
-            if (selectable.Child) return this.Evaluate(selectable.Child, target[selectable.Property]);
-            else return target[selectable.Property];
+        else if (expression.Property) {
+            if (expression.Child) return this.Evaluate(expression.Child, target[expression.Property]);
+            else return target[expression.Property];
         }
-        else if (selectable.Quoted) return selectable.Quoted;
-        else return selectable;
+        else if (expression.Quoted) return expression.Quoted;
+        else return expression;
     }
 
-    private Hash(expression: any): string {
+    private Key(expression: any): string {
         if (expression.Property) {
-            if (expression.Child) return expression.Property + '.' + this.Hash(expression.Child);
+            if (expression.Child) return expression.Property + '.' + this.Key(expression.Child);
             else return expression.Property;
         }
         else if (expression.Call) {
@@ -73,11 +73,11 @@ export class JqlQuery {
 
     private EvaluateGroup(expression: any, group : Group) {
         if (JqlQuery.IsAggregate(expression)) {
-            return this.DoAggregateFunction(expression.Call, group.Items);
+            return this.DoAggregateFunction(expression.Call, [expression.Arg], group.Items);
         }
         else if (expression.Property){
-            var hash = this.Hash(expression);
-            return group.Key[hash];
+            var key = this.Key(expression);
+            return group.Key[key];
         }
 
         /*if (expression.Operator) {
@@ -111,7 +111,7 @@ export class JqlQuery {
                 .then(groups => 
                     groups.map(group => 
                             lazy(this.stmt.Select)
-                                .map(exp => [this.Hash(exp), this.EvaluateGroup(exp, group)])
+                                .map(exp => [this.Key(exp), this.EvaluateGroup(exp, group)])
                                 .toObject()
                             )
                             .toArray()
@@ -128,7 +128,7 @@ export class JqlQuery {
 
                     return [
                         lazy(this.stmt.Select)
-                            .map(exp => [this.Hash(exp), this.EvaluateGroup(exp, group)])
+                            .map(exp => [this.Key(exp), this.EvaluateGroup(exp, group)])
                             .toObject()
                     ];
                 });
@@ -139,7 +139,7 @@ export class JqlQuery {
             //Select
             seq = seq.map(item => {
                 return lazy(this.stmt.Select)
-                    .map(selectable => [this.Hash(selectable), this.Evaluate(selectable, item)])
+                    .map(expression => [this.Key(expression), this.Evaluate(expression, item)])
                     .toObject();
             });
 
@@ -163,7 +163,7 @@ export class JqlQuery {
     GroupBy(seq : LazyJS.Sequence<any>, expressions: any[]): Q.Promise<LazyJS.Sequence<Group>>{
         var groupKey = (item: any) => {
             var object = lazy(expressions)
-                .map(exp => [this.Hash(exp), this.Evaluate(exp, item)])
+                .map(exp => [this.Key(exp), this.Evaluate(exp, item)])
                 .toObject();
 
             return JSON.stringify(object);
@@ -209,7 +209,7 @@ export class JqlQuery {
     static IsAggregate(expression: any) {
         return expression
             && expression.Call
-            && expression.Call.toLowerCase() == 'count';
+            && expression.Call.toLowerCase() == 'count';//TODO: Check against list of functions
     }
 
     static SequenceToArray<T>(seq: LazyJS.Sequence<T>): Q.Promise<T[]> {
@@ -227,7 +227,7 @@ interface Statement {
     GroupBy: any;
 }
 
-var jql = "SELECT isTasty, colour, COUNT() FROM './example.jsons' GROUP BY isTasty, colour";
+var jql = "SELECT isTasty, COUNT() FROM './example.jsons' GROUP BY isTasty";
 var stmt : Statement = parser.Parse(jql);
 
 console.log('\n\nQuery:');
@@ -246,4 +246,5 @@ query.Execute()
 
 process.stdin.read();
 
-//
+//WARNING: There is apparently a bug at Line 5527 of \node_modules\lazy.js\lazy.js (not in source control)
+//         Remove/comment that line and things should work
