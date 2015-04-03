@@ -54,17 +54,21 @@ Boolean
     ;
 
 
+Property
+	: Identifier
+		 { $$ = { Property: $1}}
+	| Identifier '.' Property
+		 { $$ = { Property: $1, Child: $3}}
+	;
+
 Expression
 	: Identifier '(' ')'
 		{ $$ = { Call: $1}}
 	| Identifier '(' Expression ')'
 		{ $$ = { Call: $1, Arg: $3}}
-    | Identifier
-        { $$ = { Property: $1}}
+    | Property
     | Quoted
-    | Boolean
-    | Identifier '.' Identifier
-        { $$ = { Property: $1, Child: $3}}
+    | Boolean  
     ;
 
 

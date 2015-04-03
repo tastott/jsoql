@@ -34,8 +34,10 @@
   </PropertyGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
-    <Content Include="example.jsons" />
+    <Content Include="Data\example.jsons" />
+    <Content Include="Data\orders.jsons" />
     <Content Include="jql.jison" />
+    <Content Include="Data\orders.json" />
     <Content Include="package.json" />
     <Content Include="README.md" />
     <TypeScriptCompile Include="Scripts\parser.ts" />
@@ -44,6 +46,7 @@
     <TypeScriptCompile Include="Scripts\typings\q\Q.d.ts" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Data\" />
     <Folder Include="Scripts\" />
     <Folder Include="Scripts\typings\" />
     <Folder Include="Scripts\typings\lazyjs\" />

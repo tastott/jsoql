@@ -227,7 +227,7 @@ interface Statement {
     GroupBy: any;
 }
 
-var jql = "SELECT isTasty, COUNT() FROM './example.jsons' GROUP BY isTasty";
+var jql = "SELECT Order.ShipCountry, COUNT() FROM './data/orders.jsons' GROUP BY Order.ShipCountry";
 var stmt : Statement = parser.Parse(jql);
 
 console.log('\n\nQuery:');
