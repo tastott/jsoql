@@ -1,7 +1,7 @@
 ﻿
 import fs = require('fs')
-var lazy = require('lazy.js')
-var Q = require('q')
+import lazy = require('lazy.js')
+import Q = require('q')
 import parse = require('parse')
 
 
@@ -47,6 +47,22 @@ export class ArrayDataSource implements DataSource {
     }
 }
 
+interface AggregateFunctions {
+    [key: string] : (items: any[]) => any;
+}
+
+var aggregateFunctions: AggregateFunctions = {
+    'count': items => items.length,
+    'max': items => lazy(items).max(),
+    'min': items => lazy(items).min(),
+    'sum': items => lazy(items).sum(),
+    'avg': items => {
+        var count = items.length;
+        if (count) return lazy(items).sum() / count;
+        else return undefined;
+    }
+};
+
 export class JqlQuery {
     constructor(private stmt: parse.Statement,
         private dataSource: DataSource = new DefaultDataSource()) {
@@ -72,12 +88,13 @@ export class JqlQuery {
         return func(args);
     }
 
-    private DoAggregateFunction(name: string, args: any[], items: any[]) {
+    private DoAggregateFunction(name: string, items: any[]) {
 
-        switch (name.toLowerCase()) {
-            case 'count': return items.length;
-            default: throw 'Unrecognized function: ' + name;
-        }
+        var func = aggregateFunctions[name.toLowerCase()];
+
+        if (!func) throw 'Unrecognized function: ' + name;
+
+        return func(items);
     }
 
     private Evaluate(expression: any, target: any) {
@@ -106,7 +123,11 @@ export class JqlQuery {
 
     private EvaluateGroup(expression: any, group: Group) {
         if (JqlQuery.IsAggregate(expression)) {
-            return this.DoAggregateFunction(expression.Call, [expression.Arg], group.Items);
+            var items = expression.Arg
+                ? group.Items.map(item => this.Evaluate(expression.Arg, item))
+                : group.Items;
+
+            return this.DoAggregateFunction(expression.Call, items);
         }
         else if (expression.Property) {
             var key = this.Key(expression);
@@ -217,10 +238,10 @@ export class JqlQuery {
         });
     }
 
-    static IsAggregate(expression: any) {
-        return expression
-            && expression.Call
-            && expression.Call.toLowerCase() == 'count';//TODO: Check against list of functions
+    static IsAggregate(expression: any) : boolean{
+        return !!expression
+            && !!expression.Call
+            && !!aggregateFunctions[expression.Call.toLowerCase()];
     }
 
     static SequenceToArray<T>(seq: LazyJS.Sequence<T>): Q.Promise<T[]> {

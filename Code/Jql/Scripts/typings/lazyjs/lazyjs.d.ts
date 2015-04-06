@@ -162,7 +162,7 @@ declare module LazyJS {
         sortBy(sortFn: NumberCallback<T>, descending?: boolean): Sequence<T>;
         sortedIndex(value: T): Sequence<T>;
         size(): number;
-        sum(valueFn?: NumberCallback<T>): Sequence<T>;
+        sum(valueFn?: NumberCallback<T>): T;
         takeWhile(predicateFn: TestCallback<T>): Sequence<T>;
         union(var_args: T[]): Sequence<T>;
         uniq(): Sequence<T>;
