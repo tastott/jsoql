@@ -10,8 +10,46 @@ export interface Group {
     Items: any[];
 }
 
+export interface DataSource {
+    Get(value: any): LazyJS.Sequence<any>;
+}
+
+export class DefaultDataSource implements DataSource {
+    Get(fromClause: any): LazyJS.Sequence<any> {
+        if (fromClause.Quoted != undefined && fromClause.Quoted != null) {
+            var file = fromClause.Quoted;
+            if (!fs.existsSync(file)) throw 'File not found: ' + file;
+            else {
+                var seq = lazy.readFile(file, 'utf8')
+                    .split('\r\n')
+                    .map(line => {
+                    //line = '{ "name": "banana", "colour": "yellow", "isTasty": true }';
+                    try {
+                        return JSON.parse(line);
+                    }
+                    catch (err) {
+                        throw 'Failed to parse line: ' + line;
+                    }
+                });
+                return seq;
+            }
+        }
+        else throw 'Unquoted from clause not supported';
+    }
+}
+
+export class ArrayDataSource implements DataSource {
+    constructor(private values: any[]) {
+    }
+
+    Get(fromClause: any): LazyJS.Sequence<any> {
+        return lazy(this.values);
+    }
+}
+
 export class JqlQuery {
-    constructor(private stmt: parse.Statement) {
+    constructor(private stmt: parse.Statement,
+        private dataSource: DataSource = new DefaultDataSource()) {
     }
 
     private DoOperation(operator: string, args: any[]) {
@@ -90,7 +128,7 @@ export class JqlQuery {
     Execute(): Q.Promise<any[]> {
         
         //From
-        var seq = this.From(this.stmt.From);
+        var seq = this.dataSource.Get(this.stmt.From);
 
         //Where
         if (this.stmt.Where) {
@@ -179,28 +217,6 @@ export class JqlQuery {
         });
     }
 
-    private From(fromClause: any): LazyJS.Sequence<any> {
-        if (fromClause.Quoted != undefined && fromClause.Quoted != null) {
-            var file = fromClause.Quoted;
-            if (!fs.existsSync(file)) throw 'File not found: ' + file;
-            else {
-                var seq = lazy.readFile(file, 'utf8')
-                    .split('\r\n')
-                    .map(line => {
-                    //line = '{ "name": "banana", "colour": "yellow", "isTasty": true }';
-                    try {
-                        return JSON.parse(line);
-                    }
-                    catch (err) {
-                        throw 'Failed to parse line: ' + line;
-                    }
-                });
-                return seq;
-            }
-        }
-        else throw 'Unquoted from clause not supported';
-    }
-
     static IsAggregate(expression: any) {
         return expression
             && expression.Call
@@ -210,7 +226,7 @@ export class JqlQuery {
     static SequenceToArray<T>(seq: LazyJS.Sequence<T>): Q.Promise<T[]> {
         var arrayPromise: any = seq.toArray();
 
-        if (typeof arrayPromise == 'Array') return Q(arrayPromise);
+        if (Object.prototype.toString.call(arrayPromise) === '[object Array]') return Q(arrayPromise);
         else return arrayPromise;
     }
 }

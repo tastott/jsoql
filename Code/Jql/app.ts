@@ -7,6 +7,7 @@ import _query = require('./Scripts/query')
 
 
 var jql = "SELECT Order.ShipCountry, COUNT() FROM './data/orders.jsons' GROUP BY Order.ShipCountry";
+//var jql = "SELECT COUNT() FROM 'Test'";
 var stmt = _parse.Parse(jql);
 
 console.log('\n\nQuery:');
@@ -15,7 +16,7 @@ console.log('\n\nParsed:');
 console.log(stmt);
 console.log('\n\nResults:');
 
-var query = new _query.JqlQuery(stmt);
+var query = new _query.JqlQuery(stmt); //, new _query.ArrayDataSource([{}, {}]));
 query.Execute()
     .then(results => {
         results.forEach(result => {
