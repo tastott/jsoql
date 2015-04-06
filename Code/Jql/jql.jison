@@ -7,6 +7,8 @@
 '.'					return '.'
 '('					return '('
 ')'					return ')'
+'['					return '['
+']'					return ']'
 \s*\,\s*            return ','
 \s*\<\=\s*			return '<='
 \s*\<\s*			return '<'
@@ -65,8 +67,12 @@ Boolean
 Property
 	: Identifier
 		 { $$ = { Property: $1}}
+	| Identifier '[' Number ']'
+		 { $$ = { Property: $1, Index: $3}}
 	| Identifier '.' Property
 		 { $$ = { Property: $1, Child: $3}}
+	| Identifier  '[' Number ']' '.' Property
+		 { $$ = { Property: $1, Index: $3, Child: $6}}
 	;
 
 Expression

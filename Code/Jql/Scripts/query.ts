@@ -102,8 +102,14 @@ export class JqlQuery {
             return this.DoOperation(expression.Operator, args);
         }
         else if (expression.Property) {
-            if (expression.Child) return this.Evaluate(expression.Child, target[expression.Property]);
-            else return target[expression.Property];
+            var propTarget;
+            if (expression.Index != undefined) {
+                //TODO: Check index is integer and target property is array
+                propTarget = target[expression.Property][expression.Index];
+            } else propTarget = target[expression.Property];
+
+            if (expression.Child) return this.Evaluate(expression.Child, propTarget);
+            else return propTarget;
         }
         else if (expression.Quoted) return expression.Quoted;
         else return expression;
@@ -111,8 +117,13 @@ export class JqlQuery {
 
     private Key(expression: any): string {
         if (expression.Property) {
-            if (expression.Child) return expression.Property + '.' + this.Key(expression.Child);
-            else return expression.Property;
+            var propKey;
+            if (expression.Index != undefined) {
+                propKey = expression.Property + '[' + expression.Index + ']';
+            } else propKey = expression.Property
+
+            if (expression.Child) return propKey + '.' + this.Key(expression.Child);
+            else return propKey;
         }
         else if (expression.Call) {
             return expression.Call;

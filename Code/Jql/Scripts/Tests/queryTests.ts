@@ -25,6 +25,44 @@ export function ExpressionAlias() {
         }); 
 }
 
+export function NestedProperty() {
+    var data = [1, 2, 3].map(i => {
+        return {
+            Thing: {
+                Value: i
+            }
+        };
+    });
+    var expected = [
+        { "Thing.Value": 1 },
+        { "Thing.Value": 2 },
+        { "Thing.Value": 3 }
+    ];
+    return ExecuteArrayQuery("SELECT Thing.Value FROM 'Test'", data)
+        .then(results => {
+        setTimeout(() => assert.deepEqual(results, expected));
+    });
+}
+
+export function ArrayProperty() {
+    var data = [1, 2, 3].map(i => {
+        return {
+            Thing: {
+                Value: [i, i + 0.1, i + 0.2]
+            }
+        };
+    });
+    var expected = [
+        { "Thing.Value[1]": 1.1 },
+        { "Thing.Value[1]": 2.1 },
+        { "Thing.Value[1]": 3.1 }
+    ];
+    return ExecuteArrayQuery("SELECT Thing.Value[1] FROM 'Test'", data)
+        .then(results => {
+        setTimeout(() => assert.deepEqual(results, expected));
+    });
+}
+
 export function Count() {
     var data = [
         { Value: 1 },

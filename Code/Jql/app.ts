@@ -6,7 +6,8 @@ import _parse = require('./Scripts/parse')
 import _query = require('./Scripts/query')
 
 
-var jql = "SELECT Order.Id FROM './data/orders.jsons' WHERE Order.Id <= 11074 AND Order.Id = 11074";
+//var jql = "SELECT Order.ShipCountry AS Country, COUNT() AS Orders FROM './data/orders.jsons' GROUP BY Order.ShipCountry";
+var jql = "SELECT OrderDetails[0].Quantity FROM './data/orders.jsons'";
 //var jql = "SELECT COUNT() FROM 'Test'";
 var stmt = _parse.Parse(jql);
 
