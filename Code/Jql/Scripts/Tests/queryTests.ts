@@ -125,3 +125,66 @@ export function WhereEqualsAnd() {
         setTimeout(() => assert.deepEqual(results, expected));
     });
 }
+
+export function WhereGreaterThan() {
+    var data = [
+        { Value: 1 },
+        { Value: 2 },
+        { Value: 3 }
+    ];
+    var expected = [
+        { Value: 3 }
+    ];
+    return ExecuteArrayQuery("SELECT Value FROM 'Test' WHERE Value > 2", data)
+        .then(results => {
+        setTimeout(() => assert.deepEqual(results, expected));
+    });
+}
+
+export function WhereLessThan() {
+    var data = [
+        { Value: 1 },
+        { Value: 2 },
+        { Value: -3 }
+    ];
+    var expected = [
+        { Value: 1 },
+        { Value: -3 }
+    ];
+    return ExecuteArrayQuery("SELECT Value FROM 'Test' WHERE Value < 2", data)
+        .then(results => {
+        setTimeout(() => assert.deepEqual(results, expected));
+    });
+}
+
+export function WhereNotEqual() {
+    var data = [
+        { Value: 'A' },
+        { Value: 'B' },
+        { Value: 'A' }
+    ];
+    var expected = [
+        { Value: 'A' },
+        { Value: 'A' }
+    ];
+    return ExecuteArrayQuery("SELECT Value FROM 'Test' WHERE Value != 'B'", data)
+        .then(results => {
+        setTimeout(() => assert.deepEqual(results, expected));
+    });
+}
+
+export function WhereOr() {
+    var data = [
+        { Value: 'A' },
+        { Value: 'B' },
+        { Value: 'C' }
+    ];
+    var expected = [
+        { Value: 'A' },
+        { Value: 'C' }
+    ];
+    return ExecuteArrayQuery("SELECT Value FROM 'Test' WHERE Value = 'A' OR Value = 'C'", data)
+        .then(results => {
+        setTimeout(() => assert.deepEqual(results, expected));
+    });
+}

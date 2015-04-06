@@ -4,31 +4,37 @@
 %lex
 %%
 
-'.'                   return '.'
-'('						return '('
-')'						return ')'
-\s*\,\s*                  return ','
-\s*\!\=\s*               return '!='
-\s*\=\s*               return '='
-<<EOF>>               return 'EOF'
-SELECT\s+             return 'SELECT'
-\s+FROM\s+               return 'FROM'
-\s+WHERE\s+               return 'WHERE'
-\s+GROUP\sBY\s+             return 'GROUPBY'
-\s+AS\s+					return 'AS'
-'true'                      return 'True'
-'false'                     return 'False'
-\s+AND\s+                   return 'AND'
-[-0-9\.]+					return 'Number'
+'.'					return '.'
+'('					return '('
+')'					return ')'
+\s*\,\s*            return ','
+\s*\<\=\s*			return '<='
+\s*\<\s*			return '<'
+\s*\>\=\s*			return '>='
+\s*\>\s*			return '>'
+\s*\!\=\s*          return '!='
+\s*\=\s*            return '='
+<<EOF>>             return 'EOF'
+SELECT\s+           return 'SELECT'
+\s+FROM\s+          return 'FROM'
+\s+WHERE\s+         return 'WHERE'
+\s+GROUP\sBY\s+     return 'GROUPBY'
+\s+AS\s+			return 'AS'
+'true'              return 'True'
+'false'             return 'False'
+\s+AND\s+           return 'AND'
+\s+OR\s+			return 'OR'
+[0-9\.-]+			return 'Number'
 [A-Za-z0-9_]+       return 'Identifier'
-\'[^\']+\'               return 'Quotation'
-.                     return 'INVALID'
+\'[^\']+\'          return 'Quotation'
+.                   return 'INVALID'
 
 /lex
 
 /* operator associations and precedence */
 
-%left 'AND'
+%left 'AND' 'OR'
+%left '=' '!=' '<' '>' '<=' '>='
 %left '+' '-'
 %left '*' '/'
 %left '^'
@@ -72,6 +78,22 @@ Expression
     | Quoted
     | Boolean  
 	| Number
+	| Expression 'AND' Expression
+		{ $$ = {Operator: $2.trim(), Args: [$1,$3]}}
+	| Expression 'OR' Expression
+		{ $$ = {Operator: $2.trim(), Args: [$1,$3]}}
+	| Expression '=' Expression
+		{ $$ = {Operator: $2.trim(), Args: [$1,$3]}}
+	| Expression '!=' Expression
+		{ $$ = {Operator: $2.trim(), Args: [$1,$3]}}
+	| Expression '>' Expression
+		{ $$ = {Operator: $2.trim(), Args: [$1,$3]}}
+	| Expression '>=' Expression
+		{ $$ = {Operator: $2.trim(), Args: [$1,$3]}}
+	| Expression '<' Expression
+		{ $$ = {Operator: $2.trim(), Args: [$1,$3]}}
+	| Expression '<=' Expression
+		{ $$ = {Operator: $2.trim(), Args: [$1,$3]}}
     ;
 
 
@@ -96,19 +118,6 @@ SelectList
 		 { $$ = $1.concat([$3])}
 	;
 
-WhereCondition
-    : Expression '=' Expression
-        { $$ = { Operator: '=', Args: [$1, $3]}}
-    | Expression '!=' Expression
-        { $$ = { Operator: '!=', Args: [$1, $3]}}
-    | WhereCondition AND WhereCondition
-        { $$ = { Operator: 'AND', Args: [$1, $3]}}
-    ;
-
-WhereClause
-    : WhereCondition
-    ;
-
 FromTarget
     : Identifier
     | Quoted
@@ -122,7 +131,7 @@ FromClause
 Stmt
     : SELECT SelectList FROM FromClause
         { $$ = { Select: $2, From: $4} }
-	| SELECT SelectList FROM FromClause WHERE WhereClause
+	| SELECT SelectList FROM FromClause WHERE Expression
 		{ $$ = { Select: $2, From: $4, Where: $6}}
     | SELECT SelectList FROM FromClause GROUPBY ExpressionList
 		{ $$ = { Select: $2, From: $4, GroupBy: $6}}

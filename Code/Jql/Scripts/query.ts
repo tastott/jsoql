@@ -47,11 +47,22 @@ export class ArrayDataSource implements DataSource {
     }
 }
 
-interface AggregateFunctions {
+interface FunctionMappings {
     [key: string] : (items: any[]) => any;
 }
 
-var aggregateFunctions: AggregateFunctions = {
+var operators: FunctionMappings = {
+    '=': args => args[0] == args[1],
+    '!=': args => args[0] !== args[1],
+    '>': args => args[0] > args[1],
+    '>=': args => args[0] >= args[1],
+    '<': args => args[0] < args[1],
+    '<=': args => args[0] <= args[1],
+    'and': args => args[0] && args[1],
+    'or': args => args[0] || args[1]
+};
+
+var aggregateFunctions: FunctionMappings = {
     'count': items => items.length,
     'max': items => lazy(items).max(),
     'min': items => lazy(items).min(),
@@ -69,21 +80,9 @@ export class JqlQuery {
     }
 
     private DoOperation(operator: string, args: any[]) {
-        var func: (args: any[]) => any;
+        var func = operators[operator.toLowerCase()];
 
-        switch (operator) {
-            case '=':
-                func = args => args[0] == args[1];
-                break;
-            case '!=':
-                func = args => args[0] !== args[1];
-                break;
-            case 'AND':
-                func = args => args[0] && args[1];
-                break;
-            default:
-                throw 'Unrecognized operator ' + operator;
-        }
+        if (!func) throw 'Unrecognized operator: ' + name;
 
         return func(args);
     }
