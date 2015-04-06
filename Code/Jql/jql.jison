@@ -15,9 +15,11 @@ SELECT\s+             return 'SELECT'
 \s+FROM\s+               return 'FROM'
 \s+WHERE\s+               return 'WHERE'
 \s+GROUP\sBY\s+             return 'GROUPBY'
+\s+AS\s+					return 'AS'
 'true'                      return 'True'
 'false'                     return 'False'
 \s+AND\s+                   return 'AND'
+[-0-9\.]+					return 'Number'
 [A-Za-z0-9_]+       return 'Identifier'
 \'[^\']+\'               return 'Quotation'
 .                     return 'INVALID'
@@ -69,6 +71,7 @@ Expression
     | Property
     | Quoted
     | Boolean  
+	| Number
     ;
 
 
@@ -78,6 +81,20 @@ ExpressionList
     | ExpressionList ',' Expression
         { $$ = $1.concat([$3])}
     ;
+
+Selectable
+	: Expression
+		{ $$ = {Expression: $1}}
+	| Expression 'AS' Identifier
+		{ $$ = { Expression: $1, Alias: $3}}
+	;
+
+SelectList
+	: Selectable
+		{ $$ = [$1]}
+	| SelectList ',' Selectable
+		 { $$ = $1.concat([$3])}
+	;
 
 WhereCondition
     : Expression '=' Expression
@@ -103,10 +120,10 @@ FromClause
 
 
 Stmt
-    : SELECT ExpressionList FROM FromClause
+    : SELECT SelectList FROM FromClause
         { $$ = { Select: $2, From: $4} }
-	| SELECT ExpressionList FROM FromClause WHERE WhereClause
+	| SELECT SelectList FROM FromClause WHERE WhereClause
 		{ $$ = { Select: $2, From: $4, Where: $6}}
-    | SELECT ExpressionList FROM FromClause GROUPBY ExpressionList
+    | SELECT SelectList FROM FromClause GROUPBY ExpressionList
 		{ $$ = { Select: $2, From: $4, GroupBy: $6}}
     ;

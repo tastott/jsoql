@@ -204,3 +204,7 @@ FakesAssemblies/
 /Code/Jql/Scripts/query.js.map
 /Code/Jql/jql.js
 /Code/Jql/jql.js.map
+/Code/Jql/Scripts/Tests/queryTests.js
+/Code/Jql/Scripts/Tests/queryTests.js.map
+/Code/Jql/Scripts/Tests/testUtilities.js
+/Code/Jql/Scripts/Tests/testUtilities.js.map

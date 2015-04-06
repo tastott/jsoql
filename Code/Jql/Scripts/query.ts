@@ -163,29 +163,35 @@ export class JqlQuery {
         if (this.stmt.GroupBy) {
             return this.GroupBy(seq, this.stmt.GroupBy)
                 .then(groups =>
-                groups.map(group =>
-                    lazy(this.stmt.Select)
-                        .map(exp => [this.Key(exp), this.EvaluateGroup(exp, group)])
-                        .toObject()
-                    )
-                    .toArray()
-                );
+                    groups.map(group =>
+                        lazy(this.stmt.Select)
+                            .map(selectable => [
+                                selectable.Alias || this.Key(selectable.Expression),
+                                this.EvaluateGroup(selectable.Expression, group)
+                            ])
+                            .toObject()
+                        )
+                        .toArray()
+                    );
         }
         //Implicitly
-        else if (lazy(this.stmt.Select).some(exp => JqlQuery.IsAggregate(exp))) {
+        else if (lazy(this.stmt.Select).some(selectable => JqlQuery.IsAggregate(selectable.Expression))) {
             return JqlQuery.SequenceToArray(seq)
                 .then(items => {
-                var group: Group = {
-                    Key: null,
-                    Items: items
-                };
+                    var group: Group = {
+                        Key: null,
+                        Items: items
+                    };
 
-                return [
-                    lazy(this.stmt.Select)
-                        .map(exp => [this.Key(exp), this.EvaluateGroup(exp, group)])
-                        .toObject()
-                ];
-            });
+                    return [
+                        lazy(this.stmt.Select)
+                            .map(selectable => [
+                                selectable.Alias || this.Key(selectable.Expression),
+                                this.EvaluateGroup(selectable.Expression, group)
+                            ])
+                            .toObject()
+                    ];
+                });
 
         }
         //No grouping
@@ -193,7 +199,10 @@ export class JqlQuery {
             //Select
             seq = seq.map(item => {
                 return lazy(this.stmt.Select)
-                    .map(expression => [this.Key(expression), this.Evaluate(expression, item)])
+                    .map(selectable => [
+                        selectable.Alias || this.Key(selectable.Expression),
+                        this.Evaluate(selectable.Expression, item)
+                    ])
                     .toObject();
             });
 

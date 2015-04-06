@@ -44,11 +44,9 @@
     <TypeScriptCompile Include="Scripts\query.ts" />
     <TypeScriptCompile Include="Scripts\Tests\queryTests.ts">
       <SubType>Code</SubType>
-      <TestFramework>Mocha</TestFramework>
+      <TestFramework>ExportRunner</TestFramework>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="Scripts\Tests\testUtilities.ts" />
     <TypeScriptCompile Include="Scripts\typings\lazyjs\lazyjs.d.ts" />
-    <TypeScriptCompile Include="Scripts\typings\mocha\mocha.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\node\node.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\q\Q.d.ts" />
   </ItemGroup>
@@ -58,7 +56,6 @@
     <Folder Include="Scripts\Tests\" />
     <Folder Include="Scripts\typings\" />
     <Folder Include="Scripts\typings\lazyjs\" />
-    <Folder Include="Scripts\typings\mocha\" />
     <Folder Include="Scripts\typings\node\" />
     <Folder Include="Scripts\typings\q\" />
   </ItemGroup>

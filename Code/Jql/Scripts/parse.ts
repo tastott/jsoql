@@ -1,9 +1,10 @@
 ﻿
-import fs  = require('fs')
+import fs = require('fs')
+import path = require('path')
 var jison = require('jison')
 
 
-var bnf = fs.readFileSync("jql.jison", "utf8");
+var bnf = fs.readFileSync(path.join(__dirname ,"../jql.jison"), "utf8");
 var parser = new jison.Parser(bnf);
 
 export function Parse(source: string) : Statement{
@@ -15,9 +16,13 @@ export interface WhereClause {
     Args: any[]
 };
 
+export interface Selectable {
+    Expression: any;
+    Alias: string;
+}
 
 export interface Statement {
-    Select: any[];
+    Select: Selectable[];
     From: any;
     Where: WhereClause;
     GroupBy: any;

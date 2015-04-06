@@ -12,7 +12,5 @@
     "lazy.js": "^0.4.0",
     "q": "^1.2.0"
   },
-  "devDependencies": {
-    "mocha": "^2.2.1"
-  }
+  "devDependencies": {}
 }
