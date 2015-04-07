@@ -2,8 +2,8 @@
 import fs = require('fs')
 import lazy = require('lazy.js')
 import Q = require('q')
-import parse = require('parse')
-
+import parse = require('./parse')
+import util = require('./utilities')
 
 export interface Group {
     Key: any;
@@ -11,39 +11,41 @@ export interface Group {
 }
 
 export interface DataSource {
-    Get(value: any): LazyJS.Sequence<any>;
+    Get(value: string): LazyJS.Sequence<any>;
 }
 
 export class DefaultDataSource implements DataSource {
-    Get(fromClause: any): LazyJS.Sequence<any> {
-        if (fromClause.Quoted != undefined && fromClause.Quoted != null) {
-            var file = fromClause.Quoted;
-            if (!fs.existsSync(file)) throw 'File not found: ' + file;
-            else {
-                var seq = lazy.readFile(file, 'utf8')
-                    .split('\r\n')
-                    .map(line => {
-                    //line = '{ "name": "banana", "colour": "yellow", "isTasty": true }';
-                    try {
-                        return JSON.parse(line);
-                    }
-                    catch (err) {
-                        throw 'Failed to parse line: ' + line;
-                    }
-                });
-                return seq;
-            }
+    Get(value : string): LazyJS.Sequence<any> {
+
+        if (!fs.existsSync(value)) throw 'File not found: ' + value;
+        else {
+            var seq = lazy.readFile(value, 'utf8')
+                .split('\r\n')
+                .map(line => {
+                //line = '{ "name": "banana", "colour": "yellow", "isTasty": true }';
+                try {
+                    return JSON.parse(line);
+                }
+                catch (err) {
+                    throw 'Failed to parse line: ' + line;
+                }
+            });
+            return seq;
         }
-        else throw 'Unquoted from clause not supported';
+     
     }
 }
 
+export interface NamedArrays {
+    [name: string]: any[];
+}
+
 export class ArrayDataSource implements DataSource {
-    constructor(private values: any[]) {
+    constructor(private arrays : NamedArrays) {
     }
 
-    Get(fromClause: any): LazyJS.Sequence<any> {
-        return lazy(this.values);
+    Get(value : string): LazyJS.Sequence<any> {
+        return lazy(this.arrays[value]);
     }
 }
 
@@ -156,10 +158,17 @@ export class JqlQuery {
         else return ['', expression];*/
     }
 
+    From(fromClause: any): LazyJS.Sequence<any> {
+        if (fromClause.Quoted != undefined && fromClause.Quoted != null) {
+            return this.dataSource.Get(fromClause.Quoted);
+        }
+        else throw 'Unquoted from clause not supported';
+    }
+
     Execute(): Q.Promise<any[]> {
         
         //From
-        var seq = this.dataSource.Get(this.stmt.From);
+        var seq = this.From(this.stmt.From);
 
         //Where
         if (this.stmt.Where) {
@@ -266,7 +275,7 @@ export class JqlQuery {
     static SequenceToArray<T>(seq: LazyJS.Sequence<T>): Q.Promise<T[]> {
         var arrayPromise: any = seq.toArray();
 
-        if (Object.prototype.toString.call(arrayPromise) === '[object Array]') return Q(arrayPromise);
+        if (util.IsArray(arrayPromise)) return Q(arrayPromise);
         else return arrayPromise;
     }
 }

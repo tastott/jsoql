@@ -3,13 +3,19 @@ import qry = require('../query')
 import parse = require('../parse')
 import lazy = require('lazy.js')
 import Q = require('q')
+import util = require('../utilities')
 
 //Have to assert inside setTimeout to get the async test to work
 //https://nodejstools.codeplex.com/discussions/550545
 
-function ExecuteArrayQuery(jql: string, values: any[]): Q.Promise<any[]> {
+function ExecuteArrayQuery(jql: string, values: any[]| qry.NamedArrays): Q.Promise<any[]> {
+
+    var namedArrays: qry.NamedArrays = util.IsArray(values)
+        ? { "Test": <any[]>values }
+        : <qry.NamedArrays>values;
+
     var stmt = parse.Parse(jql);
-    var data = new qry.ArrayDataSource(values);
+    var data = new qry.ArrayDataSource(namedArrays);
     var query = new qry.JqlQuery(stmt, data);
     return query.Execute();
 }
@@ -225,4 +231,33 @@ export function WhereOr() {
         .then(results => {
         setTimeout(() => assert.deepEqual(results, expected));
     });
+}
+
+export function Join() {
+    var dataA = [
+        { Order: 'A', CustomerId: 1 },
+        { Order: 'B', CustomerId: 1 },
+        { Order: 'B', CustomerId: 2  }
+    ];
+
+    var dataB = [
+        { CustomerId: 1, Name: 'Tim' },
+        { CustomerId: 2, Name: 'Bob' },
+    ];
+
+    var expected = [
+        { CustomerId: 1, Name: 'Tim', Order: 'A' },
+        { CustomerId: 1, Name: 'Tim', Order: 'B' },
+        { CustomerId: 2, Name: 'Bob', Order: 'B' }
+    ];
+
+    var data : qry.NamedArrays = {
+        "Orders": dataA,
+        "Customers": dataB
+    };
+
+    return ExecuteArrayQuery("SELECT c.CustomerId, c.Name, o.Order FROM 'Orders' AS o JOIN 'Customers' AS c ON o.CustomerId = c.CustomerId", data)
+        .then(results => {
+            setTimeout(() => assert.deepEqual(results, expected));
+        });
 }

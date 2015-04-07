@@ -49,6 +49,7 @@
     <TypeScriptCompile Include="Scripts\typings\lazyjs\lazyjs.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\node\node.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\q\Q.d.ts" />
+    <TypeScriptCompile Include="Scripts\utilities.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Data\" />
