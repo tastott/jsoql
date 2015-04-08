@@ -7,7 +7,7 @@ import _query = require('./Scripts/query')
 
 
 //var jql = "SELECT Order.ShipCountry AS Country, COUNT() AS Orders FROM './data/orders.jsons' GROUP BY Order.ShipCountry";
-var jql = "SELECT OrderDetails[0].Quantity FROM './data/orders.jsons'";
+var jql = "SELECT a.OrderDetails[0].Quantity FROM './data/orders.jsons' AS a JOIN './data/orders.jsons' AS b ON a.Order.Id = b.Order.Id JOIN './data/orders.jsons' AS c ON a.Order.Id = c.Order.Id";
 //var jql = "SELECT COUNT() FROM 'Test'";
 var stmt = _parse.Parse(jql);
 

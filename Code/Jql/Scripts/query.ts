@@ -77,6 +77,9 @@ var aggregateFunctions: FunctionMappings = {
 };
 
 export class JqlQuery {
+
+    private static SingleTableAlias = '*';
+
     constructor(private stmt: parse.Statement,
         private dataSource: DataSource = new DefaultDataSource()) {
     }
@@ -159,10 +162,55 @@ export class JqlQuery {
     }
 
     From(fromClause: any): LazyJS.Sequence<any> {
-        if (fromClause.Quoted != undefined && fromClause.Quoted != null) {
-            return this.dataSource.Get(fromClause.Quoted);
+
+        var targets = this.CollectFromTargets(fromClause);
+
+        //Aliases are mandatory if multiple targets are used
+        if (targets.length > 1 && lazy(targets).some(t => !t.Alias)) {
+            throw 'Each table must have an alias if more than one table is specified';
         }
-        else throw 'Unquoted from clause not supported';
+
+        //Aliases must be unique
+        if (lazy(targets).map(t => t.Alias).uniq().size() < targets.length) {
+            throw 'Table aliases must be unique';
+        }
+
+        var seq = this.dataSource.Get(targets[0].Target)
+            .map(item => {
+                var mapped = {};
+                mapped[targets[0].Alias || JqlQuery.SingleTableAlias] = item;
+                return mapped;
+            });
+        
+        lazy(targets).slice(1).each(target => {
+
+            var rightItems = this.dataSource.Get(target.Target);
+
+            seq = seq.map(item => {
+                var matchingRightItems = rightItems.filter(ri => 
+            });
+        });
+    }
+
+    private CollectFromTargets(fromClauseNode: any): { Target: string; Alias: string }[]{
+
+        //Join
+        if (fromClauseNode.Left) {
+            return this.CollectFromTargets(fromClauseNode.Left).concat(this.CollectFromTargets(fromClauseNode.Right));
+        }
+        //Aliased
+        else if (fromClauseNode.Target) {
+            return [{ Target: fromClauseNode.Target, Alias: fromClauseNode.Alias }];
+        }
+        //Quoted, un-aliased
+        else if(fromClauseNode.Quoted) {
+            return [{ Target: fromClauseNode.Quoted, Alias: null }];
+        }
+        //Un-quoted, un-aliased
+        else {
+            return [{ Target: fromClauseNode, Alias: null }];
+        }
+
     }
 
     Execute(): Q.Promise<any[]> {

@@ -22,6 +22,8 @@ SELECT\s+           return 'SELECT'
 \s+WHERE\s+         return 'WHERE'
 \s+GROUP\sBY\s+     return 'GROUPBY'
 \s+AS\s+			return 'AS'
+\s+JOIN\s+			return 'JOIN'
+\s+ON\s+			return 'ON'
 'true'              return 'True'
 'false'             return 'False'
 \s+AND\s+           return 'AND'
@@ -129,8 +131,16 @@ FromTarget
     | Quoted
     ;
 
+AliasedFromTarget
+	: FromTarget AS Identifier
+		{ $$ = {Target: $1, Alias: $3}}
+	;
+
 FromClause
     : FromTarget
+	| AliasedFromTarget
+	| FromClause JOIN AliasedFromTarget ON Expression
+		{ $$ = { Left: $1, Right: $3, Expression: $5}}
     ;
 
 
