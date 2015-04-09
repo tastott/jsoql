@@ -4,6 +4,7 @@ import lazy = require('lazy.js')
 import Q = require('q')
 import parse = require('./parse')
 import util = require('./utilities')
+var clone = require('clone')
 
 export interface Group {
     Key: any;
@@ -101,9 +102,9 @@ export class JqlQuery {
         return func(items);
     }
 
-    private Evaluate(expression: any, target: any) {
+    private Evaluate(expression: any, target: any, tableAliases : string[]) {
         if (expression.Operator) {
-            var args = expression.Args.map(arg => this.Evaluate(arg, target));
+            var args = expression.Args.map(arg => this.Evaluate(arg, target, tableAliases));
             return this.DoOperation(expression.Operator, args);
         }
         else if (expression.Property) {
@@ -113,7 +114,7 @@ export class JqlQuery {
                 propTarget = target[expression.Property][expression.Index];
             } else propTarget = target[expression.Property];
 
-            if (expression.Child) return this.Evaluate(expression.Child, propTarget);
+            if (expression.Child) return this.Evaluate(expression.Child, propTarget, tableAliases);
             else return propTarget;
         }
         else if (expression.Quoted) return expression.Quoted;
@@ -136,10 +137,10 @@ export class JqlQuery {
         else return '';
     }
 
-    private EvaluateGroup(expression: any, group: Group) {
+    private EvaluateGroup(expression: any, group: Group, tableAliases : any) {
         if (JqlQuery.IsAggregate(expression)) {
             var items = expression.Arg
-                ? group.Items.map(item => this.Evaluate(expression.Arg, item))
+                ? group.Items.map(item => this.Evaluate(expression.Arg, item, tableAliases))
                 : group.Items;
 
             return this.DoAggregateFunction(expression.Call, items);
@@ -161,7 +162,7 @@ export class JqlQuery {
         else return ['', expression];*/
     }
 
-    From(fromClause: any): LazyJS.Sequence<any> {
+    From(fromClause: any): { Sequence: LazyJS.Sequence<any>; Aliases: string[] } {
 
         var targets = this.CollectFromTargets(fromClause);
 
@@ -171,7 +172,8 @@ export class JqlQuery {
         }
 
         //Aliases must be unique
-        if (lazy(targets).map(t => t.Alias).uniq().size() < targets.length) {
+        var aliases = lazy(targets).map(t => t.Alias).compact();
+        if (aliases.uniq().size() < targets.length) {
             throw 'Table aliases must be unique';
         }
 
@@ -186,17 +188,36 @@ export class JqlQuery {
 
             var rightItems = this.dataSource.Get(target.Target);
 
-            seq = seq.map(item => {
-                var matchingRightItems = rightItems.filter(ri => 
-            });
+            seq = seq.map(li => {
+                    return rightItems.map(ri => {
+                            var merged = clone(li);
+                            merged[target.Alias] = ri;
+                            if (this.Evaluate(target.Condition, merged, aliases.toArray())) return merged;
+                            else return null;
+                        })
+                        .compact()
+                        .toArray(); //TODO Return the sequence and flatten that?
+                })
+                .flatten();
         });
+
+        return {
+            Sequence: seq,
+            Aliases: aliases.toArray()
+        };
     }
 
-    private CollectFromTargets(fromClauseNode: any): { Target: string; Alias: string }[]{
+    private CollectFromTargets(fromClauseNode: any): { Target: string; Alias: string; Condition?:any }[]{
 
         //Join
         if (fromClauseNode.Left) {
-            return this.CollectFromTargets(fromClauseNode.Left).concat(this.CollectFromTargets(fromClauseNode.Right));
+            return this.CollectFromTargets(fromClauseNode.Left)
+                .concat(this.CollectFromTargets(fromClauseNode.Right)
+                    .map(n => {
+                        n.Condition = fromClauseNode.Expression;
+                        return n;
+                    })
+                );
         }
         //Aliased
         else if (fromClauseNode.Target) {
