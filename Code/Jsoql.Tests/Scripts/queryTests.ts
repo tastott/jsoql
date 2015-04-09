@@ -1,22 +1,18 @@
 ﻿import assert = require('assert');
-import qry = require('../query')
-import parse = require('../parse')
-import lazy = require('lazy.js')
+import Jsoql = require('jsoql')
 import Q = require('q')
-import util = require('../utilities')
 
 //Have to assert inside setTimeout to get the async test to work
 //https://nodejstools.codeplex.com/discussions/550545
 
-function ExecuteArrayQuery(jsoql: string, values: any[]| qry.NamedArrays): Q.Promise<any[]> {
+function ExecuteArrayQuery(jsoql: string, values: any[]| Jsoql.Query.NamedArrays): Q.Promise<any[]> {
 
-    var namedArrays: qry.NamedArrays = util.IsArray(values)
+    var namedArrays: Jsoql.Query.NamedArrays = Jsoql.Utilities.IsArray(values)
         ? { "Test": <any[]>values }
-        : <qry.NamedArrays>values;
+        : <Jsoql.Query.NamedArrays>values;
 
-    var stmt = parse.Parse(jsoql);
-    var data = new qry.ArrayDataSource(namedArrays);
-    var query = new qry.JsoqlQuery(stmt, data);
+    var stmt = Jsoql.Parse.Parse(jsoql);
+    var query = new Jsoql.Query.JsoqlQuery(stmt, namedArrays);
     return query.Execute();
 }
 
@@ -251,7 +247,7 @@ export function Join() {
         { CustomerId: 2, Name: 'Bob', Order: 'B' }
     ];
 
-    var data : qry.NamedArrays = {
+    var data: Jsoql.Query.NamedArrays = {
         "Orders": dataA,
         "Customers": dataB
     };

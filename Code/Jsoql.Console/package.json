@@ -1,0 +1,10 @@
+{
+  "name": "Jsoql.Console",
+  "version": "0.0.0",
+  "description": "Jsoql.Console",
+  "main": "app.js",
+  "author": {
+    "name": "Tim",
+    "email": ""
+  }
+}

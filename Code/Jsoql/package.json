@@ -1,17 +1,21 @@
 {
-  "name": "Jql",
-  "version": "0.0.0",
-  "description": "Jql",
-  "main": "app.js",
-  "author": {
-    "name": "Tim",
-    "email": ""
-  },
-  "dependencies": {
-    "clone": "^1.0.2",
-    "jison": "^0.4.15",
-    "lazy.js": "^0.4.0",
-    "q": "^1.2.0"
-  },
-  "devDependencies": {}
+    "name": "jsoql",
+    "version": "0.0.1",
+    "description": "jsoql",
+    "main": "jsoql.js",
+    "author": {
+        "name": "Tim",
+        "email": ""
+    },
+    "dependencies": {
+        "clone": "^1.0.2",
+        "jison": "^0.4.15",
+        "lazy.js": "^0.4.0",
+        "q": "^1.2.0"
+    },
+    "devDependencies": { },
+    "files": [
+        "jsoql.js",
+        "jsoql.jison"
+    ]
 }

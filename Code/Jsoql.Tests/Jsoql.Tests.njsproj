@@ -3,17 +3,16 @@
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-    <Name>Jsoql</Name>
-    <RootNamespace>Jql</RootNamespace>
+    <Name>Jsoql.Tests</Name>
+    <RootNamespace>Jsoql.Tests</RootNamespace>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>66d5ffe0-e198-4c64-b126-d78be42a9192</ProjectGuid>
-    <ProjectHome>
-    </ProjectHome>
-    <StartupFile>jsoql.js</StartupFile>
+    <ProjectGuid>9f8f6360-7cf0-4505-a9e4-c9008a2f9170</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>app.ts</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -23,7 +22,7 @@
     <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
     <ProjectView>ProjectFiles</ProjectView>
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
-    <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>
+    <TypeScriptModuleKind>CommonJS</TypeScriptModuleKind>
     <EnableTypeScript>true</EnableTypeScript>
     <StartWebBrowser>false</StartWebBrowser>
   </PropertyGroup>
@@ -34,29 +33,26 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="jsoql.jison" />
+    <TypeScriptCompile Include="app.ts" />
     <Content Include="package.json" />
     <Content Include="README.md" />
-    <TypeScriptCompile Include="module.ts" />
-    <TypeScriptCompile Include="Scripts\parse.ts" />
-    <TypeScriptCompile Include="Scripts\query.ts" />
-    <TypeScriptCompile Include="Scripts\typings\lazyjs\lazyjs.d.ts" />
+    <TypeScriptCompile Include="Scripts\queryTests.ts">
+      <TestFramework>ExportRunner</TestFramework>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Scripts\typings\assert\assert.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\jsoql\jsoql.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\node\node.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\q\Q.d.ts" />
-    <TypeScriptCompile Include="Scripts\utilities.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Scripts\" />
     <Folder Include="Scripts\typings\" />
-    <Folder Include="Scripts\typings\lazyjs\" />
+    <Folder Include="Scripts\typings\assert\" />
+    <Folder Include="Scripts\typings\jsoql\" />
     <Folder Include="Scripts\typings\node\" />
     <Folder Include="Scripts\typings\q\" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <TypeScriptOutFile>jsoql.js</TypeScriptOutFile>
-    <TypeScriptGeneratesDeclarations>True</TypeScriptGeneratesDeclarations>
-  </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsTools.targets" />
   <ProjectExtensions>
