@@ -8,15 +8,15 @@ import util = require('../utilities')
 //Have to assert inside setTimeout to get the async test to work
 //https://nodejstools.codeplex.com/discussions/550545
 
-function ExecuteArrayQuery(jql: string, values: any[]| qry.NamedArrays): Q.Promise<any[]> {
+function ExecuteArrayQuery(jsoql: string, values: any[]| qry.NamedArrays): Q.Promise<any[]> {
 
     var namedArrays: qry.NamedArrays = util.IsArray(values)
         ? { "Test": <any[]>values }
         : <qry.NamedArrays>values;
 
-    var stmt = parse.Parse(jql);
+    var stmt = parse.Parse(jsoql);
     var data = new qry.ArrayDataSource(namedArrays);
-    var query = new qry.JqlQuery(stmt, data);
+    var query = new qry.JsoqlQuery(stmt, data);
     return query.Execute();
 }
 

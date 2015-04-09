@@ -3,7 +3,7 @@
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-    <Name>Jql</Name>
+    <Name>Jsoql</Name>
     <RootNamespace>Jql</RootNamespace>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -11,7 +11,8 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>66d5ffe0-e198-4c64-b126-d78be42a9192</ProjectGuid>
-    <ProjectHome>.</ProjectHome>
+    <ProjectHome>
+    </ProjectHome>
     <StartupFile>app.ts</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
@@ -36,7 +37,7 @@
     <TypeScriptCompile Include="app.ts" />
     <Content Include="Data\example.jsons" />
     <Content Include="Data\orders.jsons" />
-    <Content Include="jql.jison" />
+    <Content Include="jsoql.jison" />
     <Content Include="Data\orders.json" />
     <Content Include="package.json" />
     <Content Include="README.md" />

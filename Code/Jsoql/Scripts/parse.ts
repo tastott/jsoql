@@ -4,7 +4,7 @@ import path = require('path')
 var jison = require('jison')
 
 
-var bnf = fs.readFileSync(path.join(__dirname ,"../jql.jison"), "utf8");
+var bnf = fs.readFileSync(path.join(__dirname ,"../jsoql.jison"), "utf8");
 var parser = new jison.Parser(bnf);
 
 export function Parse(source: string) : Statement{

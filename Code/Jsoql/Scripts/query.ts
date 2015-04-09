@@ -77,7 +77,7 @@ var aggregateFunctions: FunctionMappings = {
     }
 };
 
-export class JqlQuery {
+export class JsoqlQuery {
 
     private static SingleTableAlias = '*';
 
@@ -138,7 +138,7 @@ export class JqlQuery {
     }
 
     private EvaluateGroup(expression: any, group: Group) {
-        if (JqlQuery.IsAggregate(expression)) {
+        if (JsoqlQuery.IsAggregate(expression)) {
             var items = expression.Arg
                 ? group.Items.map(item => this.Evaluate(expression.Arg, item))
                 : group.Items;
@@ -279,8 +279,8 @@ export class JqlQuery {
                     );
         }
         //Implicitly
-        else if (lazy(this.stmt.Select).some(selectable => JqlQuery.IsAggregate(selectable.Expression))) {
-            return JqlQuery.SequenceToArray(seq)
+        else if (lazy(this.stmt.Select).some(selectable => JsoqlQuery.IsAggregate(selectable.Expression))) {
+            return JsoqlQuery.SequenceToArray(seq)
                 .then(items => {
                     var group: Group = {
                         Key: null,
@@ -310,7 +310,7 @@ export class JqlQuery {
                     .toObject();
             });
 
-            return JqlQuery.SequenceToArray(seq);
+            return JsoqlQuery.SequenceToArray(seq);
         }
     }
 
@@ -336,7 +336,7 @@ export class JqlQuery {
             return JSON.stringify(object);
         };
 
-        return JqlQuery.SequenceToArray(seq)
+        return JsoqlQuery.SequenceToArray(seq)
             .then(items => {
             var grouped = lazy(items).groupBy(groupKey);
             var lazyGroups = grouped.toArray();
