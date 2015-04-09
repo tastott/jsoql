@@ -102,9 +102,9 @@ export class JqlQuery {
         return func(items);
     }
 
-    private Evaluate(expression: any, target: any, tableAliases : string[]) {
+    private Evaluate(expression: any, target: any) {
         if (expression.Operator) {
-            var args = expression.Args.map(arg => this.Evaluate(arg, target, tableAliases));
+            var args = expression.Args.map(arg => this.Evaluate(arg, target));
             return this.DoOperation(expression.Operator, args);
         }
         else if (expression.Property) {
@@ -114,7 +114,7 @@ export class JqlQuery {
                 propTarget = target[expression.Property][expression.Index];
             } else propTarget = target[expression.Property];
 
-            if (expression.Child) return this.Evaluate(expression.Child, propTarget, tableAliases);
+            if (expression.Child) return this.Evaluate(expression.Child, propTarget);
             else return propTarget;
         }
         else if (expression.Quoted) return expression.Quoted;
@@ -137,10 +137,10 @@ export class JqlQuery {
         else return '';
     }
 
-    private EvaluateGroup(expression: any, group: Group, tableAliases : any) {
+    private EvaluateGroup(expression: any, group: Group) {
         if (JqlQuery.IsAggregate(expression)) {
             var items = expression.Arg
-                ? group.Items.map(item => this.Evaluate(expression.Arg, item, tableAliases))
+                ? group.Items.map(item => this.Evaluate(expression.Arg, item))
                 : group.Items;
 
             return this.DoAggregateFunction(expression.Call, items);
@@ -162,49 +162,57 @@ export class JqlQuery {
         else return ['', expression];*/
     }
 
-    From(fromClause: any): { Sequence: LazyJS.Sequence<any>; Aliases: string[] } {
+    From(fromClause: any): LazyJS.Sequence<any> {
 
         var targets = this.CollectFromTargets(fromClause);
 
-        //Aliases are mandatory if multiple targets are used
-        if (targets.length > 1 && lazy(targets).some(t => !t.Alias)) {
-            throw 'Each table must have an alias if more than one table is specified';
-        }
+        var seq = this.dataSource.Get(targets[0].Target);
+        
+        if (targets.length > 1) {
+            var aliases = lazy(targets).map(t => t.Alias);
 
-        //Aliases must be unique
-        var aliases = lazy(targets).map(t => t.Alias).compact();
-        if (aliases.uniq().size() < targets.length) {
-            throw 'Table aliases must be unique';
-        }
+            //Aliases are mandatory if multiple targets are used
+            if (lazy(aliases).some(a => !a)) {
+                throw 'Each table must have an alias if more than one table is specified';
+            }
+            if (aliases.uniq().size() < targets.length) {
+                throw 'Table aliases must be unique';
+            }
 
-        var seq = this.dataSource.Get(targets[0].Target)
-            .map(item => {
+            //Map each item to a property with the alias of its source table
+            seq = seq.map(item => {
                 var mapped = {};
-                mapped[targets[0].Alias || JqlQuery.SingleTableAlias] = item;
+                mapped[targets[0].Alias] = item;
                 return mapped;
             });
-        
-        lazy(targets).slice(1).each(target => {
 
-            var rightItems = this.dataSource.Get(target.Target);
+            //Join each subsequent table
+            lazy(targets).slice(1).each(target => {
 
-            seq = seq.map(li => {
+                //Get sequence of items from right of join
+                var rightItems = this.dataSource.Get(target.Target);
+
+                //For each item on left of join, find 0 to many matching items from the right side, using the ON expression
+                seq = seq.map(li => {
                     return rightItems.map(ri => {
-                            var merged = clone(li);
-                            merged[target.Alias] = ri;
-                            if (this.Evaluate(target.Condition, merged, aliases.toArray())) return merged;
-                            else return null;
-                        })
-                        .compact()
-                        .toArray(); //TODO Return the sequence and flatten that?
-                })
-                .flatten();
-        });
+                         //Create prospective merged item containing left and right side items
+                        var merged = clone(li);
+                        merged[target.Alias] = ri;
 
-        return {
-            Sequence: seq,
-            Aliases: aliases.toArray()
-        };
+                        //Return non-null value to indicate match
+                        if (this.Evaluate(target.Condition, merged)) return merged;
+                        else return null;
+                    })
+                    .compact() //Throw away null (non-matching) values
+                })
+                .flatten(); //Flatten the sequence of sequences
+            });
+        }
+        else {
+            //No need to do any mapping
+        }
+
+        return seq;
     }
 
     private CollectFromTargets(fromClauseNode: any): { Target: string; Alias: string; Condition?:any }[]{
@@ -213,23 +221,31 @@ export class JqlQuery {
         if (fromClauseNode.Left) {
             return this.CollectFromTargets(fromClauseNode.Left)
                 .concat(this.CollectFromTargets(fromClauseNode.Right)
-                    .map(n => {
-                        n.Condition = fromClauseNode.Expression;
-                        return n;
-                    })
+                .map(n => {
+                n.Condition = fromClauseNode.Expression;
+                return n;
+            })
                 );
         }
         //Aliased
         else if (fromClauseNode.Target) {
-            return [{ Target: fromClauseNode.Target, Alias: fromClauseNode.Alias }];
+            //Quoted
+            if (fromClauseNode.Target.Quoted) {
+                return [{ Target: fromClauseNode.Target.Quoted, Alias: fromClauseNode.Alias }];
+            }
+            //Unquoted
+            else return [{ Target: fromClauseNode.Target, Alias: fromClauseNode.Alias }];
         }
-        //Quoted, un-aliased
-        else if(fromClauseNode.Quoted) {
-            return [{ Target: fromClauseNode.Quoted, Alias: null }];
-        }
-        //Un-quoted, un-aliased
+        //Un-aliased
         else {
-            return [{ Target: fromClauseNode, Alias: null }];
+            //Quoted
+            if (fromClauseNode.Quoted) {
+                return [{ Target: fromClauseNode.Quoted, Alias: null }];
+            }
+            //Un-quoted
+            else {
+                return [{ Target: fromClauseNode, Alias: null }];
+            }
         }
 
     }

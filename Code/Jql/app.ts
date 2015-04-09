@@ -7,8 +7,10 @@ import _query = require('./Scripts/query')
 
 
 //var jql = "SELECT Order.ShipCountry AS Country, COUNT() AS Orders FROM './data/orders.jsons' GROUP BY Order.ShipCountry";
-var jql = "SELECT a.OrderDetails[0].Quantity FROM './data/orders.jsons' AS a JOIN './data/orders.jsons' AS b ON a.Order.Id = b.Order.Id JOIN './data/orders.jsons' AS c ON a.Order.Id = c.Order.Id";
+var jql = "SELECT c.CompanyName AS Name, SUM(o.OrderDetails[0].Quantity) AS TotalOrderQuantity FROM './data/orders.jsons' AS o JOIN './data/customers.jsons' AS c ON o.Order.CustomerId = c.Id GROUP BY c.CompanyName";
 //var jql = "SELECT COUNT() FROM 'Test'";
+//var jql = "SELECT Order.CustomerId, SUM(OrderDetails[0].Quantity) AS TotalOrderQuantity FROM './data/orders.jsons' GROUP BY Order.CustomerId";
+
 var stmt = _parse.Parse(jql);
 
 console.log('\n\nQuery:');
@@ -20,9 +22,12 @@ console.log('\n\nResults:');
 var query = new _query.JqlQuery(stmt); //, new _query.ArrayDataSource([{}, {}]));
 query.Execute()
     .then(results => {
-        results.forEach(result => {
-            console.log(result);
-        });
+        if (results.length == 0) console.log('Query returned no results');
+        else {
+            results.forEach(result => {
+                console.log(result);
+            });
+        }
     });
 
 process.stdin.read();

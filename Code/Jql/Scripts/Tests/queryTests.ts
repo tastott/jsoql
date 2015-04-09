@@ -256,7 +256,7 @@ export function Join() {
         "Customers": dataB
     };
 
-    return ExecuteArrayQuery("SELECT c.CustomerId, c.Name, o.Order FROM 'Orders' AS o JOIN 'Customers' AS c ON o.CustomerId = c.CustomerId", data)
+    return ExecuteArrayQuery("SELECT c.CustomerId AS CustomerId, c.Name AS Name, o.Order AS Order FROM 'Orders' AS o JOIN 'Customers' AS c ON o.CustomerId = c.CustomerId", data)
         .then(results => {
             setTimeout(() => assert.deepEqual(results, expected));
         });
