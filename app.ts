@@ -1,28 +1,18 @@
-﻿class Greeter {
-    element: HTMLElement;
-    span: HTMLElement;
-    timerToken: number;
+﻿///<reference path="Scripts/typings/angularjs/angular.d.ts" />
+///<reference path="Scripts/typings/angularjs/angular-route.d.ts" />
 
-    constructor(element: HTMLElement) {
-        this.element = element;
-        this.element.innerHTML += "The time is: ";
-        this.span = document.createElement('span');
-        this.element.appendChild(this.span);
-        this.span.innerText = new Date().toUTCString();
-    }
+import appCtrl = require('./Scripts/Controllers/appController')
 
-    start() {
-        this.timerToken = setInterval(() => this.span.innerHTML = new Date().toUTCString(), 500);
-    }
+angular.module('Jsoql', ['ngRoute'])
+    .controller('AppController', appCtrl.AppController)
+    .config(['$routeProvider', ($routeProvider: angular.route.IRouteProvider) => {
 
-    stop() {
-        clearTimeout(this.timerToken);
-    }
+        $routeProvider.when('/home', {
+                templateUrl: 'Views/home.html',
+                controller: 'AppController'
+            })
+            .otherwise({
+                redirectTo: '/home'
+            });
 
-}
-
-window.onload = () => {
-    var el = document.getElementById('content');
-    var greeter = new Greeter(el);
-    greeter.start();
-};
+    }]);
