@@ -1,4 +1,6 @@
-﻿import Jsoql = require('jsoql')
+﻿///<reference path="Scripts/typings/jsoql/jsoql.d.ts"/>
+
+var Jsoql = require('../Jsoql/jsoql') //Bit of a workaround to speed development
 
 //var jql = "SELECT Order.ShipCountry AS Country, COUNT() AS Orders FROM './data/orders.jsons' GROUP BY Order.ShipCountry";
 var jsoql = "SELECT c.CompanyName AS Name, SUM(o.OrderDetails[0].Quantity) AS TotalOrderQuantity FROM './data/orders.jsons' AS o JOIN './data/customers.jsons' AS c ON o.Order.CustomerId = c.Id GROUP BY c.CompanyName";
@@ -13,7 +15,7 @@ console.log('\n\nParsed:');
 console.log(stmt);
 console.log('\n\nResults:');
 
-var query = new Jsoql.Query.JsoqlQuery(stmt); //, new _query.ArrayDataSource([{}, {}]));
+var query : JsoqlModule.Query.JsoqlQuery = new Jsoql.Query.JsoqlQuery(stmt); //, new _query.ArrayDataSource([{}, {}]));
 query.Execute()
     .then(results => {
     if (results.length == 0) console.log('Query returned no results');

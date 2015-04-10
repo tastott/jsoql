@@ -3,12 +3,7 @@
 module Jsoql {
     export module Parse {
 
-        var fs = require('fs')
-        var path = require('path')
-        var jison = require('jison')
-
-        var bnf = fs.readFileSync(path.join(__dirname, "jsoql.jison"), "utf8");
-        var parser = new jison.Parser(bnf);
+        var parser = require('./jsoql-parser').parser;
 
         export function Parse(source: string): Statement {
             return parser.parse(source);

@@ -1,15 +1,17 @@
-﻿import assert = require('assert');
-import Jsoql = require('jsoql')
+﻿///<reference path="typings/jsoql/jsoql.d.ts"/>
+
+import assert = require('assert');
+var Jsoql = require('../../Jsoql/jsoql') //Bit of a workaround to speed development
 import Q = require('q')
 
 //Have to assert inside setTimeout to get the async test to work
 //https://nodejstools.codeplex.com/discussions/550545
 
-function ExecuteArrayQuery(jsoql: string, values: any[]| Jsoql.Query.NamedArrays): Q.Promise<any[]> {
+function ExecuteArrayQuery(jsoql: string, values: any[]| JsoqlModule.Query.NamedArrays): Q.Promise<any[]> {
 
-    var namedArrays: Jsoql.Query.NamedArrays = Jsoql.Utilities.IsArray(values)
+    var namedArrays: JsoqlModule.Query.NamedArrays = Jsoql.Utilities.IsArray(values)
         ? { "Test": <any[]>values }
-        : <Jsoql.Query.NamedArrays>values;
+        : <JsoqlModule.Query.NamedArrays>values;
 
     var stmt = Jsoql.Parse.Parse(jsoql);
     var query = new Jsoql.Query.JsoqlQuery(stmt, namedArrays);
@@ -247,7 +249,7 @@ export function Join() {
         { CustomerId: 2, Name: 'Bob', Order: 'B' }
     ];
 
-    var data: Jsoql.Query.NamedArrays = {
+    var data: JsoqlModule.Query.NamedArrays = {
         "Orders": dataA,
         "Customers": dataB
     };

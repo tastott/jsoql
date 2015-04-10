@@ -1,6 +1,6 @@
 ///<reference path="../q/Q.d.ts"/>
 
-declare module 'jsoql' {
+declare module JsoqlModule {
     module Parse {
         function Parse(source: string): Statement;
         interface WhereClause {

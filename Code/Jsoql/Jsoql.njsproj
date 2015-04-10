@@ -34,7 +34,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="jsoql.jison" />
+    <Content Include="Grammar\jsoql.jison" />
     <Content Include="package.json" />
     <Content Include="README.md" />
     <TypeScriptCompile Include="module.ts" />
@@ -46,11 +46,16 @@
     <TypeScriptCompile Include="Scripts\utilities.ts" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Grammar\" />
     <Folder Include="Scripts\" />
     <Folder Include="Scripts\typings\" />
     <Folder Include="Scripts\typings\lazyjs\" />
     <Folder Include="Scripts\typings\node\" />
     <Folder Include="Scripts\typings\q\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="jsoql-parser.js" />
+    <Compile Include="Grammar\parser-build.js" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">

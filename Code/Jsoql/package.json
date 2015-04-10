@@ -1,21 +1,22 @@
 {
-    "name": "jsoql",
-    "version": "0.0.6",
-    "description": "jsoql",
-    "main": "jsoql.js",
-    "author": {
-        "name": "Tim",
-        "email": ""
-    },
-    "dependencies": {
-        "clone": "^1.0.2",
-        "jison": "^0.4.15",
-        "lazy.js": "^0.4.0",
-        "q": "^1.2.0"
-    },
-    "devDependencies": { },
-    "files": [
-        "jsoql.js",
-        "jsoql.jison"
-    ]
+  "name": "jsoql",
+  "version": "0.0.6",
+  "description": "jsoql",
+  "main": "jsoql.js",
+  "author": {
+    "name": "Tim",
+    "email": ""
+  },
+  "dependencies": {
+    "clone": "^1.0.2",
+    "lazy.js": "^0.4.0",
+    "q": "^1.2.0"
+  },
+  "devDependencies": {
+    "jison": "0.4.13"
+  },
+  "files": [
+    "jsoql.js",
+    "jsoql-parser.js"
+  ]
 }
