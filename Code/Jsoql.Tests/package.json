@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "assert": "^1.3.0",
-    "jsoql": "file:..\\jsoql",
     "q": "^1.2.0"
   }
 }
