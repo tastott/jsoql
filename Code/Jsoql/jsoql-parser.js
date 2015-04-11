@@ -77,7 +77,8 @@ yy: {},
 symbols_: {"error":2,"expressions":3,"Stmt":4,"EOF":5,"Quoted":6,"Quotation":7,"Boolean":8,"True":9,"False":10,"Identifier":11,"PlainIdentifier":12,"[":13,"]":14,"Property":15,"Number":16,".":17,"Expression":18,"(":19,")":20,"AND":21,"OR":22,"=":23,"!=":24,">":25,">=":26,"<":27,"<=":28,"ExpressionList":29,",":30,"Selectable":31,"AS":32,"SelectList":33,"FromTarget":34,"AliasedFromTarget":35,"FromClause":36,"JOIN":37,"ON":38,"SELECT":39,"FROM":40,"WHERE":41,"GROUPBY":42,"$accept":0,"$end":1},
 terminals_: {2:"error",5:"EOF",7:"Quotation",9:"True",10:"False",12:"PlainIdentifier",13:"[",14:"]",16:"Number",17:".",19:"(",20:")",21:"AND",22:"OR",23:"=",24:"!=",25:">",26:">=",27:"<",28:"<=",30:",",32:"AS",37:"JOIN",38:"ON",39:"SELECT",40:"FROM",41:"WHERE",42:"GROUPBY"},
 productions_: [0,[3,2],[6,1],[8,1],[8,1],[11,1],[11,3],[15,1],[15,4],[15,3],[15,6],[18,3],[18,4],[18,1],[18,1],[18,1],[18,1],[18,3],[18,3],[18,3],[18,3],[18,3],[18,3],[18,3],[18,3],[29,1],[29,3],[31,1],[31,3],[33,1],[33,3],[34,1],[34,1],[35,3],[36,1],[36,1],[36,5],[4,4],[4,6],[4,6]],
-performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
+performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */
+/**/) {
 /* this == yyval */
 
 var $0 = $$.length - 1;
@@ -103,6 +104,8 @@ break;
 case 11: this.$ = { Call: $$[$0-2]}
 break;
 case 12: this.$ = { Call: $$[$0-3], Arg: $$[$0-1]}
+break;
+case 16: this.$ = parseFloat($$[$0])
 break;
 case 17: this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
 break;
@@ -607,7 +610,8 @@ stateStackSize:function stateStackSize() {
         return this.conditionStack.length;
     },
 options: {},
-performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
+performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START
+/**/) {
 
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {

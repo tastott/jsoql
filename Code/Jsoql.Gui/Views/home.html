@@ -1,13 +1,25 @@
 ﻿<div class="row">
     <div class="col-lg-6">
-        <div>
-            <label class="control-label">Query</label>
-            <query-editor-ace value="QueryText" style="width: 400px; height:400px;"></query-editor-ace>
+        <div class="row">
+            <div class="col-lg-12">
+                <label class="control-label">Query</label>
+                <query-editor-ace value="QueryText"></query-editor-ace>
+            </div>
         </div>
-        <button ng-click="Execute()" class="btn btn-default">
-            <i class="fa fa-play"></i>
-            Execute
-        </button>
+        <div class="row">
+            <div class="col-lg-12">
+                <label>Base directory</label>
+                <folder-input value="BaseDirectory"></folder-input>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <button ng-click="Execute()" class="btn btn-default">
+                    <i class="fa fa-play"></i>
+                    Execute
+                </button>
+            </div> 
+        </div>
     </div>
     <div class="col-lg-6">
         <label class="control-label">Results</label>

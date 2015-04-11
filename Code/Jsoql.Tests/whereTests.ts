@@ -6,7 +6,7 @@ import testBase = require('./testBase');
 //Have to assert inside setTimeout to get the async test to work
 //https://nodejstools.codeplex.com/discussions/550545
 
-export function WhereEquals() {
+export function WhereEqualsStringLiteral() {
     var data = [
         { Value: 'A' },
         { Value: 'B' },
@@ -16,6 +16,21 @@ export function WhereEquals() {
         { Value: 'B' }
     ];
     return testBase.ExecuteArrayQuery("SELECT Value FROM 'var://Test' WHERE Value = 'B'", data)
+        .then(results => {
+        setTimeout(() => assert.deepEqual(results, expected));
+    });
+}
+
+export function WhereEqualsNumber() {
+    var data = [
+        { Value: 1 },
+        { Value: 2 },
+        { Value: 3 }
+    ];
+    var expected = [
+        { Value: 2 }
+    ];
+    return testBase.ExecuteArrayQuery("SELECT Value FROM 'var://Test' WHERE Value = 2", data)
         .then(results => {
         setTimeout(() => assert.deepEqual(results, expected));
     });
@@ -67,7 +82,7 @@ export function WhereLessThan() {
     });
 }
 
-export function WhereNotEqual() {
+export function WhereNotEqualStringLiteral() {
     var data = [
         { Value: 'A' },
         { Value: 'B' },
@@ -78,6 +93,22 @@ export function WhereNotEqual() {
         { Value: 'A' }
     ];
     return testBase.ExecuteArrayQuery("SELECT Value FROM 'var://Test' WHERE Value != 'B'", data)
+        .then(results => {
+        setTimeout(() => assert.deepEqual(results, expected));
+    });
+}
+
+export function WhereNotEqualNumber() {
+    var data = [
+        { Value: 1 },
+        { Value: 2 },
+        { Value: 3 }
+    ];
+    var expected = [
+        { Value: 1 },
+        { Value: 3 }
+    ];
+    return testBase.ExecuteArrayQuery("SELECT Value FROM 'var://Test' WHERE Value != 2", data)
         .then(results => {
         setTimeout(() => assert.deepEqual(results, expected));
     });
