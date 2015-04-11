@@ -9,7 +9,12 @@ module Jsoql {
         Errors?: string[]
     }
 
-    export function ExecuteQuery(jsoql: string): Q.Promise<QueryResult>  {
+    export interface QueryContext {
+        BaseDirectory?: string;
+        Data?: { [key: string]: any[] };
+    }
+
+    export function ExecuteQuery(jsoql: string, context? : QueryContext): Q.Promise<QueryResult>  {
         var statement: Parse.Statement;
         try {
             statement = Parse.Parse(jsoql);
@@ -18,7 +23,7 @@ module Jsoql {
             return Q({ Errors: [err] });
         }
 
-        var query = new Query.JsoqlQuery(statement);
+        var query = new Query.JsoqlQuery(statement, context);
 
         return query.Execute()
             .then(results => {

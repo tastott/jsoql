@@ -9,10 +9,8 @@ module Jsoql {
         var fs = require('fs')
         var lazy: LazyJS.LazyStatic = require('lazy.js')
         var Q = require('q')
-        //import parse = require('./parse')
-        //var util = require('./utilities')
         var clone = require('clone')
-
+        var path = require('path')
 
         export interface Group {
             Key: any;
@@ -20,17 +18,21 @@ module Jsoql {
         }
 
         interface DataSource {
-            Get(value: string): LazyJS.Sequence<any>;
+            Get(value: string, context : QueryContext): LazyJS.Sequence<any>;
         }
 
-        class DefaultDataSource implements DataSource {
-            Get(value: string): LazyJS.Sequence<any> {
+        class FileDataSource implements DataSource {
+            Get(value: string, context: QueryContext): LazyJS.Sequence<any> {
 
-                if (!fs.existsSync(value)) {
-                    throw new Error('File not found: ' + value + '. Cwd is ' + process.cwd());
+                var fullPath = path.isAbsolute(value)
+                    ? value
+                    : path.join(context.BaseDirectory, value);
+
+                if (!fs.existsSync(fullPath)) {
+                    throw new Error('File not found: ' + fullPath);
                 }
                 else {
-                    var seq = lazy.readFile(value, 'utf8')
+                    var seq = lazy.readFile(fullPath, 'utf8')
                         .split(/\r?\n/)
                         .map(line => {
                         //line = '{ "name": "banana", "colour": "yellow", "isTasty": true }';
@@ -47,16 +49,15 @@ module Jsoql {
             }
         }
 
-        export interface NamedArrays {
-            [name: string]: any[];
-        }
+        class VariableDataSource implements DataSource {
+            Get(value: string, context: QueryContext): LazyJS.Sequence<any> {
 
-        class ArrayDataSource implements DataSource {
-            constructor(private arrays: NamedArrays) {
-            }
+                if (!context.Data || !context.Data[value]) {
+                    console.log(context);
+                    throw new Error("Target variable not found in context: '" + value + "'");
+                }
 
-            Get(value: string): LazyJS.Sequence<any> {
-                return lazy(this.arrays[value]);
+                return lazy(context.Data[value]);
             }
         }
 
@@ -87,18 +88,33 @@ module Jsoql {
             }
         };
 
+        export interface QueryContext {
+            BaseDirectory?: string;
+            Data?: { [key: string]: any[] };
+        }
+
         export class JsoqlQuery {
 
-            private static SingleTableAlias = '*';
-
-            private dataSource: DataSource;
+            private queryContext: QueryContext
+            private static dataSources: { [scheme: string]: DataSource } = {
+                "var": new VariableDataSource(),
+                "file": new FileDataSource()
+            };
 
             constructor(private stmt: Parse.Statement,
-                namedArrays?: NamedArrays) {
+                queryContext?: QueryContext) {
+                queryContext = queryContext || {};
 
-                this.dataSource = namedArrays
-                    ? new ArrayDataSource(namedArrays)
-                    : new DefaultDataSource();
+                this.queryContext = {
+                    BaseDirectory: queryContext.BaseDirectory || process.cwd(),
+                    Data: queryContext.Data || {}
+                };
+                //this.queryContext = extend(queryContext,
+                //    {
+                //        BaseDirectory: process.cwd(),
+                //        Data: {}
+                //    });
+
             }
 
             private DoOperation(operator: string, args: any[]) {
@@ -212,11 +228,25 @@ module Jsoql {
                 else return ['', expression];*/
             }
 
+            private GetSequence(target: string): LazyJS.Sequence<any> {
+
+                var fromTargetRegex = new RegExp('^([A-Za-z]+)://(.+)$', 'i');
+                var match = target.match(fromTargetRegex);
+
+                if (!match) throw new Error("Invalid target for from clause: '" + target + "'");
+
+                var scheme = match[1].toLowerCase();
+                var dataSource = JsoqlQuery.dataSources[scheme];
+                if (!dataSource) throw new Error("Invalid scheme for from clause target: '" + scheme + "'");
+
+                return dataSource.Get(match[2], this.queryContext);
+            }
+
             private From(fromClause: any): LazyJS.Sequence<any> {
 
                 var targets = this.CollectFromTargets(fromClause);
 
-                var seq = this.dataSource.Get(targets[0].Target);
+                var seq = this.GetSequence(targets[0].Target);
 
                 if (targets.length > 1) {
                     var aliases = lazy(targets).map(t => t.Alias);
@@ -240,7 +270,7 @@ module Jsoql {
                     lazy(targets).slice(1).each(target => {
 
                         //Get sequence of items from right of join
-                        var rightItems = this.dataSource.Get(target.Target);
+                        var rightItems = this.GetSequence(target.Target);
 
                         //For each item on left of join, find 0 to many matching items from the right side, using the ON expression
                         seq = seq.map(li => {

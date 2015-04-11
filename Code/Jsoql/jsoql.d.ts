@@ -31,20 +31,24 @@ declare module Jsoql {
             Key: any;
             Items: any[];
         }
-        interface NamedArrays {
-            [name: string]: any[];
+        interface QueryContext {
+            BaseDirectory?: string;
+            Data?: {
+                [key: string]: any[];
+            };
         }
         class JsoqlQuery {
             private stmt;
-            private static SingleTableAlias;
-            private dataSource;
-            constructor(stmt: Parse.Statement, namedArrays?: NamedArrays);
+            private queryContext;
+            private static dataSources;
+            constructor(stmt: Parse.Statement, queryContext?: QueryContext);
             private DoOperation(operator, args);
             private DoAggregateFunction(name, items);
             private EvaluateAliased(expression, target, alias?);
             private Evaluate(expression, target);
             private Key(expression);
             private EvaluateGroup(expression, group);
+            private GetSequence(target);
             private From(fromClause);
             private CollectFromTargets(fromClauseNode);
             Execute(): Q.Promise<any[]>;
@@ -59,5 +63,11 @@ declare module Jsoql {
         Results?: any[];
         Errors?: string[];
     }
-    function ExecuteQuery(jsoql: string): Q.Promise<QueryResult>;
+    interface QueryContext {
+        BaseDirectory?: string;
+        Data?: {
+            [key: string]: any[];
+        };
+    }
+    function ExecuteQuery(jsoql: string, context?: QueryContext): Q.Promise<QueryResult>;
 }

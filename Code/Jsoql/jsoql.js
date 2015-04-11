@@ -32,18 +32,18 @@ var Jsoql;
         var fs = require('fs');
         var lazy = require('lazy.js');
         var Q = require('q');
-        //import parse = require('./parse')
-        //var util = require('./utilities')
         var clone = require('clone');
-        var DefaultDataSource = (function () {
-            function DefaultDataSource() {
+        var path = require('path');
+        var FileDataSource = (function () {
+            function FileDataSource() {
             }
-            DefaultDataSource.prototype.Get = function (value) {
-                if (!fs.existsSync(value)) {
-                    throw new Error('File not found: ' + value + '. Cwd is ' + process.cwd());
+            FileDataSource.prototype.Get = function (value, context) {
+                var fullPath = path.isAbsolute(value) ? value : path.join(context.BaseDirectory, value);
+                if (!fs.existsSync(fullPath)) {
+                    throw new Error('File not found: ' + fullPath);
                 }
                 else {
-                    var seq = lazy.readFile(value, 'utf8').split(/\r?\n/).map(function (line) {
+                    var seq = lazy.readFile(fullPath, 'utf8').split(/\r?\n/).map(function (line) {
                         try {
                             return JSON.parse(line);
                         }
@@ -54,16 +54,19 @@ var Jsoql;
                     return seq;
                 }
             };
-            return DefaultDataSource;
+            return FileDataSource;
         })();
-        var ArrayDataSource = (function () {
-            function ArrayDataSource(arrays) {
-                this.arrays = arrays;
+        var VariableDataSource = (function () {
+            function VariableDataSource() {
             }
-            ArrayDataSource.prototype.Get = function (value) {
-                return lazy(this.arrays[value]);
+            VariableDataSource.prototype.Get = function (value, context) {
+                if (!context.Data || !context.Data[value]) {
+                    console.log(context);
+                    throw new Error("Target variable not found in context: '" + value + "'");
+                }
+                return lazy(context.Data[value]);
             };
-            return ArrayDataSource;
+            return VariableDataSource;
         })();
         var operators = {
             '=': function (args) { return args[0] == args[1]; },
@@ -89,9 +92,18 @@ var Jsoql;
             }
         };
         var JsoqlQuery = (function () {
-            function JsoqlQuery(stmt, namedArrays) {
+            function JsoqlQuery(stmt, queryContext) {
                 this.stmt = stmt;
-                this.dataSource = namedArrays ? new ArrayDataSource(namedArrays) : new DefaultDataSource();
+                queryContext = queryContext || {};
+                this.queryContext = {
+                    BaseDirectory: queryContext.BaseDirectory || process.cwd(),
+                    Data: queryContext.Data || {}
+                };
+                //this.queryContext = extend(queryContext,
+                //    {
+                //        BaseDirectory: process.cwd(),
+                //        Data: {}
+                //    });
             }
             JsoqlQuery.prototype.DoOperation = function (operator, args) {
                 var func = operators[operator.toLowerCase()];
@@ -208,10 +220,21 @@ var Jsoql;
                 else if (expression.Quoted) return ['', expression.Quoted];
                 else return ['', expression];*/
             };
+            JsoqlQuery.prototype.GetSequence = function (target) {
+                var fromTargetRegex = new RegExp('^([A-Za-z]+)://(.+)$', 'i');
+                var match = target.match(fromTargetRegex);
+                if (!match)
+                    throw new Error("Invalid target for from clause: '" + target + "'");
+                var scheme = match[1].toLowerCase();
+                var dataSource = JsoqlQuery.dataSources[scheme];
+                if (!dataSource)
+                    throw new Error("Invalid scheme for from clause target: '" + scheme + "'");
+                return dataSource.Get(match[2], this.queryContext);
+            };
             JsoqlQuery.prototype.From = function (fromClause) {
                 var _this = this;
                 var targets = this.CollectFromTargets(fromClause);
-                var seq = this.dataSource.Get(targets[0].Target);
+                var seq = this.GetSequence(targets[0].Target);
                 if (targets.length > 1) {
                     var aliases = lazy(targets).map(function (t) { return t.Alias; });
                     //Aliases are mandatory if multiple targets are used
@@ -230,7 +253,7 @@ var Jsoql;
                     //Join each subsequent table
                     lazy(targets).slice(1).each(function (target) {
                         //Get sequence of items from right of join
-                        var rightItems = _this.dataSource.Get(target.Target);
+                        var rightItems = _this.GetSequence(target.Target);
                         //For each item on left of join, find 0 to many matching items from the right side, using the ON expression
                         seq = seq.map(function (li) {
                             return rightItems.map(function (ri) {
@@ -359,7 +382,10 @@ var Jsoql;
                 else
                     return arrayPromise;
             };
-            JsoqlQuery.SingleTableAlias = '*';
+            JsoqlQuery.dataSources = {
+                "var": new VariableDataSource(),
+                "file": new FileDataSource()
+            };
             return JsoqlQuery;
         })();
         Query.JsoqlQuery = JsoqlQuery;
@@ -370,7 +396,7 @@ var Jsoql;
 var Jsoql;
 (function (Jsoql) {
     var Q = require('Q');
-    function ExecuteQuery(jsoql) {
+    function ExecuteQuery(jsoql, context) {
         var statement;
         try {
             statement = Jsoql.Parse.Parse(jsoql);
@@ -378,7 +404,7 @@ var Jsoql;
         catch (err) {
             return Q({ Errors: [err] });
         }
-        var query = new Jsoql.Query.JsoqlQuery(statement);
+        var query = new Jsoql.Query.JsoqlQuery(statement, context);
         return query.Execute().then(function (results) {
             return { Results: results };
         });
