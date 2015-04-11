@@ -9,7 +9,7 @@ var keywords = [
 ];
 
 export interface QueryEditorScope extends ng.IScope {
-    value: string;
+    Query: EditableText;
 }
 
 export class QueryEditorDirective implements ng.IDirective {
@@ -22,7 +22,7 @@ export class QueryEditorDirective implements ng.IDirective {
 
     public link($scope: QueryEditorScope, element: JQuery, attributes: ng.IAttributes) {
         var editable = element.children();
-        editable.html($scope.value);
+        editable.html($scope.Query.Value);
 
         var onChange = require('debounce')(() => {
             var html = editable.html();
@@ -59,7 +59,7 @@ require('brace/theme/ambiance')
 export class AceQueryEditorDirective implements ng.IDirective {
 
     public scope = {
-        value: '='
+        Query: '=value'
     }
 
     public link($scope: QueryEditorScope, element: JQuery, attributes: ng.IAttributes) {
@@ -70,9 +70,9 @@ export class AceQueryEditorDirective implements ng.IDirective {
         editor.setTheme('ace/theme/ambiance');
         editor.getSession().setMode('ace/mode/sql');
 
-        editor.setValue($scope.value);
+        editor.setValue($scope.Query.Value);
         editor.getSession().on('change', function (e) {
-            $scope.value = editor.getValue();
+            $scope.$apply(() => $scope.Query.Value = editor.getValue());
         });
     }
 
