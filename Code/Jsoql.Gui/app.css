@@ -1,5 +1,5 @@
-﻿
-.renderjson {background-color:black;}
+
+.renderjson {background-color:#202020}
 .renderjson a              { text-decoration: none; }
 
 .renderjson .disclosure    { 
@@ -34,10 +34,20 @@
 }
 
 .renderjson .syntax        { color: white; }
-.renderjson .string        { color: red; }
-.renderjson .number        { color: #99dd33 }
-.renderjson .boolean       { color: plum; }
-.renderjson .key           { color: #bbaa00; }
-.renderjson .keyword       { color: lightgoldenrodyellow; }
+.renderjson .string        { color: #8f9d6a }
+.renderjson .number        { color: #78CF8A }
+.renderjson .boolean       { color: #78CF8A }
+.renderjson .key           { color: #cda869 }
+.renderjson .keyword       { color: #cda869}
 .renderjson .object.syntax { color: white; }
 .renderjson .array.syntax  { color: white; }
+
+.jsoql-keyword {
+    color: blue;
+    font-weight: bold;
+}
+
+.query-editor-ace {
+    width:100%;
+    height:600px;
+}

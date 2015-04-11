@@ -21,13 +21,15 @@
     <Content Include="app.css" />
     <Content Include="index.html" />
     <Content Include="Scripts\Vendor\renderjson.js" />
+    <Content Include="Views\Directives\queryEditor.html" />
     <Content Include="Views\home.html" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="Scripts\Controllers\appController.ts" />
-    <TypeScriptCompile Include="Scripts\Directives\queryResultDirective.ts" />
+    <TypeScriptCompile Include="Scripts\Directives\queryEditor.ts" />
+    <TypeScriptCompile Include="Scripts\Directives\queryResult.ts" />
     <TypeScriptCompile Include="Scripts\Models\models.ts" />
     <TypeScriptCompile Include="Scripts\typings\angularjs\angular-route.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\angularjs\angular.d.ts" />
