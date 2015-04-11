@@ -41,6 +41,7 @@ declare module Jsoql {
             constructor(stmt: Parse.Statement, namedArrays?: NamedArrays);
             private DoOperation(operator, args);
             private DoAggregateFunction(name, items);
+            private EvaluateAliased(expression, target, alias?);
             private Evaluate(expression, target);
             private Key(expression);
             private EvaluateGroup(expression, group);

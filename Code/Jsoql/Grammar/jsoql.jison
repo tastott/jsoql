@@ -29,7 +29,7 @@ SELECT\s+           return 'SELECT'
 \s+AND\s+           return 'AND'
 \s+OR\s+			return 'OR'
 [0-9\.-]+			return 'Number'
-[A-Za-z0-9_]+       return 'Identifier'
+[A-Za-z0-9_\*]+     return 'Identifier'
 \'[^\']+\'          return 'Quotation'
 .                   return 'INVALID'
 

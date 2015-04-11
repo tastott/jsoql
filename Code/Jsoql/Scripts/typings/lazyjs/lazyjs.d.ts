@@ -173,6 +173,8 @@ declare module LazyJS {
 
         toArray(): T[];
         toObject(): Object;
+
+        tap(each: ValueCallback<T>): Sequence<T>;
     }
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

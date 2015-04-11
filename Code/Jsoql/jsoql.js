@@ -105,6 +105,45 @@ var Jsoql;
                     throw 'Unrecognized function: ' + name;
                 return func(items);
             };
+            JsoqlQuery.prototype.EvaluateAliased = function (expression, target, alias) {
+                var _this = this;
+                if (expression.Operator) {
+                    var args = expression.Args.map(function (arg) { return _this.Evaluate(arg, target); });
+                    return [{ Alias: '', Value: this.DoOperation(expression.Operator, args) }];
+                }
+                else if (expression.Property == '*') {
+                    if (!target)
+                        return [];
+                    else
+                        return Object.keys(target).map(function (key) {
+                            return {
+                                Alias: key,
+                                Value: target[key]
+                            };
+                        });
+                }
+                else if (expression.Property) {
+                    var aliasPrefix = alias ? alias + '.' : '';
+                    var propTarget, propAlias;
+                    if (expression.Index != undefined) {
+                        //TODO: Check index is integer and target property is array
+                        propTarget = target[expression.Property][expression.Index];
+                        propAlias = aliasPrefix + expression.Property + '[' + expression.Index + ']';
+                    }
+                    else {
+                        propTarget = target[expression.Property];
+                        propAlias = aliasPrefix + expression.Property;
+                    }
+                    if (expression.Child)
+                        return this.EvaluateAliased(expression.Child, propTarget, propAlias);
+                    else
+                        return [{ Alias: propAlias, Value: propTarget }];
+                }
+                else if (expression.Quoted)
+                    return [{ Alias: expression.Quoted, Value: expression.Quoted }];
+                else
+                    return [{ Alias: '', Value: expression }];
+            };
             JsoqlQuery.prototype.Evaluate = function (expression, target) {
                 var _this = this;
                 if (expression.Operator) {
@@ -272,10 +311,12 @@ var Jsoql;
                 else {
                     //Select
                     seq = seq.map(function (item) {
-                        return lazy(_this.stmt.Select).map(function (selectable) { return [
-                            selectable.Alias || _this.Key(selectable.Expression),
-                            _this.Evaluate(selectable.Expression, item)
-                        ]; }).toObject();
+                        return lazy(_this.stmt.Select).map(function (selectable) { return _this.EvaluateAliased(selectable.Expression, item).map(function (aliasValue) {
+                            return {
+                                Alias: selectable.Alias || aliasValue.Alias,
+                                Value: aliasValue.Value
+                            };
+                        }); }).flatten().map(function (aliasValue) { return [aliasValue.Alias, aliasValue.Value]; }).toObject();
                     });
                     return JsoqlQuery.SequenceToArray(seq);
                 }
@@ -324,6 +365,7 @@ var Jsoql;
         Query.JsoqlQuery = JsoqlQuery;
     })(Query = Jsoql.Query || (Jsoql.Query = {}));
 })(Jsoql || (Jsoql = {}));
+//SELECT Thing.*.Something
 ///<reference path="Scripts/parse.ts" />
 ///<reference path="Scripts/query.ts" />
 var Jsoql;
@@ -345,4 +387,3 @@ var Jsoql;
     Jsoql.ExecuteQuery = ExecuteQuery;
 })(Jsoql || (Jsoql = {}));
 module.exports = Jsoql;
-//# sourceMappingURL=jsoql.js.map

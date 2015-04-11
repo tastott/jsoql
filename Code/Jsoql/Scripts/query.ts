@@ -118,6 +118,40 @@ module Jsoql {
                 return func(items);
             }
 
+            private EvaluateAliased(expression: any, target: any, alias?: string): { Alias: string; Value: any }[]{
+                if (expression.Operator) {
+                    var args = expression.Args.map(arg => this.Evaluate(arg, target));
+                    return [{ Alias: '', Value: this.DoOperation(expression.Operator, args) }];
+                }
+                else if (expression.Property == '*') {
+                    if (!target) return [];
+                    else return Object.keys(target)
+                        .map(key => {
+                            return {
+                                Alias: key,
+                                Value: target[key]
+                            };
+                        });
+                }
+                else if (expression.Property) {
+                    var aliasPrefix = alias ? alias + '.' : '';
+                    var propTarget, propAlias;
+                    if (expression.Index != undefined) {
+                        //TODO: Check index is integer and target property is array
+                        propTarget = target[expression.Property][expression.Index];
+                        propAlias = aliasPrefix + expression.Property + '[' + expression.Index + ']';
+                    } else {
+                        propTarget = target[expression.Property];
+                        propAlias = aliasPrefix + expression.Property
+                    }
+
+                    if (expression.Child) return this.EvaluateAliased(expression.Child, propTarget, propAlias);
+                    else return [{ Alias: propAlias, Value: propTarget }];
+                }
+                else if (expression.Quoted) return [{ Alias: expression.Quoted, Value: expression.Quoted }];
+                else return [{ Alias: '', Value: expression }];
+            }
+
             private Evaluate(expression: any, target: any) {
                 if (expression.Operator) {
                     var args = expression.Args.map(arg => this.Evaluate(arg, target));
@@ -285,13 +319,13 @@ module Jsoql {
                         .then(groups =>
                         groups.map(group =>
                             lazy(this.stmt.Select)
-                                .map(selectable => [
-                                selectable.Alias || this.Key(selectable.Expression),
-                                this.EvaluateGroup(selectable.Expression, group)
-                            ])
-                                .toObject()
-                            )
-                            .toArray()
+                                    .map(selectable => [
+                                        selectable.Alias || this.Key(selectable.Expression),
+                                        this.EvaluateGroup(selectable.Expression, group)
+                                    ])
+                                    .toObject()
+                                    )
+                                    .toArray()
                         );
                 }
                 //Implicitly
@@ -319,10 +353,17 @@ module Jsoql {
                     //Select
                     seq = seq.map(item => {
                         return lazy(this.stmt.Select)
-                            .map(selectable => [
-                            selectable.Alias || this.Key(selectable.Expression),
-                            this.Evaluate(selectable.Expression, item)
-                        ])
+                            .map(selectable =>
+                                this.EvaluateAliased(selectable.Expression, item)
+                                    .map(aliasValue => {
+                                        return {
+                                            Alias: selectable.Alias || aliasValue.Alias,
+                                            Value: aliasValue.Value
+                                        };
+                                    })
+                            )
+                            .flatten()
+                            .map((aliasValue : any) => [aliasValue.Alias,  aliasValue.Value])
                             .toObject();
                     });
 

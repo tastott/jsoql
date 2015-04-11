@@ -48,6 +48,70 @@ export function NestedProperty() {
     });
 }
 
+export function NonUniversalProperty() {
+    var data = [
+        { Thing: 1 },
+        { Blah: 2 }
+    ];
+    var expected = [
+        { Thing: 1 },
+        { Thing: undefined }
+    ];
+    return ExecuteArrayQuery("SELECT Thing FROM 'Test'", data)
+        .then(results => {
+        setTimeout(() => assert.deepEqual(results, expected));
+    });
+}
+
+export function NonUniversalParentProperty() {
+    var data = [
+        { Thing: { A: 1 }},
+        { Blah: 1 }
+    ];
+    var expected = [
+        { "Thing.A": 1 },
+        { "Thing.A": undefined }
+    ];
+    return ExecuteArrayQuery("SELECT Thing.A FROM 'Test'", data)
+        .then(results => {
+        setTimeout(() => assert.deepEqual(results, expected));
+    });
+}
+
+export function NonUniversalChildProperty() {
+    var data = [
+        { Thing: { A: 1 } },
+        { Thing: 1 }
+    ];
+    var expected = [
+        { "Thing.A": 1 },
+        { "Thing.A": undefined }
+    ];
+    return ExecuteArrayQuery("SELECT Thing.A FROM 'Test'", data)
+        .then(results => {
+        setTimeout(() => assert.deepEqual(results, expected));
+    });
+}
+
+export function SelectObject() {
+    var data = [1, 2, 3].map(i => {
+        return {
+            Thing: {
+                Value: i
+            }
+        };
+    });
+    var expected = [
+        { Thing: {Value: 1 } },
+        { Thing: { Value: 2 } },
+        { Thing: { Value: 3} }
+    ];
+    return ExecuteArrayQuery("SELECT Thing FROM 'Test'", data)
+        .then(results => {
+        setTimeout(() => assert.deepEqual(results, expected));
+    });
+}
+
 export function ArrayProperty() {
     var data = [1, 2, 3].map(i => {
         return {
@@ -258,4 +322,36 @@ export function Join() {
         .then(results => {
             setTimeout(() => assert.deepEqual(results, expected));
         });
+}
+
+export function SelectStar() {
+    var data = [
+        { Value: 'A', Child: { Thing: 1 }},
+        { Value: 'B', Child: { Blah: 2 } },
+        { Value: 'C' , Children: [1,2,3]}
+    ];
+    
+    return ExecuteArrayQuery("SELECT * FROM 'Test'", data)
+        .then(results => {
+        setTimeout(() => assert.deepEqual(results, data));
+    });
+}
+
+export function SelectNestedStar() {
+    var data = [
+        { Value: 'A', Child: { Thing: 1, Test: 'blah'  } },
+        { Value: 'B', Child: { Blah: 2 } },
+        { Value: 'C', Children: [1, 2, 3] }
+    ];
+
+    var expected = [
+        { Thing: 1, Test: 'blah' },
+        { Blah: 2 },
+        {}
+    ];
+
+    return ExecuteArrayQuery("SELECT Child.* FROM 'Test'", data)
+        .then(results => {
+        setTimeout(() => assert.deepEqual(results, expected));
+    });
 }
