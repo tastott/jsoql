@@ -227,3 +227,10 @@ FakesAssemblies/
 /Code/Jsoql/app.js
 /Code/Jsoql/app.js.map
 /Code/Jsoql/jsoql.js.map
+/Code/Jsoql.Gui/Scripts/Controllers/appController.js
+/Code/Jsoql.Gui/Scripts/Controllers/appController.js.map
+/Code/Jsoql.Gui/Scripts/Models/models.js
+/Code/Jsoql.Gui/Scripts/Models/scopes.js
+/Code/Jsoql.Gui/app.js
+/Code/Jsoql.Gui/app.js.map
+/Code/Jsoql.Gui/Scripts/Directives/QueryResultDirective.js

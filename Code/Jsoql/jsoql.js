@@ -326,5 +326,23 @@ var Jsoql;
 })(Jsoql || (Jsoql = {}));
 ///<reference path="Scripts/parse.ts" />
 ///<reference path="Scripts/query.ts" />
+var Jsoql;
+(function (Jsoql) {
+    var Q = require('Q');
+    function ExecuteQuery(jsoql) {
+        var statement;
+        try {
+            statement = Jsoql.Parse.Parse(jsoql);
+        }
+        catch (err) {
+            return Q({ Errors: [err] });
+        }
+        var query = new Jsoql.Query.JsoqlQuery(statement);
+        return query.Execute().then(function (results) {
+            return { Results: results };
+        });
+    }
+    Jsoql.ExecuteQuery = ExecuteQuery;
+})(Jsoql || (Jsoql = {}));
 module.exports = Jsoql;
 //# sourceMappingURL=jsoql.js.map

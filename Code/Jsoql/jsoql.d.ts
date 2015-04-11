@@ -53,3 +53,10 @@ declare module Jsoql {
         }
     }
 }
+declare module Jsoql {
+    interface QueryResult {
+        Results?: any[];
+        Errors?: string[];
+    }
+    function ExecuteQuery(jsoql: string): Q.Promise<QueryResult>;
+}
