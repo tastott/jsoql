@@ -13,8 +13,7 @@
     <ProjectGuid>66d5ffe0-e198-4c64-b126-d78be42a9192</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>
-    </StartupFile>
+    <StartupFile>Grammar\parser-build.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>

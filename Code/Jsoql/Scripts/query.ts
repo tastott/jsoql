@@ -31,7 +31,7 @@ module Jsoql {
                 }
                 else {
                     var seq = lazy.readFile(value, 'utf8')
-                        .split('\r\n')
+                        .split(/\r?\n/)
                         .map(line => {
                         //line = '{ "name": "banana", "colour": "yellow", "isTasty": true }';
                         try {

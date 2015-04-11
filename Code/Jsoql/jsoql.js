@@ -43,7 +43,7 @@ var Jsoql;
                     throw new Error('File not found: ' + value + '. Cwd is ' + process.cwd());
                 }
                 else {
-                    var seq = lazy.readFile(value, 'utf8').split('\r\n').map(function (line) {
+                    var seq = lazy.readFile(value, 'utf8').split(/\r?\n/).map(function (line) {
                         try {
                             return JSON.parse(line);
                         }
@@ -365,7 +365,6 @@ var Jsoql;
         Query.JsoqlQuery = JsoqlQuery;
     })(Query = Jsoql.Query || (Jsoql.Query = {}));
 })(Jsoql || (Jsoql = {}));
-//SELECT Thing.*.Something
 ///<reference path="Scripts/parse.ts" />
 ///<reference path="Scripts/query.ts" />
 var Jsoql;
@@ -387,3 +386,4 @@ var Jsoql;
     Jsoql.ExecuteQuery = ExecuteQuery;
 })(Jsoql || (Jsoql = {}));
 module.exports = Jsoql;
+//SELECT Thing.*.Something
