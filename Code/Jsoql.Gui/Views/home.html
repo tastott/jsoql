@@ -1,4 +1,16 @@
-﻿<textarea ng-model="QueryText" style="width: 400px; height:200px"></textarea>
-<button ng-click="Execute()">Execute</button>
-<query-result value="QueryResult"></query-result>
-<textarea ng-model="Errors" style="width: 400px; height:200px"></textarea>
+﻿<div class="row">
+    <div class="col-lg-6">
+        <div>
+            <label class="control-label">Query</label>
+            <textarea ng-model="QueryText" style="width: 400px;" class="form-control" rows="20"></textarea>
+        </div>
+        <button ng-click="Execute()" class="btn btn-default">
+            <i class="fa fa-play"></i>
+            Execute
+        </button>
+    </div>
+    <div class="col-lg-6">
+        <label class="control-label">Results</label>
+        <query-result value="QueryResult"></query-result>
+    </div>
+</div>

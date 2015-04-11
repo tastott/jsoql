@@ -1,13 +1,13 @@
 ﻿
+var renderJson = require('../Vendor/renderjson');
+renderJson.set_icons('', '');
+renderJson.set_show_to_level(2);
+
 export interface QueryResultScope extends ng.IScope {
     value: QueryResult;
 }
 
 export class QueryResultDirective implements ng.IDirective {
-
-    constructor() {
-        console.log('inside qrd');
-    }
 
     public scope = {
         value: '='
@@ -17,7 +17,8 @@ export class QueryResultDirective implements ng.IDirective {
         $scope.$watch('value.Results',(newValue: any[], oldValue: any[]) => {
             if (newValue) {
                 if (newValue.length) {
-                    element.html('<div>' + JSON.stringify(newValue) + '</div>');
+                    element.html('');
+                    element.append(renderJson(newValue));
                 }
                 else {
                     element.html('<div>No results</div>');
