@@ -50,6 +50,7 @@
 //     .object.syntax ("{", "}")
 //     .array.syntax  ("[", "]")
 
+var document = document || window.document;
 var module;
 (module || {}).exports = renderjson = (function () {
     var themetext = function (/* [class, text]+ */) {
@@ -101,7 +102,7 @@ var module;
             var show = function () {
                 if (!content) append(empty.parentNode,
                                      content = prepend(builder(),
-                                                       A(renderjson.hide, "disclosure",
+                                                       A(renderjson.hide, "disclosure json-show",
                                                          function () {
                                                              content.style.display = "none";
                                                              empty.style.display = "inline";
@@ -110,7 +111,7 @@ var module;
                 empty.style.display = "none";
             };
             append(empty,
-                   A(renderjson.show, "disclosure", show),
+                   A(renderjson.show, "disclosure json-hide", show),
                    themetext(type + " syntax", open),
                    A(placeholder, null, show),
                    themetext(type + " syntax", close));

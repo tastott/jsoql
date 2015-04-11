@@ -1,7 +1,43 @@
-﻿body {
-    font-family: 'Segoe UI', sans-serif;
+﻿
+.renderjson {background-color:black;}
+.renderjson a              { text-decoration: none; }
+
+.renderjson .disclosure    { 
+    color: gray;
+    font-size: 200%; 
+     display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    /*font-size: inherit;*/
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transform: translate(0, 0);
 }
 
-span {
-    font-style: italic;
+/*.renderjson .disclosure:before {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transform: translate(0, 0);
+    content: "\f0da"
+}*/
+
+.renderjson .disclosure.json-show:before {
+    content: "\f0d7"
 }
+
+.renderjson .disclosure.json-hide:before {
+    content: "\f0da"
+}
+
+.renderjson .syntax        { color: white; }
+.renderjson .string        { color: red; }
+.renderjson .number        { color: #99dd33 }
+.renderjson .boolean       { color: plum; }
+.renderjson .key           { color: #bbaa00; }
+.renderjson .keyword       { color: lightgoldenrodyellow; }
+.renderjson .object.syntax { color: white; }
+.renderjson .array.syntax  { color: white; }
