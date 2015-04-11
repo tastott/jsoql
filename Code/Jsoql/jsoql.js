@@ -8,7 +8,6 @@ var Jsoql;
             return parser.parse(source);
         }
         _Parse.Parse = Parse;
-        ;
     })(Parse = Jsoql.Parse || (Jsoql.Parse = {}));
 })(Jsoql || (Jsoql = {}));
 var Jsoql;
@@ -302,20 +301,25 @@ var Jsoql;
             JsoqlQuery.prototype.Execute = function () {
                 var _this = this;
                 //From
-                var seq = this.From(this.stmt.From);
+                var seq = this.From(this.stmt.FromWhere.From);
                 //Where
-                if (this.stmt.Where) {
+                if (this.stmt.FromWhere.Where) {
                     seq = seq.filter(function (item) {
-                        return _this.Evaluate(_this.stmt.Where, item);
+                        return _this.Evaluate(_this.stmt.FromWhere.Where, item);
                     });
                 }
                 //Grouping
                 //Explicitly
                 if (this.stmt.GroupBy) {
-                    return this.GroupBy(seq, this.stmt.GroupBy).then(function (groups) { return groups.map(function (group) { return lazy(_this.stmt.Select).map(function (selectable) { return [
-                        selectable.Alias || _this.Key(selectable.Expression),
-                        _this.EvaluateGroup(selectable.Expression, group)
-                    ]; }).toObject(); }).toArray(); });
+                    return this.GroupBy(seq, this.stmt.GroupBy).then(function (groups) {
+                        (_this.stmt.OrderBy || []).forEach(function (orderByExp) {
+                            groups = groups.sortBy(function (group) { return _this.EvaluateGroup(orderByExp.Expression, group); }, !orderByExp.Asc);
+                        });
+                        return groups.map(function (group) { return lazy(_this.stmt.Select).map(function (selectable) { return [
+                            selectable.Alias || _this.Key(selectable.Expression),
+                            _this.EvaluateGroup(selectable.Expression, group)
+                        ]; }).toObject(); }).toArray();
+                    });
                 }
                 else if (lazy(this.stmt.Select).some(function (selectable) { return JsoqlQuery.IsAggregate(selectable.Expression); })) {
                     return JsoqlQuery.SequenceToArray(seq).then(function (items) {
@@ -332,6 +336,9 @@ var Jsoql;
                     });
                 }
                 else {
+                    (this.stmt.OrderBy || []).forEach(function (orderByExp) {
+                        seq = seq.sortBy(function (item) { return _this.Evaluate(orderByExp.Expression, item); }, !orderByExp.Asc);
+                    });
                     //Select
                     seq = seq.map(function (item) {
                         return lazy(_this.stmt.Select).map(function (selectable) { return _this.EvaluateAliased(selectable.Expression, item).map(function (aliasValue) {
@@ -391,6 +398,7 @@ var Jsoql;
         Query.JsoqlQuery = JsoqlQuery;
     })(Query = Jsoql.Query || (Jsoql.Query = {}));
 })(Jsoql || (Jsoql = {}));
+//SELECT Thing.*.Something
 ///<reference path="Scripts/parse.ts" />
 ///<reference path="Scripts/query.ts" />
 var Jsoql;
@@ -412,4 +420,3 @@ var Jsoql;
     Jsoql.ExecuteQuery = ExecuteQuery;
 })(Jsoql || (Jsoql = {}));
 module.exports = Jsoql;
-//SELECT Thing.*.Something

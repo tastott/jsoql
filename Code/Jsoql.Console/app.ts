@@ -6,7 +6,7 @@ var Jsoql : JsoqlStatic = require('../Jsoql/jsoql') //Bit of a workaround to spe
 //var jsoql = "SELECT c.CompanyName AS Name, SUM(o.OrderDetails[0].Quantity) AS TotalOrderQuantity FROM './data/orders.jsons' AS o JOIN './data/customers.jsons' AS c ON o.Order.CustomerId = c.Id GROUP BY c.CompanyName";
 //var jql = "SELECT COUNT() FROM 'Test'";
 //var jql = "SELECT Order.CustomerId, SUM(OrderDetails[0].Quantity) AS TotalOrderQuantity FROM './data/orders.jsons' GROUP BY Order.CustomerId";
-var jsoql = "SELECT Order.Id FROM 'file://data/orders.jsons' WHERE Order.Id != 11074";
+var jsoql = "SELECT * FROM 'file://data/orders.jsons'";
 
 
 console.log('\n\nQuery:');

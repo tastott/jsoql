@@ -333,12 +333,12 @@ module Jsoql {
             Execute(): Q.Promise<any[]> {
         
                 //From
-                var seq = this.From(this.stmt.From);
+                var seq = this.From(this.stmt.FromWhere.From);
 
                 //Where
-                if (this.stmt.Where) {
+                if (this.stmt.FromWhere.Where) {
                     seq = seq.filter(item => {
-                        return this.Evaluate(this.stmt.Where, item);
+                        return this.Evaluate(this.stmt.FromWhere.Where, item);
                     })
                 }
 
@@ -346,17 +346,22 @@ module Jsoql {
                 //Explicitly
                 if (this.stmt.GroupBy) {
                     return this.GroupBy(seq, this.stmt.GroupBy)
-                        .then(groups =>
-                        groups.map(group =>
-                            lazy(this.stmt.Select)
+                        .then(groups => {
+
+                            (this.stmt.OrderBy || []).forEach(orderByExp => {
+                                groups = groups.sortBy(group => this.EvaluateGroup(orderByExp.Expression, group), !orderByExp.Asc);
+                            });
+
+                            return groups.map(group =>
+                                lazy(this.stmt.Select)
                                     .map(selectable => [
-                                        selectable.Alias || this.Key(selectable.Expression),
-                                        this.EvaluateGroup(selectable.Expression, group)
-                                    ])
+                                    selectable.Alias || this.Key(selectable.Expression),
+                                    this.EvaluateGroup(selectable.Expression, group)
+                                ])
                                     .toObject()
-                                    )
-                                    .toArray()
-                        );
+                                )
+                                .toArray();
+                        });
                 }
                 //Implicitly
                 else if (lazy(this.stmt.Select).some(selectable => JsoqlQuery.IsAggregate(selectable.Expression))) {
@@ -380,6 +385,11 @@ module Jsoql {
                 }
                 //No grouping
                 else {
+
+                    (this.stmt.OrderBy || []).forEach(orderByExp => {
+                        seq = seq.sortBy(item => this.Evaluate(orderByExp.Expression, item), !orderByExp.Asc);
+                    });
+
                     //Select
                     seq = seq.map(item => {
                         return lazy(this.stmt.Select)

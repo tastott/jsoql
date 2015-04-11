@@ -4,19 +4,21 @@
 declare module Jsoql {
     module Parse {
         function Parse(source: string): Statement;
-        interface WhereClause {
-            Operator: string;
-            Args: any[];
-        }
         interface Selectable {
             Expression: any;
             Alias: string;
         }
         interface Statement {
             Select: Selectable[];
-            From: any;
-            Where: WhereClause;
+            FromWhere: {
+                From: any;
+                Where: any;
+            };
             GroupBy: any;
+            OrderBy: {
+                Expression: any;
+                Asc: boolean;
+            }[];
         }
     }
 }

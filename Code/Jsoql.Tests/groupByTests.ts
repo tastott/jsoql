@@ -76,3 +76,18 @@ export function GroupByWithAggregate() {
         setTimeout(() => assert.deepEqual(results, expected));
     });
 }
+
+export function WhereGroupBy() {
+    var data = [
+        { Value: 1, Thing: true },
+        { Value: 2, Thing: true },
+        { Value: 3, Thing: false }
+    ];
+    var expected = [
+        { Thing: true }
+    ];
+    return testBase.ExecuteArrayQuery("SELECT Thing FROM 'var://Test' WHERE Value < 3 GROUP BY Thing", data)
+        .then(results => {
+        setTimeout(() => assert.deepEqual(results, expected));
+    });
+}

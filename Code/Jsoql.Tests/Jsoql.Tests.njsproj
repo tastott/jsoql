@@ -46,6 +46,10 @@
     <TypeScriptCompile Include="fromFileTests.ts">
       <TestFramework>ExportRunner</TestFramework>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="orderByTests.ts">
+      <SubType>Code</SubType>
+      <TestFramework>ExportRunner</TestFramework>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="testBase.ts" />
     <TypeScriptCompile Include="whereTests.ts">
       <TestFramework>ExportRunner</TestFramework>

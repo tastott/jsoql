@@ -21,6 +21,9 @@ SELECT\s+           return 'SELECT'
 \s+FROM\s+          return 'FROM'
 \s+WHERE\s+         return 'WHERE'
 \s+GROUP\sBY\s+     return 'GROUPBY'
+\s+ORDER\sBY\s+     return 'ORDERBY'
+\s+ASC\s*			return 'ASC'
+\s+DESC\s*			return 'DESC'
 \s+AS\s+			return 'AS'
 \s+JOIN\s+			return 'JOIN'
 \s+ON\s+			return 'ON'
@@ -149,12 +152,36 @@ FromClause
 		{ $$ = { Left: $1, Right: $3, Expression: $5}}
     ;
 
+OrderByExpression
+	: Expression
+		{ $$ = {Expression: $1, Asc: true}}
+	| Expression ASC
+		{ $$ = {Expression: $1, Asc: true}}
+	| Expression DESC
+		{ $$ = {Expression: $1, Asc: false}}
+	;
+
+OrderByList
+	: OrderByList ',' OrderByExpression 
+		{ $$ = $1.concat([$3])}
+	| OrderByExpression
+		{ $$ = [$1]}
+	;
+
+FromWhere
+	: FromClause
+		{ $$ = {From: $1 }}
+	| FromClause WHERE Expression
+		{ $$ = {From: $1, Where: $3}}
+	;
 
 Stmt
-    : SELECT SelectList FROM FromClause
-        { $$ = { Select: $2, From: $4} }
-	| SELECT SelectList FROM FromClause WHERE Expression
-		{ $$ = { Select: $2, From: $4, Where: $6}}
-    | SELECT SelectList FROM FromClause GROUPBY ExpressionList
-		{ $$ = { Select: $2, From: $4, GroupBy: $6}}
+    : SELECT SelectList FROM FromWhere
+        { $$ = { Select: $2, FromWhere: $4} }
+    | SELECT SelectList FROM FromWhere GROUPBY ExpressionList
+		{ $$ = { Select: $2, FromWhere: $4, GroupBy: $6}}
+	| SELECT SelectList FROM FromWhere GROUPBY ExpressionList ORDERBY OrderByList
+		{ $$ = { Select: $2, FromWhere: $4, GroupBy: $6, OrderBy: $8}}
+	| SELECT SelectList FROM FromWhere ORDERBY OrderByList
+		{ $$ = { Select: $2, FromWhere: $4, OrderBy: $6}}
     ;

@@ -259,3 +259,5 @@ FakesAssemblies/
 /Code/Jsoql.Tests/testBase.js.map
 /Code/Jsoql.Tests/whereTests.js.map
 /Code/Jsoql.Gui/Scripts/Directives/folderInput.js
+/Code/Jsoql.Tests/orderByTests.js
+/Code/Jsoql.Tests/orderByTests.js.map

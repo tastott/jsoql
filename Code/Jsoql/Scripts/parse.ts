@@ -9,11 +9,6 @@ module Jsoql {
             return parser.parse(source);
         }
 
-        export interface WhereClause {
-            Operator: string;
-            Args: any[]
-        };
-
         export interface Selectable {
             Expression: any;
             Alias: string;
@@ -21,9 +16,15 @@ module Jsoql {
 
         export interface Statement {
             Select: Selectable[];
-            From: any;
-            Where: WhereClause;
+            FromWhere: {
+                From: any;
+                Where: any;
+            }
             GroupBy: any;
+            OrderBy: {
+                Expression: any;
+                Asc: boolean
+            }[]
         }
 
     }
