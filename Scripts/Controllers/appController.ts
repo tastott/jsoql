@@ -1,30 +1,126 @@
 ﻿///<reference path="../typings/jsoql/jsoql.d.ts" />
 ///<reference path="../models/models.ts"/>
 import Q = require('q')
-import utilities = require('../utilities')
+import qss = require('../Services/queryStorageService')
+import _fs = require('../Services/fileService')
 var Jsoql: JsoqlStatic = require('../../../Jsoql/jsoql') //TODO: Replace with npm module eventually
 
-interface appScope extends angular.IScope {
-    BaseDirectory: EditableText;
+class QueryTab {
+
+    constructor(private $scope: ng.IScope,
+        private queryService: qss.QueryStorageService,
+        private fileService: _fs.FileService,
+        public Name: string,
+        StorageId?: string,
+        QueryText?: string,
+        BaseDirectory?: string) {
+
+        this.StorageId = StorageId || null;
+        this.QueryText = { Value: QueryText || '' };
+        this.QueryResult = {};
+        this.BaseDirectory = { Value: BaseDirectory ||process.cwd() };
+    }
+
     QueryText: EditableText;
     QueryResult: QueryResult;
-    Execute: () => void; 
-    SaveResults: () => void;
-    SaveResultsEnabled: () => boolean;
+    BaseDirectory: EditableText;
+    StorageId: string;
+
+    Execute = () => {
+        if (this.QueryText.Value) {
+            var context: JsoqlQueryContext = {
+                BaseDirectory: this.BaseDirectory.Value
+            };
+
+            Jsoql.ExecuteQuery(this.QueryText.Value, context)
+                .then(result => {
+                this.$scope.$apply(() => this.QueryResult = result); //TOOD: Better way to do this?
+            });
+        }
+    }
+
+    SaveQuery = () => {
+        var query: qss.SavedQuery = {
+            Id: this.StorageId,
+            Name: this.Name,
+            Query: this.QueryText.Value,
+            Settings: {
+                BaseDirectory: this.BaseDirectory.Value
+            }
+        };
+
+        this.queryService.Save(query)
+            .then(savedFile => {
+                this.StorageId = savedFile.Id;
+                this.Name = savedFile.Name; 
+            });
+    }
+
+    SaveResults = () => {
+        if (this.SaveResultsEnabled()) {
+            var json = JSON.stringify(this.QueryResult.Results, null, 4);
+
+            this.fileService.Download(json, 'results.json')
+                .fail(error => {
+                    console.log(error);
+                })
+                .then(() => {
+                    console.log('file saved');
+                });
+                
+            }
+    }
+
+    SaveResultsEnabled = () => {
+        return !!this.QueryResult && !!this.QueryResult.Results;
+    }
+}
+
+interface AppScope extends angular.IScope {
+    
+    SelectTab(tab: QueryTab): void;
+    Tabs: QueryTab[];
+    SelectedTab: QueryTab;
+    AddTab: () => void;
 }
 
 export class AppController {
 
-    constructor(private $scope: appScope) {
-        $scope.BaseDirectory = { Value: this.GetLatest('BaseDirectory.Value') || process.cwd() };
-        $scope.QueryText = { Value: this.GetLatest('QueryText.Value') || '' };
-        $scope.Execute = this.Execute;
-        $scope.SaveResults = this.SaveResults;
-        $scope.SaveResultsEnabled = this.SaveResultsEnabled;
-        $scope.QueryResult = {};
+    constructor(private $scope: AppScope,
+        private fileService: _fs.FileService,
+        private queryStorageService: qss.QueryStorageService) {
 
-        this.StoreLatest('QueryText.Value');
-        this.StoreLatest('BaseDirectory.Value');
+        $scope.SelectTab = this.SelectTab;
+        $scope.Tabs = [];
+        $scope.AddTab = this.AddTab;
+
+        this.GetInitialTabs()
+            .then(tabs => {
+                if (!tabs || !tabs.length) this.AddTab();
+                else tabs.forEach(tab => this.AddTab(tab));
+                $scope.SelectedTab = $scope.Tabs[0];
+            });
+        }
+
+    AddTab = (tab?: QueryTab) => {
+        tab = tab || new QueryTab(this.$scope, this.queryStorageService, this.fileService, 'query');;
+
+        this.$scope.Tabs.push(tab);
+    }
+
+    GetInitialTabs(): Q.Promise<QueryTab[]> {
+        return this.queryStorageService.GetAll()
+            .then(queries => queries.map(query => 
+                new QueryTab(this.$scope, this.queryStorageService, this.fileService,
+                    query.Name, query.Id, query.Query, query.Settings.BaseDirectory)
+            ));
+    }
+
+    SelectTab = (tab: QueryTab) => {
+        if (tab != this.$scope.SelectedTab) {
+            var index = this.$scope.Tabs.indexOf(tab);
+            if (index >= 0) this.$scope.SelectedTab = tab;
+        } 
     }
 
     private GetStorageKey(scopeProperty: string): string{
@@ -43,38 +139,5 @@ export class AppController {
         });
     }
 
-    Execute = () => {
-        if (this.$scope.QueryText) {
-            var context: JsoqlQueryContext = {
-                BaseDirectory: this.$scope.BaseDirectory.Value
-            };
-
-            Jsoql.ExecuteQuery(this.$scope.QueryText.Value, context)
-                .then(result => {
-                    this.$scope.$apply(() => this.$scope.QueryResult = result); //TOOD: Better way to do this?
-                });
-        }
-    }
-
-    SaveResults = () => {
-        if (this.SaveResultsEnabled()) {
-
-            //DESKTOP-ONLY
-            utilities.ShowSaveFileDialog({ InitialFilename: 'results.json' })
-                .then(path => {
-                    var json = JSON.stringify(this.$scope.QueryResult.Results, null, 4);
-                    return Q.denodeify(require('fs').writeFile)(path, json);
-                })
-                .then(() => {
-                    console.log('file saved');
-                })
-                .fail(error => {
-                    console.log(error);
-                })
-        }
-    }
-
-    SaveResultsEnabled = () => {
-        return !!this.$scope.QueryResult && !!this.$scope.QueryResult.Results;
-    }
+    
 }

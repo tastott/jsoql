@@ -1,31 +1,48 @@
 ﻿<div class="row">
+    <div class="col-lg-12">
+        <ul class="nav nav-tabs" role="tablist">
+            <li>
+                <a class="btn-lg" ng-click="AddTab()" href="">
+                    <i class="fa fa-plus"></i>
+                </a>
+            </li>
+            <li ng-repeat="tab in Tabs" ng-class="{'active': tab == SelectedTab}">
+                <a class="btn-lg" ng-click="SelectTab(tab)" href="">{{tab.Name}}</a>
+            </li>
+        </ul>
+    </div>
+</div>
+<div class="row">
     <div class="col-lg-6">
         <div class="row">
             <div class="col-lg-12">
                 <label class="control-label">Query</label>
-                <query-editor-ace value="QueryText"></query-editor-ace>
+                <query-editor-ace value="SelectedTab.QueryText"></query-editor-ace>
             </div>
         </div>
         <div class="row">
             <div class="col-lg-12">
                 <label>Base directory</label>
-                <folder-input value="BaseDirectory"></folder-input>
+                <folder-input value="SelectedTab.BaseDirectory"></folder-input>
             </div>
         </div>
         <div class="row">
             <div class="col-lg-12">
-                <button ng-click="Execute()" class="btn btn-default">
+                <button ng-click="SelectedTab.Execute()" class="btn btn-default">
                     <i class="fa fa-play"></i>
                     Execute
                 </button>
-            </div> 
+                <button class="btn btn-default" ng-click="SelectedTab.SaveQuery()">
+                    <i class="fa fa-save"></i>
+                </button>
+            </div>
         </div>
     </div>
     <div class="col-lg-6">
         <label class="control-label">Results</label>
-        <button class="btn btn-default" ng-click="SaveResults()" ng-disabled="!SaveResultsEnabled()">
+        <button class="btn btn-default" ng-click="SelectedTab.SaveResults()" ng-disabled="!SelectedTab.SaveResultsEnabled()">
             <i class="fa fa-save"></i>
-        </button> 
-        <query-result value="QueryResult"></query-result>
+        </button>
+        <query-result value="SelectedTab.QueryResult"></query-result>
     </div>
 </div>

@@ -29,10 +29,14 @@
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="Scripts\Controllers\appController.ts" />
+    <TypeScriptCompile Include="Scripts\dictionary.ts" />
     <TypeScriptCompile Include="Scripts\Directives\queryEditor.ts" />
     <TypeScriptCompile Include="Scripts\Directives\folderInput.ts" />
     <TypeScriptCompile Include="Scripts\Directives\queryResult.ts" />
     <TypeScriptCompile Include="Scripts\Models\models.ts" />
+    <TypeScriptCompile Include="Scripts\Services\fileService.ts" />
+    <TypeScriptCompile Include="Scripts\Services\queryStorageService.ts" />
+    <TypeScriptCompile Include="Scripts\Services\typedRepository.ts" />
     <TypeScriptCompile Include="Scripts\typings\angularjs\angular-route.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\angularjs\angular.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\jquery\jquery.d.ts" />
