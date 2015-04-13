@@ -262,3 +262,8 @@ FakesAssemblies/
 /Code/Jsoql.Tests/orderByTests.js
 /Code/Jsoql.Tests/orderByTests.js.map
 /Code/Jsoql.Gui/Scripts/utilities.js
+/Code/Jsoql.Gui/Scripts/Services/FileService.js
+/Code/Jsoql.Gui/Scripts/Services/TypedRepository.js
+/Code/Jsoql.Gui/Scripts/Services/queryStorageService.js
+/Code/Jsoql.Gui/Scripts/config.js
+/Code/Jsoql.Gui/Scripts/dictionary.js

@@ -72,7 +72,10 @@ export class AceQueryEditorDirective implements ng.IDirective {
 
         editor.setValue($scope.Query.Value);
         editor.getSession().on('change', function (e) {
-            $scope.$apply(() => $scope.Query.Value = editor.getValue());
+            $scope.Query.Value = editor.getValue();
+        });
+        $scope.$watch('Query',(newValue: EditableText) => {
+            editor.setValue(newValue.Value);
         });
     }
 
