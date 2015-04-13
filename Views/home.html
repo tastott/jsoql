@@ -23,6 +23,9 @@
     </div>
     <div class="col-lg-6">
         <label class="control-label">Results</label>
+        <button class="btn btn-default" ng-click="SaveResults()" ng-disabled="!SaveResultsEnabled()">
+            <i class="fa fa-save"></i>
+        </button> 
         <query-result value="QueryResult"></query-result>
     </div>
 </div>
