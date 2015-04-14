@@ -7,7 +7,7 @@
                 </a>
             </li>
             <li ng-repeat="tab in Tabs" ng-class="{'active': tab == SelectedTab}">
-                <a class="btn-lg" ng-click="SelectTab(tab)" href="">{{tab.Name}}</a>
+                <a class="btn-lg" ng-click="SelectTab(tab)" href="">{{tab.DisplayName()}}</a>
             </li>
         </ul>
     </div>
@@ -34,6 +34,9 @@
                 </button>
                 <button class="btn btn-default" ng-click="SelectedTab.SaveQuery()">
                     <i class="fa fa-save"></i>
+                </button>
+                <button class="btn btn-default" ng-click="Reload()">
+                    <i class="fa fa-refresh"></i>
                 </button>
             </div>
         </div>

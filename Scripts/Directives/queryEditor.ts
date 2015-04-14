@@ -70,12 +70,14 @@ export class AceQueryEditorDirective implements ng.IDirective {
         editor.setTheme('ace/theme/ambiance');
         editor.getSession().setMode('ace/mode/sql');
 
-        editor.setValue($scope.Query.Value);
+        if ($scope.Query && $scope.Query.Value) editor.setValue($scope.Query.Value);
+
         editor.getSession().on('change', function (e) {
-            $scope.Query.Value = editor.getValue();
+            if($scope.Query) $scope.Query.Value = editor.getValue();
         });
         $scope.$watch('Query',(newValue: EditableText) => {
-            editor.setValue(newValue.Value);
+            if (newValue) editor.setValue(newValue.Value);
+            else editor.setValue('');
         });
     }
 

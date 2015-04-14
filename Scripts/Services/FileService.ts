@@ -2,10 +2,11 @@
 import utilities = require('../utilities')
 import path = require('path')
 import repo = require('./typedRepository')
+import d = require('../dictionary')
 
 export interface FileSaveOptions {
-    StorageId?: string;
     Extensions?: string[];
+    InitialFilename?: string;
 }
 
 export interface SavedFile {
@@ -16,50 +17,52 @@ export interface SavedFile {
 export interface FileService {
     GetAll(): SavedFile[];
     Load(id: string): Q.Promise<string>;
-    Save(data: string, options : FileSaveOptions): Q.Promise<SavedFile>;
+    Save(data: string, id : string): Q.Promise<SavedFile>;
+    SaveAs(data: string, options: FileSaveOptions): Q.Promise<SavedFile>;
     Download(data : string, filename: string): Q.Promise<boolean>; 
 }
 
 
 export class DesktopFileService implements FileService {
 
-    constructor(private savedQueryIdsRepo : repo.TypedRepository<Set<string>>) { }
+    constructor(private savedQueryIdsRepo : repo.TypedRepository<d.Dictionary<string>>) { }
+
+    private IdToFileEntry(id: string): SavedFile {
+        return {
+            Name: path.basename(id, path.extname(id)), //File name without extension
+            Id: id
+        };
+    }
 
     GetAll(): SavedFile[]{
         var ids = this.savedQueryIdsRepo.Get() || {};
-        return Object.keys(ids).map(id => {
-            return {
-                Id: id,
-                Name: path.basename(id)
-            };
-        });
+        return Object.keys(ids).map(this.IdToFileEntry);
     }
 
     Load(id: string): Q.Promise<string> {
-        return <any>Q.denodeify(require('fs').readFile)(id);
+        return <any>Q.denodeify(require('fs').readFile)(id, 'utf8');
     }
 
-    Save(data : string, options : FileSaveOptions): Q.Promise<SavedFile> {
+    Save(data: string, id: string): Q.Promise<SavedFile> {
+        return Q.denodeify(require('fs').writeFile)(id, data)
+            .then(() => {
+                var ids = this.savedQueryIdsRepo.Get() || {};
+                ids[id] = id;
+                this.savedQueryIdsRepo.Put(ids);
+
+                return this.IdToFileEntry(id);
+            });
+    }
+
+    SaveAs(data : string, options : FileSaveOptions): Q.Promise<SavedFile> {
         var dialogOptions : utilities.SaveFileOptions = {};
-        if (options && options.StorageId) {
-            dialogOptions.InitialDirectory = path.dirname(options.StorageId);
-            dialogOptions.InitialFilename = path.basename(options.StorageId);
+        if (options && options.InitialFilename) {
+            dialogOptions.InitialFilename = options.InitialFilename;
         }
 
         return utilities.ShowSaveFileDialog(options)
             .then(savedPath => {
-                var name = path.basename(savedPath);
-                return Q.denodeify(require('fs').writeFile)(savedPath, data)
-                    .then(() => {
-                        var id = path.normalize(savedPath);
-                        var ids = this.savedQueryIdsRepo.Get();
-                        ids.add(id);
-
-                        return {
-                            Name: name,
-                            Id: id
-                        };
-                    });
+                return this.Save(data, savedPath); 
             });
     }
 

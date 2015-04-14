@@ -12,7 +12,7 @@ import d = require('./Scripts/dictionary')
 
 angular.module('Jsoql', ['ngRoute', 'ui.bootstrap'])
     .constant('querySettingsRepo', new repo.LocalStorageRepository<d.Dictionary<qServ.QuerySettings>>('querySettings'))
-    .constant('savedQueryIdsRepo', new repo.LocalStorageRepository<Set<string>>('queryIds'))
+    .constant('savedQueryIdsRepo', new repo.LocalStorageRepository<d.Dictionary<string>>('queryIds'))
     .service('fileService', fServ.DesktopFileService)
     .service('queryStorageService', qServ.QueryStorageService)
     .controller('AppController', appCtrl.AppController)
