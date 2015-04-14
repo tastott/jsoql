@@ -5,26 +5,35 @@ import qss = require('../Services/queryStorageService')
 import _fs = require('../Services/fileService')
 var Jsoql: JsoqlStatic = require('../../../Jsoql/jsoql') //TODO: Replace with npm module eventually
 
+
 class QueryTab {
+
+    private isUnsaved: boolean;
 
     constructor(private $scope: ng.IScope,
         private queryService: qss.QueryStorageService,
         private fileService: _fs.FileService,
-        public Name: string,
+        private name: string,
         StorageId?: string,
         QueryText?: string,
         BaseDirectory?: string) {
 
+        //this.isUnsaved = !StorageId;
         this.StorageId = StorageId || null;
         this.QueryText = { Value: QueryText || '' };
         this.QueryResult = {};
-        this.BaseDirectory = { Value: BaseDirectory ||process.cwd() };
+        this.BaseDirectory = { Value: BaseDirectory || process.cwd() };
+       
     }
 
     QueryText: EditableText;
     QueryResult: QueryResult;
     BaseDirectory: EditableText;
     StorageId: string;
+
+    DisplayName = () => {
+        return this.name + (this.isUnsaved ? ' *' : '');
+    }
 
     Execute = () => {
         if (this.QueryText.Value) {
@@ -42,7 +51,7 @@ class QueryTab {
     SaveQuery = () => {
         var query: qss.SavedQuery = {
             Id: this.StorageId,
-            Name: this.Name,
+            Name: this.name,
             Query: this.QueryText.Value,
             Settings: {
                 BaseDirectory: this.BaseDirectory.Value
@@ -51,8 +60,10 @@ class QueryTab {
 
         this.queryService.Save(query)
             .then(savedFile => {
-                this.StorageId = savedFile.Id;
-                this.Name = savedFile.Name; 
+                this.$scope.$apply(() => {
+                    this.StorageId = savedFile.Id;
+                    this.name = savedFile.Name;
+                });
             });
     }
 
@@ -82,6 +93,7 @@ interface AppScope extends angular.IScope {
     Tabs: QueryTab[];
     SelectedTab: QueryTab;
     AddTab: () => void;
+    Reload: () => void;
 }
 
 export class AppController {
@@ -93,6 +105,7 @@ export class AppController {
         $scope.SelectTab = this.SelectTab;
         $scope.Tabs = [];
         $scope.AddTab = this.AddTab;
+        $scope.Reload = this.Reload;
 
         this.GetInitialTabs()
             .then(tabs => {
@@ -103,7 +116,7 @@ export class AppController {
         }
 
     AddTab = (tab?: QueryTab) => {
-        tab = tab || new QueryTab(this.$scope, this.queryStorageService, this.fileService, 'query');;
+        tab = tab || new QueryTab(this.$scope, this.queryStorageService, this.fileService, 'new');;
 
         this.$scope.Tabs.push(tab);
     }
@@ -121,6 +134,10 @@ export class AppController {
             var index = this.$scope.Tabs.indexOf(tab);
             if (index >= 0) this.$scope.SelectedTab = tab;
         } 
+    }
+
+    Reload = () => {
+        this.GetInitialTabs();
     }
 
     private GetStorageKey(scopeProperty: string): string{

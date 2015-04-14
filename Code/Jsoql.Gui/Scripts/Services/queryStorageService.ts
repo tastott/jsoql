@@ -45,7 +45,10 @@ export class QueryStorageService {
     }
 
     Save(query: SavedQuery): Q.Promise<SavedQuery> {
-        return this.fileService.Save(query.Query, { StorageId: query.Id, Extensions: [QueryStorageService.QueryExtension] })
+        return (query.Id
+                ? this.fileService.Save(query.Query, query.Id)
+                : this.fileService.SaveAs(query.Query, { Extensions: [QueryStorageService.QueryExtension] })
+            )
             .then(saved => {
                 var allSettings = this.querySettingsRepo.Get() || {};
                 allSettings[saved.Id] = query.Settings;
