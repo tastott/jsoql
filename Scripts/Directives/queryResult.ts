@@ -1,10 +1,11 @@
-﻿
+﻿import m = require('../models/models')
+
 var renderJson = require('../Vendor/renderjson');
 renderJson.set_icons('', '');
 renderJson.set_show_to_level(2);
 
 export interface QueryResultScope extends ng.IScope {
-    value: QueryResult;
+    value: m.QueryResult;
 }
 
 export class QueryResultDirective implements ng.IDirective {
@@ -14,7 +15,7 @@ export class QueryResultDirective implements ng.IDirective {
     }
 
     public link($scope: QueryResultScope, element: JQuery, attributes: ng.IAttributes) {
-        $scope.$watch('value',(newValue: QueryResult) => {
+        $scope.$watch('value',(newValue: m.QueryResult) => {
             element.html('');
 
             if (newValue) {

@@ -1,4 +1,5 @@
 ﻿import $ = require('jquery')
+import m = require('../models/models')
 
 var keywords = [
     /select\s+/ig,
@@ -9,7 +10,7 @@ var keywords = [
 ];
 
 export interface QueryEditorScope extends ng.IScope {
-    Query: EditableText;
+    Query: m.EditableText;
 }
 
 export class QueryEditorDirective implements ng.IDirective {
@@ -22,7 +23,7 @@ export class QueryEditorDirective implements ng.IDirective {
 
     public link($scope: QueryEditorScope, element: JQuery, attributes: ng.IAttributes) {
         var editable = element.children();
-        editable.html($scope.Query.Value);
+        editable.html($scope.Query.GetValue());
 
         var onChange = require('debounce')(() => {
             var html = editable.html();
@@ -70,13 +71,13 @@ export class AceQueryEditorDirective implements ng.IDirective {
         editor.setTheme('ace/theme/ambiance');
         editor.getSession().setMode('ace/mode/sql');
 
-        if ($scope.Query && $scope.Query.Value) editor.setValue($scope.Query.Value);
+        if ($scope.Query) editor.setValue($scope.Query.GetValue());
 
         editor.getSession().on('change', function (e) {
-            if($scope.Query) $scope.Query.Value = editor.getValue();
+            if($scope.Query) $scope.Query.SetValue(editor.getValue());
         });
-        $scope.$watch('Query',(newValue: EditableText) => {
-            if (newValue) editor.setValue(newValue.Value);
+        $scope.$watch('Query',(newValue: m.EditableText) => {
+            if (newValue) editor.setValue(newValue.GetValue());
             else editor.setValue('');
         });
     }

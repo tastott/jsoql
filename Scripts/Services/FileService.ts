@@ -2,7 +2,7 @@
 import utilities = require('../utilities')
 import path = require('path')
 import repo = require('./typedRepository')
-import d = require('../dictionary')
+import d = require('../models/dictionary')
 
 export interface FileSaveOptions {
     Extensions?: string[];

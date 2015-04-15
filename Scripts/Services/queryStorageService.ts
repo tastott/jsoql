@@ -1,7 +1,7 @@
 ﻿import Q = require('q')
 import fServ = require('./fileService')
 import repo = require('./typedRepository')
-import d = require('../dictionary')
+import d = require('../models/dictionary')
 
 export interface QuerySettings {
     BaseDirectory: string;

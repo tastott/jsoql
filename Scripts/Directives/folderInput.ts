@@ -1,7 +1,8 @@
 ﻿import $ = require('jquery')
+import m = require('../models/models')
 
 export interface FolderInputScope extends ng.IScope {
-    Folder: EditableText;
+    Folder: m.EditableText;
     browse(): void;
 }
 
@@ -15,12 +16,12 @@ export class FolderInputDirective implements ng.IDirective {
 
     public link($scope: FolderInputScope, element: JQuery, attributes: ng.IAttributes) {
 
-        $scope.Folder = $scope.Folder || { Value: '' };
+        $scope.Folder = $scope.Folder || new m.EditableText('');
 
         var fileInput = $(element).find("input[type='file']")
             .change(function (event) {
-                if (this.files && this.files.length) $scope.Folder.Value = this.files[0].path;
-                else $scope.Folder.Value = '';
+                if (this.files && this.files.length) $scope.Folder.SetValue(this.files[0].path);
+                else $scope.Folder.SetValue('');
             });
 
         $scope.browse = () => {
