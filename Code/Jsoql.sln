@@ -9,7 +9,7 @@ Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Jsoql.Console", "Jsoql.Cons
 EndProject
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Jsoql.Tests", "Jsoql.Tests\Jsoql.Tests.njsproj", "{9F8F6360-7CF0-4505-A9E4-C9008A2F9170}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jsoql.Gui", "Jsoql.Gui\Jsoql.Gui.csproj", "{55CE5ACE-0790-4AB3-B30F-F3FCE850E176}"
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Jsoql.Gui", "Jsoql.Gui\Jsoql.Gui.njsproj", "{58764359-FE3D-4D7C-9360-7BEB42D901D0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{9F8F6360-7CF0-4505-A9E4-C9008A2F9170}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F8F6360-7CF0-4505-A9E4-C9008A2F9170}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F8F6360-7CF0-4505-A9E4-C9008A2F9170}.Release|Any CPU.Build.0 = Release|Any CPU
-		{55CE5ACE-0790-4AB3-B30F-F3FCE850E176}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{55CE5ACE-0790-4AB3-B30F-F3FCE850E176}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{55CE5ACE-0790-4AB3-B30F-F3FCE850E176}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{55CE5ACE-0790-4AB3-B30F-F3FCE850E176}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58764359-FE3D-4D7C-9360-7BEB42D901D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58764359-FE3D-4D7C-9360-7BEB42D901D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58764359-FE3D-4D7C-9360-7BEB42D901D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58764359-FE3D-4D7C-9360-7BEB42D901D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
