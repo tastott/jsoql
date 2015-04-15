@@ -30,4 +30,9 @@ export class EditableText {
     IsEdited(): boolean {
         return this.isEdited;
     }
+
+    Value(newValue?: string) {
+        if (newValue != undefined) this.SetValue(newValue);
+        else return this.GetValue();
+    }
 }
