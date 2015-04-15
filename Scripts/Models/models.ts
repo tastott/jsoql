@@ -1,4 +1,12 @@
-﻿export interface QueryResult {
+﻿export interface Configuration {
+    Environment: Environment
+}
+
+export enum Environment {
+    Desktop
+}
+
+export interface QueryResult {
     Results?: any[];
     Errors?: string[];
 }
