@@ -7,38 +7,21 @@
                 </a>
             </li>
             <li ng-repeat="tab in Tabs" ng-class="{'active': tab == SelectedTab}">
-                <a class="btn-lg" ng-click="SelectTab(tab)" href="">{{tab.DisplayName()}}</a>
+                <a class="btn" ng-click="SelectTab(tab)" href="">{{tab.DisplayName()}}</a>
             </li>
         </ul>
     </div>
 </div>
-<div class="row">
+<div class="row row-margin">
     <div class="col-lg-6">
-        <div class="row">
-            <div class="col-lg-12">
-                <label class="control-label">Query</label>
-                <query-editor-ace value="SelectedTab.QueryText"></query-editor-ace>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-12">
-                <label>Base directory</label>
-                <folder-input value="SelectedTab.BaseDirectory"></folder-input>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-12">
-                <button ng-click="SelectedTab.Execute()" class="btn btn-default">
-                    <i class="fa fa-play"></i>
-                    Execute
-                </button>
-                <button class="btn btn-default" ng-click="SelectedTab.SaveQuery()">
-                    <i class="fa fa-save"></i>
-                </button>
-                <button class="btn btn-default" ng-click="Reload()">
-                    <i class="fa fa-refresh"></i>
-                </button>
-            </div>
+        <label class="control-label">Query</label>
+        <div class="btn-group">
+            <button ng-click="SelectedTab.Execute()" class="btn btn-default">
+                <i class="fa fa-play"></i>
+            </button>
+            <button class="btn btn-default" ng-click="SelectedTab.SaveQuery()">
+                <i class="fa fa-save"></i>
+            </button>
         </div>
     </div>
     <div class="col-lg-6">
@@ -46,6 +29,30 @@
         <button class="btn btn-default" ng-click="SelectedTab.SaveResults()" ng-disabled="!SelectedTab.SaveResultsEnabled()">
             <i class="fa fa-save"></i>
         </button>
+    </div>
+</div>
+<div class="row row-margin">
+    <div class="col-lg-6">
+        <div class="row row-margin">
+            <div class="col-lg-12">
+                <query-editor-ace value="SelectedTab.QueryText"></query-editor-ace>
+            </div>
+        </div>
+        <div class="row row-margin">
+            <div class="col-lg-12">
+                <label>Base directory</label>
+                <folder-input value="SelectedTab.BaseDirectory"></folder-input>
+            </div>
+        </div>
+        <div class="row row-margin">
+            <div class="col-lg-12">
+                <button class="btn btn-default" ng-click="Reload()">
+                    <i class="fa fa-refresh"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
         <query-result value="SelectedTab.QueryResult"></query-result>
     </div>
 </div>
