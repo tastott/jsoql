@@ -29,7 +29,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="Scripts\Controllers\appController.ts" />
-    <TypeScriptCompile Include="Scripts\dictionary.ts" />
+    <TypeScriptCompile Include="Scripts\Models\dictionary.ts" />
     <TypeScriptCompile Include="Scripts\Directives\queryEditor.ts" />
     <TypeScriptCompile Include="Scripts\Directives\folderInput.ts" />
     <TypeScriptCompile Include="Scripts\Directives\queryResult.ts" />

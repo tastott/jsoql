@@ -4,11 +4,9 @@ import Q = require('q')
 import qss = require('../Services/queryStorageService')
 import _fs = require('../Services/fileService')
 var Jsoql: JsoqlStatic = require('../../../Jsoql/jsoql') //TODO: Replace with npm module eventually
-
+import m = require('../models/models')
 
 class QueryTab {
-
-    private isUnsaved: boolean;
 
     constructor(private $scope: ng.IScope,
         private queryService: qss.QueryStorageService,
@@ -18,30 +16,33 @@ class QueryTab {
         QueryText?: string,
         BaseDirectory?: string) {
 
-        //this.isUnsaved = !StorageId;
         this.StorageId = StorageId || null;
-        this.QueryText = { Value: QueryText || '' };
+        this.QueryText = new m.EditableText(QueryText || '');
         this.QueryResult = {};
-        this.BaseDirectory = { Value: BaseDirectory || process.cwd() };
+        this.BaseDirectory = new m.EditableText(BaseDirectory || process.cwd());
        
     }
 
-    QueryText: EditableText;
-    QueryResult: QueryResult;
-    BaseDirectory: EditableText;
+    QueryText: m.EditableText;
+    QueryResult: m.QueryResult;
+    BaseDirectory: m.EditableText;
     StorageId: string;
 
+    IsEdited = () => {
+        return !this.StorageId || this.QueryText.IsEdited() || this.BaseDirectory.IsEdited();
+    }
+
     DisplayName = () => {
-        return this.name + (this.isUnsaved ? ' *' : '');
+        return this.name;// + (this.IsEdited() ? ' *' : ''); IsEdited logic not working yet
     }
 
     Execute = () => {
-        if (this.QueryText.Value) {
+        if (this.QueryText.GetValue()) {
             var context: JsoqlQueryContext = {
-                BaseDirectory: this.BaseDirectory.Value
+                BaseDirectory: this.BaseDirectory.GetValue()
             };
 
-            Jsoql.ExecuteQuery(this.QueryText.Value, context)
+            Jsoql.ExecuteQuery(this.QueryText.GetValue(), context)
                 .then(result => {
                 this.$scope.$apply(() => this.QueryResult = result); //TOOD: Better way to do this?
             });
@@ -52,9 +53,9 @@ class QueryTab {
         var query: qss.SavedQuery = {
             Id: this.StorageId,
             Name: this.name,
-            Query: this.QueryText.Value,
+            Query: this.QueryText.GetValue(),
             Settings: {
-                BaseDirectory: this.BaseDirectory.Value
+                BaseDirectory: this.BaseDirectory.GetValue()
             }
         };
 
