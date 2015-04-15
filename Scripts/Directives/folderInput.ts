@@ -16,12 +16,9 @@ export class FolderInputDirective implements ng.IDirective {
 
     public link($scope: FolderInputScope, element: JQuery, attributes: ng.IAttributes) {
 
-        $scope.Folder = $scope.Folder || new m.EditableText('');
-
         var fileInput = $(element).find("input[type='file']")
             .change(function (event) {
-                if (this.files && this.files.length) $scope.Folder.SetValue(this.files[0].path);
-                else $scope.Folder.SetValue('');
+                if ($scope.Folder) $scope.$apply(() => $scope.Folder.Value($(this).val()));
             });
 
         $scope.browse = () => {
