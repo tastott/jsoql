@@ -37,6 +37,7 @@
     <TypeScriptCompile Include="Scripts\Services\fileService.ts" />
     <TypeScriptCompile Include="Scripts\Services\queryStorageService.ts" />
     <TypeScriptCompile Include="Scripts\Services\typedRepository.ts" />
+    <TypeScriptCompile Include="Scripts\typings\ace\ace.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\angularjs\angular-route.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\angularjs\angular.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\jquery\jquery.d.ts" />

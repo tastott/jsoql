@@ -1,5 +1,8 @@
 
-.renderjson {background-color:#202020}
+.renderjson {
+    background-color:#202020;
+    border:none;
+}
 .renderjson a              { text-decoration: none; }
 
 .renderjson .disclosure    { 
@@ -42,6 +45,7 @@
 .renderjson .object.syntax { color: white; }
 .renderjson .array.syntax  { color: white; }
 
+
 .jsoql-keyword {
     color: blue;
     font-weight: bold;
@@ -55,4 +59,9 @@
 .tab-content > .tab-pane
 {
     display: block;
+}
+
+.row-margin{
+    margin-top: 4px;
+    margin-bottom: 4px;
 }

@@ -1,4 +1,6 @@
-﻿import $ = require('jquery')
+﻿///<reference path="../typings/ace/ace.d.ts"/>
+
+import $ = require('jquery')
 import m = require('../models/models')
 
 var keywords = [
@@ -63,11 +65,11 @@ export class AceQueryEditorDirective implements ng.IDirective {
         Query: '=value'
     }
 
-    public link($scope: QueryEditorScope, element: JQuery, attributes: ng.IAttributes) {
+    public link = ($scope: QueryEditorScope, element: JQuery, attributes: ng.IAttributes) => {
         var div = $('<div class="query-editor-ace"></div>')
             .appendTo(element)
 
-        var editor = brace.edit(div[0]);
+        var editor : AceAjax.Editor = brace.edit(div[0]);
         editor.setTheme('ace/theme/ambiance');
         editor.getSession().setMode('ace/mode/sql');
 
@@ -77,9 +79,33 @@ export class AceQueryEditorDirective implements ng.IDirective {
             if($scope.Query) $scope.Query.SetValue(editor.getValue());
         });
         $scope.$watch('Query',(newValue: m.EditableText) => {
-            if (newValue) editor.setValue(newValue.GetValue());
+            if (newValue) editor.setValue(newValue.GetValue(), -1); //Move cursor to start
             else editor.setValue('');
         });
+
+        this.ConfigureAutoComplete(editor);
     }
 
+    private ConfigureAutoComplete(editor: any) {
+        require('brace/ext/language_tools')
+        var langTools = brace.acequire("ace/ext/language_tools");
+        console.log(langTools);
+
+        editor.setOptions({ enableBasicAutocompletion: true });
+        // uses http://rhymebrain.com/api.html
+        var rhymeCompleter = {
+            getCompletions: function (editor, session, pos, prefix, callback) {
+                if (prefix.length === 0) { callback(null, []); return }
+                $.getJSON(
+                    "http://rhymebrain.com/talk?function=getRhymes&word=" + prefix,
+                    function (wordList) {
+                        // wordList like [{"word":"flow","freq":24,"score":300,"flags":"bc","syllables":"1"}]
+                        callback(null, wordList.map(function (ea) {
+                            return { name: ea.word, value: ea.word, score: ea.score, meta: "rhyme" }
+                        }));
+                    })
+            }
+        }
+        langTools.addCompleter(rhymeCompleter);
+    }
 }
