@@ -268,3 +268,14 @@ FakesAssemblies/
 /Code/Jsoql.Gui/Scripts/config.js
 /Code/Jsoql.Gui/Scripts/dictionary.js
 /Code/Jsoql.Gui/Scripts/Models/dictionary.js
+/Code/Jsoql.Gui/Scripts/Directives/folderInput.js.map
+/Code/Jsoql.Gui/Scripts/Directives/queryEditor.js.map
+/Code/Jsoql.Gui/Scripts/Directives/queryResult.js.map
+/Code/Jsoql.Gui/Scripts/Models/dictionary.js.map
+/Code/Jsoql.Gui/Scripts/Models/models.js.map
+/Code/Jsoql.Gui/Scripts/Services/fileService.js.map
+/Code/Jsoql.Gui/Scripts/Services/queryStorageService.js.map
+/Code/Jsoql.Gui/Scripts/Services/typedRepository.js.map
+/Code/Jsoql.Gui/Scripts/Tests/fileCompleterTests.js
+/Code/Jsoql.Gui/Scripts/Tests/fileCompleterTests.js.map
+/Code/Jsoql.Gui/Scripts/utilities.js.map
