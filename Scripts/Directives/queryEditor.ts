@@ -136,6 +136,9 @@ interface AceCompletion {
     value: string;
     score: number;
     meta: string;
+    completer?: {
+        insertMatch(editor, data): void;
+    }
 }
 
 interface AceCompleter {
@@ -146,10 +149,20 @@ interface AceCompleter {
         callback: (something: any, completions: AceCompletion[]) => void) : void;
 }
 
+export interface FudgedAceEditor extends AceAjax.Editor {
+    completer: {
+        completions: {
+            filterText: string;
+        }
+    }
+}
+
 //Desktop-only
 class FileUriCompleter implements AceCompleter{
 
-    static FileUriRegex = new RegExp("'file://([^']*)$", "i")
+    static UnclosedFileUriRegex = new RegExp("'file://([^']*)$", "i")
+    static FileUriPattern = "'file://[^']*'?"; //Warning: this could over-match?
+
     static ExtensionScores: d.Dictionary<number> = {
         '.json': 10,
         '.jsons': 20
@@ -171,7 +184,7 @@ class FileUriCompleter implements AceCompleter{
             else {
 
                 //Are we part-way through a file URI?
-                var fileUriMatch = lineToHere.match(FileUriCompleter.FileUriRegex);
+                var fileUriMatch = lineToHere.match(FileUriCompleter.UnclosedFileUriRegex);
                 if (!fileUriMatch) callback(null, []);
                 else {
                     var fileUriPrefix = fileUriMatch[1];
@@ -183,6 +196,20 @@ class FileUriCompleter implements AceCompleter{
                 }
             }
         }
+    }
+
+    public insertMatch = (editor: FudgedAceEditor, completion: AceCompletion) => {
+
+        var position = editor.selection.getRange().start;
+
+        //Find this partial file URI with a search (probably a better way to do this?)
+        var search = editor.find(FileUriCompleter.FileUriPattern, {
+            caseSensitive: false,
+            range: new Range(position.row, 0, position.row + 1, 0), //Search whole row
+            regExp: true,
+            //start: The starting Range or cursor position to begin the search
+        });
+        editor.replace("'file://" + completion.value + "'");
     }
 
     private GetFileUriSuggestions(baseDirectory: string, prefix: string): Q.Promise<AceCompletion[]> {
@@ -206,7 +233,8 @@ class FileUriCompleter implements AceCompleter{
                         name: path.basename(file),
                         value: file,
                         score: 1,
-                        meta: 'file'
+                        meta: 'file',
+                        completer: this
                     };
                 })
             );

@@ -82,3 +82,9 @@ export class DesktopFileService implements FileService {
     }
 
 }
+
+export class FilePathCompleter {
+    Complete(partial: string, full: string, baseDirectory?: string): string {
+        return full;
+    }
+}
