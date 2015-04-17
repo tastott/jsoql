@@ -26,6 +26,8 @@ declare module LazyJS {
 
         readFile(path: string, encoding? : string): FileStreamSequence;
         makeHttpRequest(path: string): StringLikeSequence;
+
+        createWrapper(initFunc: any): () => Sequence<any>;
     }
 
     interface ArrayLike<T> {

@@ -279,3 +279,5 @@ FakesAssemblies/
 /Code/Jsoql.Gui/Scripts/Tests/fileCompleterTests.js
 /Code/Jsoql.Gui/Scripts/Tests/fileCompleterTests.js.map
 /Code/Jsoql.Gui/Scripts/utilities.js.map
+/Code/Jsoql/Scripts/lazy-json.d.ts
+/Code/Jsoql/Scripts/lazy-json.js
