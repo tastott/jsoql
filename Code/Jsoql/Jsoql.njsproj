@@ -38,6 +38,7 @@
     <Content Include="package.json" />
     <Content Include="README.md" />
     <TypeScriptCompile Include="module.ts" />
+    <TypeScriptCompile Include="Scripts\lazy-json.ts" />
     <TypeScriptCompile Include="Scripts\parse.ts" />
     <TypeScriptCompile Include="Scripts\query.ts" />
     <TypeScriptCompile Include="Scripts\typings\lazyjs\lazyjs.d.ts" />
