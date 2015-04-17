@@ -20,15 +20,12 @@ export interface FileService {
     Save(data: string, id : string): Q.Promise<SavedFile>;
     SaveAs(data: string, options: FileSaveOptions): Q.Promise<SavedFile>;
     Download(data: string, filename: string): Q.Promise<boolean>;
-    GetMatches(globPattern: string): Q.Promise<string[]>;
 }
 
 export class DesktopFileService implements FileService {
 
     constructor(private savedQueryIdsRepo: repo.TypedRepository<d.Dictionary<string>>) {
     }
-
-    private globPromised: (pattern: string, options: any) => Q.Promise<string[]> = <any>Q.denodeify(require('glob'));
 
     private IdToFileEntry(id: string): SavedFile {
         return {
@@ -75,16 +72,5 @@ export class DesktopFileService implements FileService {
                 return Q.denodeify(require('fs').writeFile)(path, data)
                     .then(() => true);
             });
-    }
-
-    GetMatches(globPattern: string): Q.Promise<string[]> {
-        return this.globPromised(globPattern, null);
-    }
-
-}
-
-export class FilePathCompleter {
-    Complete(partial: string, full: string, baseDirectory?: string): string {
-        return full;
     }
 }

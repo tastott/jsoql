@@ -50,9 +50,6 @@
     <TypeScriptCompile Include="Scripts\Services\fileService.ts" />
     <TypeScriptCompile Include="Scripts\Services\queryStorageService.ts" />
     <TypeScriptCompile Include="Scripts\Services\TypedRepository.ts" />
-    <TypeScriptCompile Include="Scripts\Tests\filePathCompleterTests.ts">
-      <TestFramework>ExportRunner</TestFramework>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="Scripts\typings\ace\ace.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\angularjs\angular-route.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\angularjs\angular.d.ts" />
