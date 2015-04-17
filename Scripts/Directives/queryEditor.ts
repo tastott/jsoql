@@ -5,6 +5,7 @@ import m = require('../models/models')
 import Q = require('q')
 import fServ = require('../Services/fileService')
 import d = require('../models/dictionary')
+import path = require('path') //OK in browser?
 
 var keywords = [
     /select\s+/ig,
@@ -81,16 +82,16 @@ export class AceQueryEditorDirective  {
     }
 
     public static Factory() {
-        var directive = (fileService: fServ.FileService, configuration: m.Configuration) => {
-            return new AceQueryEditorDirective(fileService, configuration);
+        var directive = (configuration: m.Configuration) => {
+            return new AceQueryEditorDirective(configuration);
         };
 
-        directive['$inject'] = ['fileService', 'configuration'];
+        directive['$inject'] = ['configuration'];
 
         return directive;
     }
 
-    constructor(private fileService: fServ.FileService, private configuration : m.Configuration) {
+    constructor(private configuration : m.Configuration) {
         this.link = ($scope: QueryEditorScope, element: JQuery, attributes: ng.IAttributes) => {
             console.log('inside link')
 
@@ -124,7 +125,7 @@ export class AceQueryEditorDirective  {
 
         var completers: AceCompleter[] = [];
         if (this.configuration.Environment == m.Environment.Desktop) {
-            completers.push(new FileUriCompleter(this.fileService, () => $scope.BaseDirectory.Value()));
+            completers.push(new FileUriCompleter(() => $scope.BaseDirectory.Value()));
         }
 
         completers.forEach(c => langTools.addCompleter(c));
@@ -164,12 +165,11 @@ class FileUriCompleter implements AceCompleter{
     static FileUriPattern = "'file://[^']*'?"; //Warning: this could over-match?
 
     static ExtensionScores: d.Dictionary<number> = {
-        '.json': 10,
-        '.jsons': 20
+        '.json': 100,
+        '.jsons': 101
     }
 
-    constructor(private fileService: fServ.FileService,
-        private getBaseDirectory: () => string) {
+    constructor(private getBaseDirectory: () => string) {
     }
 
     getCompletions(editor: AceAjax.Editor, session: AceAjax.IEditSession, pos: AceAjax.Position, prefix, callback) {
@@ -203,37 +203,51 @@ class FileUriCompleter implements AceCompleter{
         var position = editor.selection.getRange().start;
 
         //Find this partial file URI with a search (probably a better way to do this?)
-        var search = editor.find(FileUriCompleter.FileUriPattern, {
+        var search : AceAjax.Range = editor.find(FileUriCompleter.FileUriPattern, {
             caseSensitive: false,
             range: new Range(position.row, 0, position.row + 1, 0), //Search whole row
             regExp: true,
-            //start: The starting Range or cursor position to begin the search
+            start: new Range(position.row, 0,position.row, 0)
         });
         editor.replace("'file://" + completion.value + "'");
+
+        if (!search)  throw new Error('Unable to find file URI to replace');
+
+        var selectionEnd = editor.selection.getRange().end;
+        var newCursorPos: AceAjax.Position;
+        //If completion is a file, move cursor outside quotes
+        if (path.extname(completion.value)) newCursorPos = { row: selectionEnd.row, column: selectionEnd.column };
+        //Otherwise keep cursor inside quotes
+        else newCursorPos = { row: selectionEnd.row, column: selectionEnd.column - 1 };
+
+        editor.selection.setRange(new Range(newCursorPos.row, newCursorPos.column, newCursorPos.row, newCursorPos.column), false);
+
     }
+
+
+    private globPromised: (pattern: string, options: any) => Q.Promise<string[]> = <any>Q.denodeify(require('glob'));
 
     private GetFileUriSuggestions(baseDirectory: string, prefix: string): Q.Promise<AceCompletion[]> {
 
-        var path = require('path');
-
-        var pathPrefix = path.isAbsolute(prefix) || !baseDirectory
-            ? prefix
-            : baseDirectory + '\\' + prefix;
+        var pattern = (path.isAbsolute(prefix) || !baseDirectory)
+            ? prefix + '*'
+            : baseDirectory + '\\' + prefix + '*';
         
-        var pattern = pathPrefix + '*'
-
-        return this.fileService.GetMatches(pattern)
+        return this.globPromised(pattern, null)
             .then(matches =>
                 matches.map(file => {
 
-                    var score = FileUriCompleter.ExtensionScores[path.extname(file).toLowerCase()] || 1;
-                    if (pathPrefix) file = path.relative(pathPrefix, file);
+                    var ext = path.extname(file).toLowerCase();
+                    var score = FileUriCompleter.ExtensionScores[ext] || 99;
+
+                    if (baseDirectory) file = path.relative(baseDirectory, file);
+                    if (!ext) file += '\\'; //Directory
 
                     return {
                         name: path.basename(file),
                         value: file,
-                        score: 1,
-                        meta: 'file',
+                        score: score,
+                        meta: ext ? 'file' : 'folder',
                         completer: this
                     };
                 })
