@@ -10,7 +10,9 @@ var Jsoql: JsoqlStatic = require('../Jsoql/jsoql');
 export function FromRelativeFileWithNoSpecifiedBaseDirectory() {
     var jsoql = "SELECT Order.Id FROM 'file://Data/orders.jsons'";
     return Jsoql.ExecuteQuery(jsoql)
-        .then(result => assert.equal(result.Results.length, 12));
+        .then(result => {
+            setTimeout(() => assert.equal(result.Results.length, 20));
+        });
 }
 
 export function FromRelativeFileWithSpecifiedBaseDirectory() {
@@ -18,7 +20,9 @@ export function FromRelativeFileWithSpecifiedBaseDirectory() {
 
     var jsoql = "SELECT Order.Id FROM 'file://orders.jsons'";
     return Jsoql.ExecuteQuery(jsoql, { BaseDirectory: baseDirectory })
-        .then(result => assert.equal(result.Results.length, 12));
+        .then(result => {
+            setTimeout(() => assert.equal(result.Results.length, 20));
+        });
 }
 
 export function FromAbsoluteFile() {
@@ -26,5 +30,7 @@ export function FromAbsoluteFile() {
    
     var jsoql = "SELECT Order.Id FROM 'file://" + absolutePath + "'";
     return Jsoql.ExecuteQuery(jsoql)
-        .then(result => assert.equal(result.Results.length, 12));
+        .then(result => {
+            setTimeout(() => assert.equal(result.Results.length, 20));
+        });
 }

@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "clone": "^1.0.2",
+    "csv-string": "^2.2.5",
     "lazy.js": "^0.4.0",
     "q": "^1.2.0"
   },

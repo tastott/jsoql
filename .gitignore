@@ -283,3 +283,5 @@ FakesAssemblies/
 /Code/Jsoql/Scripts/lazy-json.js
 /Code/Jsoql.Tests/lazyJsonTests.js
 /Code/Jsoql.Tests/lazyJsonTests.js.map
+/Code/Jsoql.Tests/fromCsvFileTests.js
+/Code/Jsoql.Tests/fromCsvFileTests.js.map
