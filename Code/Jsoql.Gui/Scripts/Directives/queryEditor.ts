@@ -165,6 +165,7 @@ class FileUriCompleter implements AceCompleter{
     static FileUriPattern = "'file://[^']*'?"; //Warning: this could over-match?
 
     static ExtensionScores: d.Dictionary<number> = {
+        '.csv': 99,
         '.json': 100,
         '.jsons': 101
     }
