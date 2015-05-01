@@ -1,6 +1,39 @@
 ///<reference path="typings/node/node.d.ts"/>
 var Jsoql;
 (function (Jsoql) {
+    var Parse;
+    (function (_Parse) {
+        var parser = require('./jsoql-parser').parser;
+        function Parse(source) {
+            return parser.parse(source);
+        }
+        _Parse.Parse = Parse;
+    })(Parse = Jsoql.Parse || (Jsoql.Parse = {}));
+})(Jsoql || (Jsoql = {}));
+var Jsoql;
+(function (Jsoql) {
+    var fs = require('fs');
+    var Utilities;
+    (function (Utilities) {
+        function IsArray(value) {
+            return Object.prototype.toString.call(value) === '[object Array]';
+        }
+        Utilities.IsArray = IsArray;
+        function ReadFirstLineSync(filepath, maxChars) {
+            if (maxChars === void 0) { maxChars = 1024; }
+            if (maxChars > 1024)
+                throw new Error('Maximum number of chars for first line must be 1024 or less');
+            var buffer = new Buffer(1024);
+            var fd = fs.openSync(filepath, 'r');
+            var bytesRead = fs.readSync(fd, buffer, 0, maxChars, 0);
+            return buffer.toString('utf8').split(/\r?\n/)[0];
+        }
+        Utilities.ReadFirstLineSync = ReadFirstLineSync;
+    })(Utilities = Jsoql.Utilities || (Jsoql.Utilities = {}));
+})(Jsoql || (Jsoql = {}));
+///<reference path="typings/node/node.d.ts"/>
+var Jsoql;
+(function (Jsoql) {
     var DataSources;
     (function (DataSources) {
         var fs = require('fs');
@@ -84,54 +117,6 @@ var Jsoql;
         })();
         DataSources.VariableDataSource = VariableDataSource;
     })(DataSources = Jsoql.DataSources || (Jsoql.DataSources = {}));
-})(Jsoql || (Jsoql = {}));
-var _this = this;
-var lazy = require('lazy.js');
-var factory = lazy.createWrapper(function (eventSource) {
-    var sequence = _this;
-    eventSource.handleEvent(function (data) {
-        sequence.emit(data);
-    });
-});
-var Jsoql;
-(function (Jsoql) {
-    var Lazy;
-    (function (Lazy) {
-        Lazy.lazyJsonFile = factory;
-    })(Lazy = Jsoql.Lazy || (Jsoql.Lazy = {}));
-})(Jsoql || (Jsoql = {}));
-///<reference path="typings/node/node.d.ts"/>
-var Jsoql;
-(function (Jsoql) {
-    var Parse;
-    (function (_Parse) {
-        var parser = require('./jsoql-parser').parser;
-        function Parse(source) {
-            return parser.parse(source);
-        }
-        _Parse.Parse = Parse;
-    })(Parse = Jsoql.Parse || (Jsoql.Parse = {}));
-})(Jsoql || (Jsoql = {}));
-var Jsoql;
-(function (Jsoql) {
-    var fs = require('fs');
-    var Utilities;
-    (function (Utilities) {
-        function IsArray(value) {
-            return Object.prototype.toString.call(value) === '[object Array]';
-        }
-        Utilities.IsArray = IsArray;
-        function ReadFirstLineSync(filepath, maxChars) {
-            if (maxChars === void 0) { maxChars = 1024; }
-            if (maxChars > 1024)
-                throw new Error('Maximum number of chars for first line must be 1024 or less');
-            var buffer = new Buffer(1024);
-            var fd = fs.openSync(filepath, 'r');
-            var bytesRead = fs.readSync(fd, buffer, 0, maxChars, 0);
-            return buffer.toString('utf8').split(/\r?\n/)[0];
-        }
-        Utilities.ReadFirstLineSync = ReadFirstLineSync;
-    })(Utilities = Jsoql.Utilities || (Jsoql.Utilities = {}));
 })(Jsoql || (Jsoql = {}));
 ///<reference path="utilities.ts" />
 ///<reference path="typings/node/node.d.ts"/>
@@ -480,22 +465,6 @@ var Jsoql;
         Query.JsoqlQuery = JsoqlQuery;
     })(Query = Jsoql.Query || (Jsoql.Query = {}));
 })(Jsoql || (Jsoql = {}));
-///<reference path="typings/node/node.d.ts"/>
-var Jsoql;
-(function (Jsoql) {
-    var QueryString;
-    (function (QueryString) {
-        var lazy = require('lazy.js');
-        function Parse(value) {
-            if (!value)
-                return {};
-            var pairs = value.split('&');
-            return lazy(pairs).map(function (pair) { return pair.split('='); }).toObject();
-        }
-        QueryString.Parse = Parse;
-    })(QueryString = Jsoql.QueryString || (Jsoql.QueryString = {}));
-})(Jsoql || (Jsoql = {}));
-//SELECT Thing.*.Something
 ///<reference path="Scripts/parse.ts" />
 ///<reference path="Scripts/query.ts" />
 var Jsoql;
@@ -512,3 +481,34 @@ var Jsoql;
     Jsoql.ExecuteQuery = ExecuteQuery;
 })(Jsoql || (Jsoql = {}));
 module.exports = Jsoql;
+var _this = this;
+var lazy = require('lazy.js');
+var factory = lazy.createWrapper(function (eventSource) {
+    var sequence = _this;
+    eventSource.handleEvent(function (data) {
+        sequence.emit(data);
+    });
+});
+var Jsoql;
+(function (Jsoql) {
+    var Lazy;
+    (function (Lazy) {
+        Lazy.lazyJsonFile = factory;
+    })(Lazy = Jsoql.Lazy || (Jsoql.Lazy = {}));
+})(Jsoql || (Jsoql = {}));
+///<reference path="typings/node/node.d.ts"/>
+var Jsoql;
+(function (Jsoql) {
+    var QueryString;
+    (function (QueryString) {
+        var lazy = require('lazy.js');
+        function Parse(value) {
+            if (!value)
+                return {};
+            var pairs = value.split('&');
+            return lazy(pairs).map(function (pair) { return pair.split('='); }).toObject();
+        }
+        QueryString.Parse = Parse;
+    })(QueryString = Jsoql.QueryString || (Jsoql.QueryString = {}));
+})(Jsoql || (Jsoql = {}));
+//SELECT Thing.*.Something
