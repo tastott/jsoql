@@ -6,60 +6,18 @@
 module Jsoql {
     export module Query {
 
-        var fs = require('fs')
+      
         var lazy: LazyJS.LazyStatic = require('lazy.js')
         var Q = require('q')
         var clone = require('clone')
-        var path = require('path')
+      
 
         export interface Group {
             Key: any;
             Items: any[];
         }
 
-        interface DataSource {
-            Get(value: string, context : QueryContext): LazyJS.Sequence<any>;
-        }
-
-        class FileDataSource implements DataSource {
-            Get(value: string, context: QueryContext): LazyJS.Sequence<any> {
-
-                var fullPath = path.isAbsolute(value)
-                    ? value
-                    : path.join(context.BaseDirectory, value);
-
-                if (!fs.existsSync(fullPath)) {
-                    throw new Error('File not found: ' + fullPath);
-                }
-                else {
-                    var seq = lazy.readFile(fullPath, 'utf8')
-                        .split(/\r?\n/)
-                        .map(line => {
-                        //line = '{ "name": "banana", "colour": "yellow", "isTasty": true }';
-                        try {
-                            return JSON.parse(line);
-                        }
-                        catch (err) {
-                            throw 'Failed to parse line: ' + line;
-                        }
-                    });
-                    return seq;
-                }
-
-            }
-        }
-
-        class VariableDataSource implements DataSource {
-            Get(value: string, context: QueryContext): LazyJS.Sequence<any> {
-
-                if (!context.Data || !context.Data[value]) {
-                    console.log(context);
-                    throw new Error("Target variable not found in context: '" + value + "'");
-                }
-
-                return lazy(context.Data[value]);
-            }
-        }
+        
 
         interface FunctionMappings {
             [key: string]: (items: any[]) => any;
@@ -96,9 +54,9 @@ module Jsoql {
         export class JsoqlQuery {
 
             private queryContext: QueryContext
-            private static dataSources: { [scheme: string]: DataSource } = {
-                "var": new VariableDataSource(),
-                "file": new FileDataSource()
+            private static dataSources: { [scheme: string]: DataSources.DataSource } = {
+                "var": new DataSources.VariableDataSource(),
+                "file": new DataSources.FileDataSource()
             };
 
             constructor(private stmt: Parse.Statement,
@@ -230,16 +188,17 @@ module Jsoql {
 
             private GetSequence(target: string): LazyJS.Sequence<any> {
 
-                var fromTargetRegex = new RegExp('^([A-Za-z]+)://(.+)$', 'i');
+                var fromTargetRegex = new RegExp('^([A-Za-z]+)://([^?]+)(?:\\?(.+))?$', 'i');
                 var match = target.match(fromTargetRegex);
 
                 if (!match) throw new Error("Invalid target for from clause: '" + target + "'");
 
                 var scheme = match[1].toLowerCase();
+                var parameters = match[3] ? QueryString.Parse(match[3]) : {};
                 var dataSource = JsoqlQuery.dataSources[scheme];
                 if (!dataSource) throw new Error("Invalid scheme for from clause target: '" + scheme + "'");
 
-                return dataSource.Get(match[2], this.queryContext);
+                return dataSource.Get(match[2], parameters, this.queryContext);
             }
 
             private From(fromClause: any): LazyJS.Sequence<any> {
@@ -460,7 +419,16 @@ module Jsoql {
                 var arrayPromise: any = seq.toArray();
 
                 if (Utilities.IsArray(arrayPromise)) return Q(arrayPromise);
-                else return arrayPromise;
+                else {
+                    var deferred = Q.defer();
+
+                    arrayPromise.then(
+                        result => deferred.resolve(result),
+                        error => deferred.reject(error)
+                    );
+
+                    return deferred.promise;
+                }
             }
         }
     }

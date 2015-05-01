@@ -6,14 +6,14 @@ var Jsoql : JsoqlStatic = require('../Jsoql/jsoql') //Bit of a workaround to spe
 //var jsoql = "SELECT c.CompanyName AS Name, SUM(o.OrderDetails[0].Quantity) AS TotalOrderQuantity FROM './data/orders.jsons' AS o JOIN './data/customers.jsons' AS c ON o.Order.CustomerId = c.Id GROUP BY c.CompanyName";
 //var jql = "SELECT COUNT() FROM 'Test'";
 //var jql = "SELECT Order.CustomerId, SUM(OrderDetails[0].Quantity) AS TotalOrderQuantity FROM './data/orders.jsons' GROUP BY Order.CustomerId";
-var jsoql = "SELECT * FROM 'file://data/orders.jsons'";
+var jsoql = "SELECT * FROM 'file://data/customers.csv'";
 
 
 console.log('\n\nQuery:');
 console.log(jsoql);
 console.log('\n\nResults:');
 
-Jsoql.ExecuteQuery(jsoql)
+Jsoql.ExecuteQuery(jsoql, { Data: { Blah: [] } })
     .then(result => {
         var results = result.Results;
         if (results.length == 0) console.log('Query returned no results');
@@ -23,7 +23,11 @@ Jsoql.ExecuteQuery(jsoql)
             });
         }
     })
-    
+    .fail(error => {
+        console.log(error);
+    });
+
+
 
 process.stdin.read();
 

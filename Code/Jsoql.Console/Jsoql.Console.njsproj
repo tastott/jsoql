@@ -34,6 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
+    <Content Include="Data\customers.csv" />
     <Content Include="Data\customers.jsons" />
     <Content Include="Data\example.jsons" />
     <Content Include="Data\orders.json" />

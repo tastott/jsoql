@@ -16,6 +16,108 @@ var Jsoql;
 ///<reference path="typings/node/node.d.ts"/>
 var Jsoql;
 (function (Jsoql) {
+    var DataSources;
+    (function (DataSources) {
+        var fs = require('fs');
+        var path = require('path');
+        var csv = require('csv-string');
+        var lazy = require('lazy.js');
+        var FileDataSource = (function () {
+            function FileDataSource() {
+            }
+            FileDataSource.prototype.GetLineMapper = function (filePath, parameters) {
+                var extension = path.extname(filePath);
+                //csv
+                if (extension.toLowerCase() == '.csv' || (parameters.format && parameters.format.toLowerCase() == 'csv')) {
+                    var headers;
+                    var skip;
+                    //Explicit headers
+                    if (parameters.headers) {
+                        headers = parameters.headers.split(',');
+                        skip = 0;
+                    }
+                    else {
+                        var firstLine = Jsoql.Utilities.ReadFirstLineSync(filePath);
+                        headers = csv.parse(firstLine)[0];
+                        skip = 1;
+                    }
+                    //Use explicit skip if provided
+                    if (parameters.skip) {
+                        skip = parseInt(parameters.skip);
+                        if (isNaN(skip))
+                            throw new Error("Invalid value for 'skip': '" + parameters.skip + "'");
+                    }
+                    return {
+                        Mapper: function (line) {
+                            var values = csv.parse(line)[0];
+                            return lazy(headers).zip(values).toObject();
+                        },
+                        Skip: skip
+                    };
+                }
+                else {
+                    return {
+                        Mapper: function (line) {
+                            try {
+                                return JSON.parse(line);
+                            }
+                            catch (err) {
+                                throw 'Failed to parse line: ' + line;
+                            }
+                        },
+                        Skip: 0
+                    };
+                }
+            };
+            FileDataSource.prototype.Get = function (value, parameters, context) {
+                var fullPath = path.isAbsolute(value) ? value : path.join(context.BaseDirectory, value);
+                if (!fs.existsSync(fullPath)) {
+                    throw new Error('File not found: ' + fullPath);
+                }
+                else {
+                    var lineHandler = this.GetLineMapper(fullPath, parameters);
+                    var seq = lazy.readFile(fullPath, 'utf8').split(/\r?\n/).map(lineHandler.Mapper);
+                    if (lineHandler.Skip)
+                        seq = seq.rest(lineHandler.Skip);
+                    return seq;
+                }
+            };
+            return FileDataSource;
+        })();
+        DataSources.FileDataSource = FileDataSource;
+        var VariableDataSource = (function () {
+            function VariableDataSource() {
+            }
+            VariableDataSource.prototype.Get = function (value, parameters, context) {
+                if (!context.Data || !context.Data[value]) {
+                    console.log(context);
+                    throw new Error("Target variable not found in context: '" + value + "'");
+                }
+                return lazy(context.Data[value]);
+            };
+            return VariableDataSource;
+        })();
+        DataSources.VariableDataSource = VariableDataSource;
+    })(DataSources = Jsoql.DataSources || (Jsoql.DataSources = {}));
+})(Jsoql || (Jsoql = {}));
+var _this = this;
+var lazy = require('lazy.js');
+var factory = lazy.createWrapper(function (eventSource) {
+    var sequence = _this;
+    eventSource.handleEvent(function (data) {
+        sequence.emit(data);
+    });
+});
+var Jsoql;
+(function (Jsoql) {
+    var Lazy;
+    (function (Lazy) {
+        Lazy.lazyJsonFile = factory;
+    })(Lazy = Jsoql.Lazy || (Jsoql.Lazy = {}));
+})(Jsoql || (Jsoql = {}));
+///<reference path="typings/node/node.d.ts"/>
+var Jsoql;
+(function (Jsoql) {
     var Parse;
     (function (_Parse) {
         var parser = require('./jsoql-parser').parser;
@@ -27,12 +129,23 @@ var Jsoql;
 })(Jsoql || (Jsoql = {}));
 var Jsoql;
 (function (Jsoql) {
+    var fs = require('fs');
     var Utilities;
     (function (Utilities) {
         function IsArray(value) {
             return Object.prototype.toString.call(value) === '[object Array]';
         }
         Utilities.IsArray = IsArray;
+        function ReadFirstLineSync(filepath, maxChars) {
+            if (maxChars === void 0) { maxChars = 1024; }
+            if (maxChars > 1024)
+                throw new Error('Maximum number of chars for first line must be 1024 or less');
+            var buffer = new Buffer(1024);
+            var fd = fs.openSync(filepath, 'r');
+            var bytesRead = fs.readSync(fd, buffer, 0, maxChars, 0);
+            return buffer.toString('utf8').split(/\r?\n/)[0];
+        }
+        Utilities.ReadFirstLineSync = ReadFirstLineSync;
     })(Utilities = Jsoql.Utilities || (Jsoql.Utilities = {}));
 })(Jsoql || (Jsoql = {}));
 ///<reference path="utilities.ts" />
@@ -43,45 +156,9 @@ var Jsoql;
 (function (Jsoql) {
     var Query;
     (function (Query) {
-        var fs = require('fs');
         var lazy = require('lazy.js');
         var Q = require('q');
         var clone = require('clone');
-        var path = require('path');
-        var FileDataSource = (function () {
-            function FileDataSource() {
-            }
-            FileDataSource.prototype.Get = function (value, context) {
-                var fullPath = path.isAbsolute(value) ? value : path.join(context.BaseDirectory, value);
-                if (!fs.existsSync(fullPath)) {
-                    throw new Error('File not found: ' + fullPath);
-                }
-                else {
-                    var seq = lazy.readFile(fullPath, 'utf8').split(/\r?\n/).map(function (line) {
-                        try {
-                            return JSON.parse(line);
-                        }
-                        catch (err) {
-                            throw 'Failed to parse line: ' + line;
-                        }
-                    });
-                    return seq;
-                }
-            };
-            return FileDataSource;
-        })();
-        var VariableDataSource = (function () {
-            function VariableDataSource() {
-            }
-            VariableDataSource.prototype.Get = function (value, context) {
-                if (!context.Data || !context.Data[value]) {
-                    console.log(context);
-                    throw new Error("Target variable not found in context: '" + value + "'");
-                }
-                return lazy(context.Data[value]);
-            };
-            return VariableDataSource;
-        })();
         var operators = {
             '=': function (args) { return args[0] == args[1]; },
             '!=': function (args) { return args[0] !== args[1]; },
@@ -235,15 +312,16 @@ var Jsoql;
                 else return ['', expression];*/
             };
             JsoqlQuery.prototype.GetSequence = function (target) {
-                var fromTargetRegex = new RegExp('^([A-Za-z]+)://(.+)$', 'i');
+                var fromTargetRegex = new RegExp('^([A-Za-z]+)://([^?]+)(?:\\?(.+))?$', 'i');
                 var match = target.match(fromTargetRegex);
                 if (!match)
                     throw new Error("Invalid target for from clause: '" + target + "'");
                 var scheme = match[1].toLowerCase();
+                var parameters = match[3] ? Jsoql.QueryString.Parse(match[3]) : {};
                 var dataSource = JsoqlQuery.dataSources[scheme];
                 if (!dataSource)
                     throw new Error("Invalid scheme for from clause target: '" + scheme + "'");
-                return dataSource.Get(match[2], this.queryContext);
+                return dataSource.Get(match[2], parameters, this.queryContext);
             };
             JsoqlQuery.prototype.From = function (fromClause) {
                 var _this = this;
@@ -402,17 +480,35 @@ var Jsoql;
                 var arrayPromise = seq.toArray();
                 if (Jsoql.Utilities.IsArray(arrayPromise))
                     return Q(arrayPromise);
-                else
-                    return arrayPromise;
+                else {
+                    var deferred = Q.defer();
+                    arrayPromise.then(function (result) { return deferred.resolve(result); }, function (error) { return deferred.reject(error); });
+                    return deferred.promise;
+                }
             };
             JsoqlQuery.dataSources = {
-                "var": new VariableDataSource(),
-                "file": new FileDataSource()
+                "var": new Jsoql.DataSources.VariableDataSource(),
+                "file": new Jsoql.DataSources.FileDataSource()
             };
             return JsoqlQuery;
         })();
         Query.JsoqlQuery = JsoqlQuery;
     })(Query = Jsoql.Query || (Jsoql.Query = {}));
+})(Jsoql || (Jsoql = {}));
+///<reference path="typings/node/node.d.ts"/>
+var Jsoql;
+(function (Jsoql) {
+    var QueryString;
+    (function (QueryString) {
+        var lazy = require('lazy.js');
+        function Parse(value) {
+            if (!value)
+                return {};
+            var pairs = value.split('&');
+            return lazy(pairs).map(function (pair) { return pair.split('='); }).toObject();
+        }
+        QueryString.Parse = Parse;
+    })(QueryString = Jsoql.QueryString || (Jsoql.QueryString = {}));
 })(Jsoql || (Jsoql = {}));
 //SELECT Thing.*.Something
 ///<reference path="Scripts/parse.ts" />

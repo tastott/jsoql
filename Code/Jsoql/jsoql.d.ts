@@ -9,6 +9,32 @@ declare module Jsoql {
     }
 }
 declare module Jsoql {
+    module DataSources {
+        interface DataSourceParameters {
+            format?: string;
+            headers?: string;
+            skip?: string;
+        }
+        interface DataSource {
+            Get(value: string, parameters: any, context: QueryContext): LazyJS.Sequence<any>;
+        }
+        class FileDataSource implements DataSource {
+            private GetLineMapper(filePath, parameters);
+            Get(value: string, parameters: DataSourceParameters, context: QueryContext): LazyJS.Sequence<any>;
+        }
+        class VariableDataSource implements DataSource {
+            Get(value: string, parameters: any, context: QueryContext): LazyJS.Sequence<any>;
+        }
+    }
+}
+declare var lazy: LazyJS.LazyStatic;
+declare var factory: () => LazyJS.Sequence<any>;
+declare module Jsoql {
+    module Lazy {
+        var lazyJsonFile: (file: string) => LazyJS.Sequence<any>;
+    }
+}
+declare module Jsoql {
     module Parse {
         function Parse(source: string): Statement;
         interface Selectable {
@@ -35,6 +61,7 @@ declare module Jsoql {
 declare module Jsoql {
     module Utilities {
         function IsArray(value: any): boolean;
+        function ReadFirstLineSync(filepath: string, maxChars?: number): string;
     }
 }
 declare module Jsoql {
@@ -68,6 +95,11 @@ declare module Jsoql {
             private static IsAggregate(expression);
             private static SequenceToArray<T>(seq);
         }
+    }
+}
+declare module Jsoql {
+    module QueryString {
+        function Parse(value: string): any;
     }
 }
 declare module Jsoql {
