@@ -1,13 +1,6 @@
 /// <reference path="Scripts/typings/node/node.d.ts" />
 /// <reference path="Scripts/typings/lazyjs/lazyjs.d.ts" />
 /// <reference path="Scripts/typings/q/Q.d.ts" />
-declare var lazy: LazyJS.LazyStatic;
-declare var factory: () => LazyJS.Sequence<any>;
-declare module Jsoql {
-    module Lazy {
-        var lazyJsonFile: (file: string) => LazyJS.Sequence<any>;
-    }
-}
 declare module Jsoql {
     module DataSources {
         interface DataSourceParameters {

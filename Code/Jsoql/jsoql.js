@@ -1,18 +1,3 @@
-var _this = this;
-var lazy = require('lazy.js');
-var factory = lazy.createWrapper(function (eventSource) {
-    var sequence = _this;
-    eventSource.handleEvent(function (data) {
-        sequence.emit(data);
-    });
-});
-var Jsoql;
-(function (Jsoql) {
-    var Lazy;
-    (function (Lazy) {
-        Lazy.lazyJsonFile = factory;
-    })(Lazy = Jsoql.Lazy || (Jsoql.Lazy = {}));
-})(Jsoql || (Jsoql = {}));
 ///<reference path="typings/node/node.d.ts"/>
 var Jsoql;
 (function (Jsoql) {
@@ -152,6 +137,7 @@ var Jsoql;
 ///<reference path="typings/node/node.d.ts"/>
 ///<reference path="typings/lazyjs/lazyjs.d.ts"/>
 ///<reference path="typings/q/Q.d.ts"/>
+///<reference path="datasource.ts" />
 var Jsoql;
 (function (Jsoql) {
     var Query;
@@ -433,7 +419,7 @@ var Jsoql;
                         seq = seq.sortBy(function (item) { return _this.Evaluate(orderByExp.Expression, item); }, !orderByExp.Asc);
                     });
                     //Select
-                    seq = seq.map(function (item) {
+                    seq = seq.first(this.stmt.Select.Limit || Number.MAX_VALUE).map(function (item) {
                         return lazy(_this.stmt.Select.SelectList).map(function (selectable) { return _this.EvaluateAliased(selectable.Expression, item).map(function (aliasValue) {
                             return {
                                 Alias: selectable.Alias || aliasValue.Alias,
@@ -441,7 +427,6 @@ var Jsoql;
                             };
                         }); }).flatten().map(function (aliasValue) { return [aliasValue.Alias, aliasValue.Value]; }).toObject();
                     });
-                    //.first(this.stmt.Select.Limit || Number.MAX_VALUE);
                     return JsoqlQuery.SequenceToArray(seq);
                 }
             };

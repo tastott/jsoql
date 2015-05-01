@@ -2,6 +2,7 @@
 ///<reference path="typings/node/node.d.ts"/>
 ///<reference path="typings/lazyjs/lazyjs.d.ts"/>
 ///<reference path="typings/q/Q.d.ts"/>
+///<reference path="datasource.ts" />
 
 module Jsoql {
     export module Query {
@@ -351,7 +352,9 @@ module Jsoql {
                     });
 
                     //Select
-                    seq = seq.map(item => {
+                    seq = seq
+                        .first(this.stmt.Select.Limit || Number.MAX_VALUE)
+                        .map(item => {
                         return lazy(this.stmt.Select.SelectList)
                             .map(selectable =>
                             this.EvaluateAliased(selectable.Expression, item)
@@ -366,7 +369,7 @@ module Jsoql {
                             .map((aliasValue: any) => [aliasValue.Alias, aliasValue.Value])
                             .toObject();
                     });
-                    //.first(this.stmt.Select.Limit || Number.MAX_VALUE);
+                
 
                     return JsoqlQuery.SequenceToArray(seq);
                 }
