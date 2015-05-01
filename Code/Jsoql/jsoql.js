@@ -1,3 +1,18 @@
+var _this = this;
+var lazy = require('lazy.js');
+var factory = lazy.createWrapper(function (eventSource) {
+    var sequence = _this;
+    eventSource.handleEvent(function (data) {
+        sequence.emit(data);
+    });
+});
+var Jsoql;
+(function (Jsoql) {
+    var Lazy;
+    (function (Lazy) {
+        Lazy.lazyJsonFile = factory;
+    })(Lazy = Jsoql.Lazy || (Jsoql.Lazy = {}));
+})(Jsoql || (Jsoql = {}));
 ///<reference path="typings/node/node.d.ts"/>
 var Jsoql;
 (function (Jsoql) {
@@ -315,20 +330,20 @@ var Jsoql;
                         (_this.stmt.OrderBy || []).forEach(function (orderByExp) {
                             groups = groups.sortBy(function (group) { return _this.EvaluateGroup(orderByExp.Expression, group); }, !orderByExp.Asc);
                         });
-                        return groups.map(function (group) { return lazy(_this.stmt.Select).map(function (selectable) { return [
+                        return groups.map(function (group) { return lazy(_this.stmt.Select.SelectList).map(function (selectable) { return [
                             selectable.Alias || _this.Key(selectable.Expression),
                             _this.EvaluateGroup(selectable.Expression, group)
-                        ]; }).toObject(); }).toArray();
+                        ]; }).toObject(); }).first(_this.stmt.Select.Limit || Number.MAX_VALUE).toArray();
                     });
                 }
-                else if (lazy(this.stmt.Select).some(function (selectable) { return JsoqlQuery.IsAggregate(selectable.Expression); })) {
+                else if (lazy(this.stmt.Select.SelectList).some(function (selectable) { return JsoqlQuery.IsAggregate(selectable.Expression); })) {
                     return JsoqlQuery.SequenceToArray(seq).then(function (items) {
                         var group = {
                             Key: null,
                             Items: items
                         };
                         return [
-                            lazy(_this.stmt.Select).map(function (selectable) { return [
+                            lazy(_this.stmt.Select.SelectList).map(function (selectable) { return [
                                 selectable.Alias || _this.Key(selectable.Expression),
                                 _this.EvaluateGroup(selectable.Expression, group)
                             ]; }).toObject()
@@ -341,13 +356,14 @@ var Jsoql;
                     });
                     //Select
                     seq = seq.map(function (item) {
-                        return lazy(_this.stmt.Select).map(function (selectable) { return _this.EvaluateAliased(selectable.Expression, item).map(function (aliasValue) {
+                        return lazy(_this.stmt.Select.SelectList).map(function (selectable) { return _this.EvaluateAliased(selectable.Expression, item).map(function (aliasValue) {
                             return {
                                 Alias: selectable.Alias || aliasValue.Alias,
                                 Value: aliasValue.Value
                             };
                         }); }).flatten().map(function (aliasValue) { return [aliasValue.Alias, aliasValue.Value]; }).toObject();
                     });
+                    //.first(this.stmt.Select.Limit || Number.MAX_VALUE);
                     return JsoqlQuery.SequenceToArray(seq);
                 }
             };
@@ -406,12 +422,7 @@ var Jsoql;
     var Q = require('Q');
     function ExecuteQuery(jsoql, context) {
         var statement;
-        try {
-            statement = Jsoql.Parse.Parse(jsoql);
-        }
-        catch (err) {
-            return Q({ Errors: [err] });
-        }
+        statement = Jsoql.Parse.Parse(jsoql);
         var query = new Jsoql.Query.JsoqlQuery(statement, context);
         return query.Execute().then(function (results) {
             return { Results: results };

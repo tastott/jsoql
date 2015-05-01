@@ -17,6 +17,7 @@
 \s*\!\=\s*          return '!='
 \s*\=\s*            return '='
 <<EOF>>             return 'EOF'
+SELECT\sTOP\s+      return 'SELECTTOP'
 SELECT\s+           return 'SELECT'
 \s+FROM\s+          return 'FROM'
 \s+WHERE\s+         return 'WHERE'
@@ -175,13 +176,20 @@ FromWhere
 		{ $$ = {From: $1, Where: $3}}
 	;
 
+SelectClause
+    : SELECTTOP Number SelectList
+        { $$ = { SelectList: $3, Limit: $2}}
+    | SELECT SelectList
+        { $$ = { SelectList: $2}}
+    ;
+
 Stmt
-    : SELECT SelectList FROM FromWhere
-        { $$ = { Select: $2, FromWhere: $4} }
-    | SELECT SelectList FROM FromWhere GROUPBY ExpressionList
-		{ $$ = { Select: $2, FromWhere: $4, GroupBy: $6}}
-	| SELECT SelectList FROM FromWhere GROUPBY ExpressionList ORDERBY OrderByList
-		{ $$ = { Select: $2, FromWhere: $4, GroupBy: $6, OrderBy: $8}}
-	| SELECT SelectList FROM FromWhere ORDERBY OrderByList
-		{ $$ = { Select: $2, FromWhere: $4, OrderBy: $6}}
+    : SelectClause FROM FromWhere
+        { $$ = { Select: $1, FromWhere: $3} }
+    | SelectClause FROM FromWhere GROUPBY ExpressionList
+		{ $$ = { Select: $1, FromWhere: $3, GroupBy: $5}}
+	| SelectClause FROM FromWhere GROUPBY ExpressionList ORDERBY OrderByList
+		{ $$ = { Select: $1, FromWhere: $3, GroupBy: $5, OrderBy: $7}}
+	| SelectClause FROM FromWhere ORDERBY OrderByList
+		{ $$ = { Select: $1, FromWhere: $3, OrderBy: $5}}
     ;

@@ -16,19 +16,15 @@ module Jsoql {
 
     export function ExecuteQuery(jsoql: string, context? : QueryContext): Q.Promise<QueryResult>  {
         var statement: Parse.Statement;
-        try {
-            statement = Parse.Parse(jsoql);
-        }
-        catch (err) {
-            return Q({ Errors: [err] });
-        }
+        statement = Parse.Parse(jsoql);
 
         var query = new Query.JsoqlQuery(statement, context);
 
         return query.Execute()
-            .then(results => {
+                .then(results => {
                 return { Results: results }
             });
+       
     }
 }
 

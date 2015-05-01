@@ -353,18 +353,19 @@ module Jsoql {
                             });
 
                             return groups.map(group =>
-                                lazy(this.stmt.Select)
+                                lazy(this.stmt.Select.SelectList)
                                     .map(selectable => [
                                     selectable.Alias || this.Key(selectable.Expression),
                                     this.EvaluateGroup(selectable.Expression, group)
                                 ])
                                     .toObject()
                                 )
+                                .first(this.stmt.Select.Limit || Number.MAX_VALUE)
                                 .toArray();
                         });
                 }
                 //Implicitly
-                else if (lazy(this.stmt.Select).some(selectable => JsoqlQuery.IsAggregate(selectable.Expression))) {
+                else if (lazy(this.stmt.Select.SelectList).some(selectable => JsoqlQuery.IsAggregate(selectable.Expression))) {
                     return JsoqlQuery.SequenceToArray(seq)
                         .then(items => {
                         var group: Group = {
@@ -373,7 +374,7 @@ module Jsoql {
                         };
 
                         return [
-                            lazy(this.stmt.Select)
+                            lazy(this.stmt.Select.SelectList)
                                 .map(selectable => [
                                 selectable.Alias || this.Key(selectable.Expression),
                                 this.EvaluateGroup(selectable.Expression, group)
@@ -392,20 +393,21 @@ module Jsoql {
 
                     //Select
                     seq = seq.map(item => {
-                        return lazy(this.stmt.Select)
+                        return lazy(this.stmt.Select.SelectList)
                             .map(selectable =>
-                                this.EvaluateAliased(selectable.Expression, item)
-                                    .map(aliasValue => {
-                                        return {
-                                            Alias: selectable.Alias || aliasValue.Alias,
-                                            Value: aliasValue.Value
-                                        };
-                                    })
+                            this.EvaluateAliased(selectable.Expression, item)
+                                .map(aliasValue => {
+                                return {
+                                    Alias: selectable.Alias || aliasValue.Alias,
+                                    Value: aliasValue.Value
+                                };
+                            })
                             )
                             .flatten()
-                            .map((aliasValue : any) => [aliasValue.Alias,  aliasValue.Value])
+                            .map((aliasValue: any) => [aliasValue.Alias, aliasValue.Value])
                             .toObject();
                     });
+                    //.first(this.stmt.Select.Limit || Number.MAX_VALUE);
 
                     return JsoqlQuery.SequenceToArray(seq);
                 }

@@ -13,18 +13,17 @@ console.log('\n\nQuery:');
 console.log(jsoql);
 console.log('\n\nResults:');
 
-Jsoql.ExecuteQuery(jsoql, {
-    Data: { Blah: [] }
-    })
+Jsoql.ExecuteQuery(jsoql)
     .then(result => {
-    var results = result.Results;
-    if (results.length == 0) console.log('Query returned no results');
-    else {
-        results.forEach(result => {
-            console.log(result);
-        });
-    }
-});
+        var results = result.Results;
+        if (results.length == 0) console.log('Query returned no results');
+        else {
+            results.forEach(result => {
+                console.log(result);
+            });
+        }
+    })
+    
 
 process.stdin.read();
 

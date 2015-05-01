@@ -15,7 +15,10 @@ module Jsoql {
         }
 
         export interface Statement {
-            Select: Selectable[];
+            Select: {
+                SelectList: Selectable[];
+                Limit: number;
+            }
             FromWhere: {
                 From: any;
                 Where: any;

@@ -151,3 +151,18 @@ export function SelectNestedStar() {
         setTimeout(() => assert.deepEqual(results, expected));
     });
 }
+
+export function SelectTopX() {
+    var data = [1, 2, 3, 4, 5, 6, 7, 8].map(n => {
+        return {
+            Value: n
+        };
+    });
+
+    var expected = data.slice(0, 3);
+
+    return testBase.ExecuteArrayQuery("SELECT TOP 3 Value FROM 'var://Test'", data)
+        .then(results => {
+        setTimeout(() => assert.deepEqual(results, expected));
+    });
+}
