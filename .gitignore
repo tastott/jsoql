@@ -299,3 +299,9 @@ FakesAssemblies/
 /Code/Jsoql/Scripts/validate.js
 /Code/Jsoql/module.d.ts
 /Code/Jsoql/module.js
+/Code/Jsoql/Scripts/datasource.js.map
+/Code/Jsoql/Scripts/lazy-json.js.map
+/Code/Jsoql/Scripts/models.js.map
+/Code/Jsoql/Scripts/query-string.js.map
+/Code/Jsoql/Scripts/validate.js.map
+/Code/Jsoql/app.d.ts

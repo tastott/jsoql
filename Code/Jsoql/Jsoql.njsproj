@@ -5,6 +5,7 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>Jsoql</Name>
     <RootNamespace>Jql</RootNamespace>
+    <ScriptArguments>-q "SELECT * FROM 'file://../Data/orders.jsons'"</ScriptArguments>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -13,7 +14,7 @@
     <ProjectGuid>66d5ffe0-e198-4c64-b126-d78be42a9192</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>Grammar\parser-build.js</StartupFile>
+    <StartupFile>app.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -22,10 +23,10 @@
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
     <ProjectView>ProjectFiles</ProjectView>
-    <TypeScriptSourceMap>False</TypeScriptSourceMap>
+    <TypeScriptSourceMap>True</TypeScriptSourceMap>
     <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>
     <EnableTypeScript>true</EnableTypeScript>
-    <StartWebBrowser>false</StartWebBrowser>
+    <StartWebBrowser>False</StartWebBrowser>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -37,6 +38,7 @@
     <Content Include="Grammar\jsoql.jison" />
     <Content Include="package.json" />
     <Content Include="README.md" />
+    <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="jsoql.ts" />
     <TypeScriptCompile Include="Scripts\datasource.ts" />
     <TypeScriptCompile Include="Scripts\lazy-json.ts" />

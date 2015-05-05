@@ -1,12 +1,16 @@
 ﻿import lazy = require('lazy.js')     
 import oboe = require('oboe')
- 
-var lazyJsonFileSequenceFactory = lazy.createWrapper(eventSource => {
+import fs = require('fs')
+
+var lazyJsonFileSequenceFactory = lazy.createWrapper(filepath => {
     var sequence = this;
 
-    eventSource.handleEvent(function (data) {
-        sequence.emit(data);
-    });
+    oboe(fs.createReadStream(filepath))
+        .on('node', '!',(items: any[]) => {
+            items.forEach(item => sequence.emit(item));
+        })
+        .start(() => { });
+    
 });
 
 export var lazyJsonFile: (file: string) => LazyJS.Sequence<any> = lazyJsonFileSequenceFactory;

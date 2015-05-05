@@ -49,7 +49,7 @@ export class JsoqlQuery {
     private queryContext: m.QueryContext
     private static dataSources: { [scheme: string]: ds.DataSource } = {
         "var": new ds.VariableDataSource(),
-        "file": new ds.FileDataSource()
+        "file": new ds.SmartFileDataSource()
     };
 
     constructor(private stmt: parse.Statement,
@@ -179,7 +179,7 @@ export class JsoqlQuery {
         else return ['', expression];*/
     }
 
-    private GetSequence(target: string): LazyJS.Sequence<any> {
+    private GetSequence(target: string): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
         var fromTargetRegex = new RegExp('^([A-Za-z]+)://([^?]+)(?:\\?(.+))?$', 'i');
         var match = target.match(fromTargetRegex);
@@ -194,7 +194,7 @@ export class JsoqlQuery {
         return dataSource.Get(match[2], parameters, this.queryContext);
     }
 
-    private From(fromClause: any): LazyJS.Sequence<any> {
+    private From(fromClause: any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
         var targets = this.CollectFromTargets(fromClause);
 
@@ -380,7 +380,7 @@ export class JsoqlQuery {
     }*/
 
 
-    private GroupBy(seq: LazyJS.Sequence<any>, expressions: any[]): Q.Promise<LazyJS.Sequence<Group>> {
+    private GroupBy(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, expressions: any[]): Q.Promise<LazyJS.Sequence<Group>> {
         var groupKey = (item: any) => {
             var object = lazy(expressions)
                 .map(exp => [this.Key(exp), this.Evaluate(exp, item)])
@@ -410,7 +410,7 @@ export class JsoqlQuery {
             && !!aggregateFunctions[expression.Call.toLowerCase()];
     }
 
-    private static SequenceToArray<T>(seq: LazyJS.Sequence<T>): Q.Promise<T[]> {
+    private static SequenceToArray<T>(seq: LazyJS.Sequence<T>|LazyJS.AsyncSequence<any>): Q.Promise<T[]> {
         var arrayPromise: any = seq.toArray();
 
         if (util.IsArray(arrayPromise)) return Q(arrayPromise);

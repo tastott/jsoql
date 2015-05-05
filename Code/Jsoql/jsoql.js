@@ -10,3 +10,4 @@ function ExecuteQuery(jsoql, context) {
     });
 }
 exports.ExecuteQuery = ExecuteQuery;
+//# sourceMappingURL=jsoql.js.map
