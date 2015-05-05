@@ -285,3 +285,17 @@ FakesAssemblies/
 /Code/Jsoql.Tests/lazyJsonTests.js.map
 /Code/Jsoql.Tests/fromCsvFileTests.js
 /Code/Jsoql.Tests/fromCsvFileTests.js.map
+/Code/Jsoql/Scripts/datasource.d.ts
+/Code/Jsoql/Scripts/datasource.js
+/Code/Jsoql/Scripts/models.d.ts
+/Code/Jsoql/Scripts/models.js
+/Code/Jsoql/Scripts/models.ts
+/Code/Jsoql/Scripts/parse.d.ts
+/Code/Jsoql/Scripts/query-string.d.ts
+/Code/Jsoql/Scripts/query-string.js
+/Code/Jsoql/Scripts/query.d.ts
+/Code/Jsoql/Scripts/utilities.d.ts
+/Code/Jsoql/Scripts/validate.d.ts
+/Code/Jsoql/Scripts/validate.js
+/Code/Jsoql/module.d.ts
+/Code/Jsoql/module.js

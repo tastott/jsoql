@@ -12,6 +12,9 @@ export function FromRelativeFileWithNoSpecifiedBaseDirectory() {
     return Jsoql.ExecuteQuery(jsoql)
         .then(result => {
             setTimeout(() => assert.equal(result.Results.length, 20));
+        })
+        .fail(error => {
+            setTimeout(() => assert.fail(null, null, error));
         });
 }
 
@@ -22,6 +25,9 @@ export function FromRelativeFileWithSpecifiedBaseDirectory() {
     return Jsoql.ExecuteQuery(jsoql, { BaseDirectory: baseDirectory })
         .then(result => {
             setTimeout(() => assert.equal(result.Results.length, 20));
+        })
+        .fail(error => {
+            setTimeout(() => assert.fail(null, null, error));
         });
 }
 
@@ -32,5 +38,8 @@ export function FromAbsoluteFile() {
     return Jsoql.ExecuteQuery(jsoql)
         .then(result => {
             setTimeout(() => assert.equal(result.Results.length, 20));
+        })
+        .fail(error => {
+            setTimeout(() => assert.fail(null, null, error));
         });
 }

@@ -37,14 +37,16 @@
     <Content Include="Grammar\jsoql.jison" />
     <Content Include="package.json" />
     <Content Include="README.md" />
-    <TypeScriptCompile Include="module.ts" />
+    <TypeScriptCompile Include="jsoql.ts" />
     <TypeScriptCompile Include="Scripts\datasource.ts" />
     <TypeScriptCompile Include="Scripts\lazy-json.ts" />
+    <TypeScriptCompile Include="Scripts\models.ts" />
     <TypeScriptCompile Include="Scripts\parse.ts" />
     <TypeScriptCompile Include="Scripts\query-string.ts" />
     <TypeScriptCompile Include="Scripts\query.ts" />
     <TypeScriptCompile Include="Scripts\typings\lazyjs\lazyjs.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\node\node.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\oboe\oboe.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\q\Q.d.ts" />
     <TypeScriptCompile Include="Scripts\utilities.ts" />
     <TypeScriptCompile Include="Scripts\validate.ts" />
@@ -55,6 +57,7 @@
     <Folder Include="Scripts\typings\" />
     <Folder Include="Scripts\typings\lazyjs\" />
     <Folder Include="Scripts\typings\node\" />
+    <Folder Include="Scripts\typings\oboe\" />
     <Folder Include="Scripts\typings\q\" />
   </ItemGroup>
   <ItemGroup>
@@ -63,7 +66,6 @@
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <TypeScriptOutFile>jsoql.js</TypeScriptOutFile>
     <TypeScriptGeneratesDeclarations>True</TypeScriptGeneratesDeclarations>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />

@@ -1,34 +1,26 @@
-﻿///<reference path="typings/node/node.d.ts"/>
+﻿var parser = require('../jsoql-parser').parser;
 
-module Jsoql {
-    export module Parse {
+export function Parse(source: string): Statement {
+    return parser.parse(source);
+}
 
-        var parser = require('./jsoql-parser').parser;
+export interface Selectable {
+    Expression: any;
+    Alias: string;
+}
 
-        export function Parse(source: string): Statement {
-            return parser.parse(source);
-        }
-
-        export interface Selectable {
-            Expression: any;
-            Alias: string;
-        }
-
-        export interface Statement {
-            Select: {
-                SelectList: Selectable[];
-                Limit: number;
-            }
-            FromWhere: {
-                From: any;
-                Where: any;
-            }
-            GroupBy: any;
-            OrderBy: {
-                Expression: any;
-                Asc: boolean
-            }[]
-        }
-
+export interface Statement {
+    Select: {
+        SelectList: Selectable[];
+        Limit: number;
     }
+    FromWhere: {
+        From: any;
+        Where: any;
+    }
+    GroupBy: any;
+    OrderBy: {
+        Expression: any;
+        Asc: boolean
+    }[]
 }

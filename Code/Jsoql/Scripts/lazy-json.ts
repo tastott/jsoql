@@ -1,5 +1,7 @@
-﻿var lazy: LazyJS.LazyStatic = require('lazy.js')     
-var factory = lazy.createWrapper(eventSource => {
+﻿import lazy = require('lazy.js')     
+import oboe = require('oboe')
+ 
+var lazyJsonFileSequenceFactory = lazy.createWrapper(eventSource => {
     var sequence = this;
 
     eventSource.handleEvent(function (data) {
@@ -7,8 +9,4 @@ var factory = lazy.createWrapper(eventSource => {
     });
 });
 
-module Jsoql {
-    export module Lazy {
-        export var lazyJsonFile: (file: string) => LazyJS.Sequence<any> = factory;
-    }
-}
+export var lazyJsonFile: (file: string) => LazyJS.Sequence<any> = lazyJsonFileSequenceFactory;

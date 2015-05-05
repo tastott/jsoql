@@ -1,120 +1,115 @@
-﻿///<reference path="typings/node/node.d.ts"/>
+﻿import m = require('./models')
+import fs =  require('fs')
+import path = require('path')
+var csv = require('csv-string')
+import lazy = require('lazy.js')
+import util = require('./utilities')
 
-module Jsoql {
-    export module DataSources {
+export interface DataSourceParameters {
+    format?: string;
+    headers?: string;
+    skip?: string;
+}
 
-        var fs =  require('fs')
-        var path = require('path')
-        var csv = require('csv-string')
-        var lazy: LazyJS.LazyStatic = require('lazy.js')
+export interface DataSource {
+    Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any>;
+}
 
-        export interface DataSourceParameters {
-            format?: string;
-            headers?: string;
-            skip?: string;
-        }
+interface LineHandler {
+    Mapper: (line: string) => any;
+    Skip: number;
+}
 
-        export interface DataSource {
-            Get(value: string, parameters: any, context: QueryContext): LazyJS.Sequence<any>;
-        }
+export class FileDataSource implements DataSource {
 
-        interface LineHandler {
-            Mapper: (line: string) => any;
-            Skip: number;
-        }
+    private GetLineMapper(filePath: string, parameters: DataSourceParameters): LineHandler {
 
-        export class FileDataSource implements DataSource {
+        var extension = path.extname(filePath);
 
-            private GetLineMapper(filePath: string, parameters: DataSourceParameters): LineHandler {
+        //csv
+        if (extension.toLowerCase() == '.csv' || (parameters.format && parameters.format.toLowerCase() == 'csv')) {
 
-                var extension = path.extname(filePath);
+            var headers: string[];
+            var skip: number;
 
-                //csv
-                if (extension.toLowerCase() == '.csv' || (parameters.format && parameters.format.toLowerCase() == 'csv')) {
+            //Explicit headers
+            if (parameters.headers) {
+                headers = parameters.headers.split(',');
+                skip = 0;
+            }
+            //Use first line as headers
+            else {
+                var firstLine = util.ReadFirstLineSync(filePath);
+                headers = csv.parse(firstLine)[0];
+                skip = 1;
+            }
 
-                    var headers: string[];
-                    var skip: number;
-
-                    //Explicit headers
-                    if (parameters.headers) {
-                        headers = parameters.headers.split(',');
-                        skip = 0;
-                    }
-                    //Use first line as headers
-                    else {
-                        var firstLine = Utilities.ReadFirstLineSync(filePath);
-                        headers = csv.parse(firstLine)[0];
-                        skip = 1;
-                    }
-
-                    //Use explicit skip if provided
-                    if (parameters.skip) {
-                        skip = parseInt(parameters.skip);
-                        if (isNaN(skip)) throw new Error(`Invalid value for 'skip': '${parameters.skip}'`);
+            //Use explicit skip if provided
+            if (parameters.skip) {
+                skip = parseInt(parameters.skip);
+                if (isNaN(skip)) throw new Error(`Invalid value for 'skip': '${parameters.skip}'`);
  
-                    }
+            }
                   
-                    return {
-                        Mapper: line => {
-                            var values = csv.parse(line)[0];
-                            return lazy(headers)
-                                .zip(values)
-                                .toObject();
-                        },
-                        Skip: skip
-                    };
-                }
-                //json
-                else {
-                    return {
-                        Mapper: line => {
-                            try {
-                                return JSON.parse(line);
-                            }
-                            catch (err) {
-                                throw 'Failed to parse line: ' + line;
-                            }
-                        },
-                        Skip: 0
-                    };
-                }
-            }
+            return {
+                Mapper: line => {
+                    var values = csv.parse(line)[0];
+                    return lazy(headers)
+                        .zip(values)
+                        .toObject();
+                },
+                Skip: skip
+            };
+        }
+        //json
+        else {
+            return {
+                Mapper: line => {
+                    try {
+                        return JSON.parse(line);
+                    }
+                    catch (err) {
+                        throw 'Failed to parse line: ' + line;
+                    }
+                },
+                Skip: 0
+            };
+        }
+    }
 
-            Get(value: string, parameters: DataSourceParameters, context: QueryContext): LazyJS.Sequence<any> {
+    Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any> {
 
-                var fullPath = path.isAbsolute(value)
-                    ? value
-                    : path.join(context.BaseDirectory, value);
+        var fullPath = path.isAbsolute(value)
+            ? value
+            : path.join(context.BaseDirectory, value);
 
-                if (!fs.existsSync(fullPath)) {
-                    throw new Error('File not found: ' + fullPath);
-                }
-                else {
+        if (!fs.existsSync(fullPath)) {
+            throw new Error('File not found: ' + fullPath);
+        }
+        else {
 
-                    var lineHandler = this.GetLineMapper(fullPath, parameters);
+            var lineHandler = this.GetLineMapper(fullPath, parameters);
 
-                    var seq = lazy.readFile(fullPath, 'utf8')
-                        .split(/\r?\n/)
-                        .map(lineHandler.Mapper);
+            var seq = lazy.readFile(fullPath, 'utf8')
+                .split(/\r?\n/)
+                .map(lineHandler.Mapper);
 
-                    if (lineHandler.Skip) seq = seq.rest(lineHandler.Skip);
+            if (lineHandler.Skip) seq = seq.rest(lineHandler.Skip);
 
-                    return seq;
-                }
-
-            }
+            return seq;
         }
 
-        export class VariableDataSource implements DataSource {
-            Get(value: string, parameters: any, context: QueryContext): LazyJS.Sequence<any> {
+    }
+}
 
-                if (!context.Data || !context.Data[value]) {
-                    console.log(context);
-                    throw new Error("Target variable not found in context: '" + value + "'");
-                }
+export class VariableDataSource implements DataSource {
+    Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any> {
 
-                return lazy(context.Data[value]);
-            }
+        if (!context.Data || !context.Data[value]) {
+            console.log(context);
+            throw new Error("Target variable not found in context: '" + value + "'");
         }
+
+        return lazy(context.Data[value]);
     }
 }
