@@ -5,6 +5,7 @@ import d = require('../models/dictionary')
 
 export interface QuerySettings {
     BaseDirectory: string;
+    InWorkspace: boolean;
 }
 
 export interface SavedQuery {
@@ -24,21 +25,24 @@ export class QueryStorageService {
 
     GetAll(): Q.Promise<SavedQuery[]> {
         var querySettings = this.querySettingsRepo.Get() || {};
-        var loadFiles = this.fileService.GetAll().map(entry =>
-            this.fileService.Load(entry.Id)
-                .fail(() => {
-                    console.log('Failed to load file, it will be ignored:  ' + entry.Id);
-                    return null;
-                })
-                .then(data => {
-                    return {
-                        Id: entry.Id,
-                        Name: entry.Name,
-                        Query: data,
-                        Settings: querySettings[entry.Id]
-                    };
-                })
-            );
+        var loadFiles = this.fileService.GetAll().map(entry => {
+            if (!querySettings[entry.Id].InWorkspace) return Q(<SavedQuery>null);
+            else {
+                return this.fileService.Load(entry.Id)
+                    .fail(() => {
+                        console.log('Failed to load file, it will be ignored:  ' + entry.Id);
+                        return null;
+                    })
+                    .then(data => {
+                        return {
+                            Id: entry.Id,
+                            Name: entry.Name,
+                            Query: data,
+                            Settings: querySettings[entry.Id]
+                        };
+                    });
+                }
+            });
 
         return Q.all(loadFiles)
             .then(loaded => loaded.filter(file => !!file));
@@ -63,4 +67,11 @@ export class QueryStorageService {
             });
     }
 
+    Unload(id : string) {
+        var settings = this.querySettingsRepo.Get();
+        if (settings[id]) {
+            settings[id].InWorkspace = false;
+            this.querySettingsRepo.Put(settings);
+        }
+    }
 }

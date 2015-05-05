@@ -8,6 +8,7 @@
             </li>
             <li ng-repeat="tab in Tabs" ng-class="{'active': tab == SelectedTab}">
                 <a class="btn" ng-click="SelectTab(tab)" href="">{{tab.DisplayName()}}</a>
+                <span class="fa fa-times close-button" ng-click="CloseTab(tab)" ng-show="Tabs.length > 1"></span>
             </li>
         </ul>
     </div>
