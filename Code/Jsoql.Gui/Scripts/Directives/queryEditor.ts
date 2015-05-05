@@ -18,6 +18,7 @@ var keywords = [
 export interface QueryEditorScope extends ng.IScope {
     Query: m.EditableText;
     BaseDirectory: m.EditableText;
+    Execute: () => void;
 }
 
 export class QueryEditorDirective implements ng.IDirective {
@@ -78,7 +79,8 @@ export class AceQueryEditorDirective  {
   
     public scope = {
         Query: '=query',
-        BaseDirectory: '=baseDirectory'
+        BaseDirectory: '=baseDirectory',
+        Execute: '=execute'
     }
 
     public static Factory() {
@@ -98,6 +100,12 @@ export class AceQueryEditorDirective  {
             var div = $('<div class="query-editor-ace"></div>')
                 .appendTo(element)
 
+            div.keyup(event => { 
+                 //Execute on F5
+                if (event.keyCode == 116) {
+                    if ($scope.Execute) $scope.Execute();
+                }
+            });
             var editor: AceAjax.Editor = brace.edit(div[0]);
             editor.setTheme('ace/theme/ambiance');
             editor.getSession().setMode('ace/mode/sql');
