@@ -55,7 +55,8 @@ class QueryTab {
             Name: this.name,
             Query: this.QueryText.GetValue(),
             Settings: {
-                BaseDirectory: this.BaseDirectory.GetValue()
+                BaseDirectory: this.BaseDirectory.GetValue(),
+                InWorkspace: true
             }
         };
 
@@ -91,6 +92,7 @@ class QueryTab {
 interface AppScope extends angular.IScope {
     
     SelectTab(tab: QueryTab): void;
+    CloseTab(tab: QueryTab): void;
     Tabs: QueryTab[];
     SelectedTab: QueryTab;
     AddTab: () => void;
@@ -104,6 +106,7 @@ export class AppController {
         private queryStorageService: qss.QueryStorageService) {
 
         $scope.SelectTab = this.SelectTab;
+        $scope.CloseTab = this.CloseTab;
         $scope.Tabs = [];
         $scope.AddTab = this.AddTab;
         $scope.Reload = this.Reload;
@@ -135,6 +138,12 @@ export class AppController {
             var index = this.$scope.Tabs.indexOf(tab);
             if (index >= 0) this.$scope.SelectedTab = tab;
         } 
+    }
+
+    CloseTab = (tab: QueryTab) => {
+        this.$scope.Tabs = this.$scope.Tabs.filter(t => t != tab);
+        if (tab == this.$scope.SelectedTab) this.SelectTab(this.$scope.Tabs[0]);
+        this.queryStorageService.Unload(tab.StorageId);
     }
 
     Reload = () => {

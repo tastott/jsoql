@@ -65,3 +65,16 @@
     margin-top: 4px;
     margin-bottom: 4px;
 }
+
+.close-button
+{
+    position: absolute;
+    right: 4px;
+    top: 4px;
+    font-size:0.8em;
+}
+
+.close-button:hover
+{
+    color:red;
+}
