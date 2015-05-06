@@ -5,8 +5,6 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Jsoql", "Jsoql\Jsoql.njsproj", "{66D5FFE0-E198-4C64-B126-D78BE42A9192}"
 EndProject
-Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Jsoql.Console", "Jsoql.Console\Jsoql.Console.njsproj", "{33F6F51F-BA47-4AA6-8205-BAE02E2EF994}"
-EndProject
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Jsoql.Tests", "Jsoql.Tests\Jsoql.Tests.njsproj", "{9F8F6360-7CF0-4505-A9E4-C9008A2F9170}"
 EndProject
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Jsoql.Gui", "Jsoql.Gui\Jsoql.Gui.njsproj", "{58764359-FE3D-4D7C-9360-7BEB42D901D0}"
@@ -21,10 +19,6 @@ Global
 		{66D5FFE0-E198-4C64-B126-D78BE42A9192}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66D5FFE0-E198-4C64-B126-D78BE42A9192}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66D5FFE0-E198-4C64-B126-D78BE42A9192}.Release|Any CPU.Build.0 = Release|Any CPU
-		{33F6F51F-BA47-4AA6-8205-BAE02E2EF994}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{33F6F51F-BA47-4AA6-8205-BAE02E2EF994}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{33F6F51F-BA47-4AA6-8205-BAE02E2EF994}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{33F6F51F-BA47-4AA6-8205-BAE02E2EF994}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9F8F6360-7CF0-4505-A9E4-C9008A2F9170}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9F8F6360-7CF0-4505-A9E4-C9008A2F9170}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F8F6360-7CF0-4505-A9E4-C9008A2F9170}.Release|Any CPU.ActiveCfg = Release|Any CPU

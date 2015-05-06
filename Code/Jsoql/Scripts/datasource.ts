@@ -114,11 +114,14 @@ class JsonsFileDataSource extends AbstractLinedFileDataSource {
     }
 }
 
-class JsonFileDataSource extends AbstractFileDataSource {
+class SimpleJsonFileDataSource extends AbstractFileDataSource {
     protected GetFromFile(fullPath: string, parameters: DataSourceParameters): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
 
-        return lazyJson.lazyJsonFile(fullPath);
+        var json = fs.readFileSync(fullPath, 'utf8');
+        var results = JSON.parse(json);
 
+        if (util.IsArray(results)) return lazy(<any[]>results);
+        else return lazy([results]);
     }
 }
 
@@ -136,7 +139,7 @@ export class SmartFileDataSource implements DataSource {
         this.datasources = {
             'csv': new CsvFileDataSource(),
             'jsons': new JsonsFileDataSource(),
-            'json': new JsonFileDataSource()
+            'json': new SimpleJsonFileDataSource()
         };
 
         this.extensionToDataSource = {

@@ -36,6 +36,7 @@
     <TypeScriptCompile Include="app.ts" />
     <Content Include="Data\customers.csv2" />
     <Content Include="Data\customers.csv" />
+    <Content Include="Data\single-order.json" />
     <Content Include="Data\orders.json" />
     <Content Include="Data\orders.jsons" />
     <Content Include="package.json" />
