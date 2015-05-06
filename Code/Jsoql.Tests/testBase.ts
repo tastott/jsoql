@@ -18,3 +18,22 @@ export function ExecuteArrayQuery(jsoql: string, values: any[]| JsoqlQueryContex
     return Jsoql.ExecuteQuery(jsoql, context)
         .then(result => result.Results);
 }
+
+export function ExecuteAndAssert(jsoql: string,
+    values: any[]| JsoqlQueryContext,
+    assertCallback: (results : any[]) => void) : Q.Promise<any> {
+
+    return ExecuteArrayQuery(jsoql, values)
+        .then(results => setTimeout(() => assertCallback(results)))
+        .fail(error => setTimeout(() => assert.fail(null, null, error)));
+}
+
+export function ExecuteAndAssertFail(jsoql: string,
+    values: any[]| JsoqlQueryContext): Q.Promise<any>  {
+
+    return ExecuteArrayQuery(jsoql, values)
+        .then(results => setTimeout(() => assert.fail(null, null, 'Expected query to fail')));
+        //.fail(error => setTimeout(() => assert.fail(error)));
+
+
+}

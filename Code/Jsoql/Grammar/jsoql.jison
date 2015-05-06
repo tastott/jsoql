@@ -112,6 +112,8 @@ Expression
 		{ $$ = {Operator: $2.trim(), Args: [$1,$3]}}
 	| Expression '<=' Expression
 		{ $$ = {Operator: $2.trim(), Args: [$1,$3]}}
+	| '(' Stmt ')'
+		{ $$ = {SubQuery: $2}}
     ;
 
 

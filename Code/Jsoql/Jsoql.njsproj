@@ -5,7 +5,7 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>Jsoql</Name>
     <RootNamespace>Jql</RootNamespace>
-    <ScriptArguments>-q "SELECT * FROM 'file://../Data/orders.json'"</ScriptArguments>
+    <ScriptArguments>-q "SELECT (SELECT SUM(Quantity) FROM OrderDetails) AS TotalQuantity FROM 'file://../Data/orders.jsons'"</ScriptArguments>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>

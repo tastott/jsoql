@@ -15,3 +15,10 @@ export function ReadFirstLineSync(filepath: string, maxChars: number = 1024): st
     return buffer.toString('utf8').split(/\r?\n/)[0];
 }
 
+export function MonoProp(value: any) {
+
+    var keys = Object.keys(value);
+
+    if (keys.length == 1) return value[keys[0]];
+    else throw new Error("Expected exactly one property");
+}

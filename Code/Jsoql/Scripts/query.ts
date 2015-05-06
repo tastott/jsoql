@@ -116,6 +116,15 @@ export class JsoqlQuery {
             else return [{ Alias: propAlias, Value: propTarget }];
         }
         else if (expression.Quoted) return [{ Alias: expression.Quoted, Value: expression.Quoted }];
+        else if (expression.SubQuery) {
+            var context: m.QueryContext = {
+                Data: target
+            };
+            var subquery = new JsoqlQuery(expression.SubQuery, context);
+            var results = subquery.ExecuteSync();
+
+            return [{ Alias: alias, Value: util.MonoProp(results[0]) }];
+        }
         else return [{ Alias: '', Value: expression }];
     }
 
@@ -184,14 +193,17 @@ export class JsoqlQuery {
         var fromTargetRegex = new RegExp('^([A-Za-z]+)://([^?]+)(?:\\?(.+))?$', 'i');
         var match = target.match(fromTargetRegex);
 
-        if (!match) throw new Error("Invalid target for from clause: '" + target + "'");
+        if (!match) {
+            return JsoqlQuery.dataSources['var'].Get(target, {}, this.queryContext);
+        }
+        else {
+            var scheme = match[1].toLowerCase();
+            var parameters = match[3] ? qstring.Parse(match[3]) : {};
+            var dataSource = JsoqlQuery.dataSources[scheme];
+            if (!dataSource) throw new Error("Invalid scheme for from clause target: '" + scheme + "'");
 
-        var scheme = match[1].toLowerCase();
-        var parameters = match[3] ? qstring.Parse(match[3]) : {};
-        var dataSource = JsoqlQuery.dataSources[scheme];
-        if (!dataSource) throw new Error("Invalid scheme for from clause target: '" + scheme + "'");
-
-        return dataSource.Get(match[2], parameters, this.queryContext);
+            return dataSource.Get(match[2], parameters, this.queryContext);
+        } 
     }
 
     private From(fromClause: any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
@@ -282,103 +294,145 @@ export class JsoqlQuery {
 
     }
 
+    private Where(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, whereClause : any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
+        return seq.filter(item => {
+            return this.Evaluate(this.stmt.FromWhere.Where, item);
+        })
+    }
+
+    private SelectGrouped(groups: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>): LazyJS.Sequence<any>|LazyJS.AsyncSequence <any>{
+        (this.stmt.OrderBy || []).forEach(orderByExp => {
+            groups = groups.sortBy(group => this.EvaluateGroup(orderByExp.Expression, group), !orderByExp.Asc);
+        });
+
+        return groups.map(group =>
+            lazy(this.stmt.Select.SelectList)
+                .map(selectable => [
+                selectable.Alias || this.Key(selectable.Expression),
+                this.EvaluateGroup(selectable.Expression, group)
+            ])
+                .toObject()
+            )
+            .first(this.stmt.Select.Limit || Number.MAX_VALUE);
+    }
+    private SelectMonoGroup(items : any[]): any[] {
+        
+        var group: Group = {
+            Key: null,
+            Items: items
+        };
+
+        return [
+            lazy(this.stmt.Select.SelectList)
+                .map(selectable => [
+                selectable.Alias || this.Key(selectable.Expression),
+                this.EvaluateGroup(selectable.Expression, group)
+            ])
+            .toObject()
+        ];
+    }
+
+    private SelectUngrouped(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>): LazyJS.Sequence<any>|LazyJS.AsyncSequence <any>{
+        (this.stmt.OrderBy || []).forEach(orderByExp => {
+            seq = seq.sortBy(item => this.Evaluate(orderByExp.Expression, item), !orderByExp.Asc);
+        });
+
+        //Select
+        return seq
+            .first(this.stmt.Select.Limit || Number.MAX_VALUE)
+            .map(item => {
+            return lazy(this.stmt.Select.SelectList)
+                .map(selectable =>
+                this.EvaluateAliased(selectable.Expression, item)
+                    .map(aliasValue => {
+                    return {
+                        Alias: selectable.Alias || aliasValue.Alias,
+                        Value: aliasValue.Value
+                    };
+                })
+                )
+                .flatten()
+                .map((aliasValue: any) => [aliasValue.Alias, aliasValue.Value])
+                .toObject();
+        });
+    }
+
+
+    ExecuteSync(): any[]{
+        //From
+        var seq = this.From(this.stmt.FromWhere.From);
+
+        //Where
+        if (this.stmt.FromWhere.Where) seq = this.Where(seq, this.stmt.FromWhere.Where);
+
+        //Grouping
+        //Explicitly
+        if (this.stmt.GroupBy) {
+            seq = this.GroupBySync(seq, this.stmt.GroupBy)
+            seq = this.SelectGrouped(seq);
+            return JsoqlQuery.SequenceToArraySync(seq);
+        }
+        //Implicitly
+        else if (lazy(this.stmt.Select.SelectList).some(selectable => JsoqlQuery.IsAggregate(selectable.Expression))) {
+
+            var items = JsoqlQuery.SequenceToArraySync(seq);
+            return this.SelectMonoGroup(items);
+        }
+        //No grouping
+        else {
+            return JsoqlQuery.SequenceToArraySync(this.SelectUngrouped(seq));
+        }
+    }
+
     Execute(): Q.Promise<any[]> {
         
         //From
         var seq = this.From(this.stmt.FromWhere.From);
 
         //Where
-        if (this.stmt.FromWhere.Where) {
-            seq = seq.filter(item => {
-                return this.Evaluate(this.stmt.FromWhere.Where, item);
-            })
-        }
+        if (this.stmt.FromWhere.Where) seq = this.Where(seq, this.stmt.FromWhere.Where);
 
         //Grouping
         //Explicitly
         if (this.stmt.GroupBy) {
             return this.GroupBy(seq, this.stmt.GroupBy)
-                .then(groups => {
-
-                    (this.stmt.OrderBy || []).forEach(orderByExp => {
-                        groups = groups.sortBy(group => this.EvaluateGroup(orderByExp.Expression, group), !orderByExp.Asc);
-                    });
-
-                    return groups.map(group =>
-                        lazy(this.stmt.Select.SelectList)
-                            .map(selectable => [
-                            selectable.Alias || this.Key(selectable.Expression),
-                            this.EvaluateGroup(selectable.Expression, group)
-                        ])
-                            .toObject()
-                        )
-                        .first(this.stmt.Select.Limit || Number.MAX_VALUE)
-                        .toArray();
-                });
+                .then(groups => this.SelectGrouped(groups))
+                .then(resultSeq => resultSeq.toArray());
         }
         //Implicitly
         else if (lazy(this.stmt.Select.SelectList).some(selectable => JsoqlQuery.IsAggregate(selectable.Expression))) {
+
             return JsoqlQuery.SequenceToArray(seq)
-                .then(items => {
-                var group: Group = {
-                    Key: null,
-                    Items: items
-                };
-
-                return [
-                    lazy(this.stmt.Select.SelectList)
-                        .map(selectable => [
-                        selectable.Alias || this.Key(selectable.Expression),
-                        this.EvaluateGroup(selectable.Expression, group)
-                    ])
-                        .toObject()
-                ];
-            });
-
+                .then(items => this.SelectMonoGroup(items));
         }
         //No grouping
         else {
-
-            (this.stmt.OrderBy || []).forEach(orderByExp => {
-                seq = seq.sortBy(item => this.Evaluate(orderByExp.Expression, item), !orderByExp.Asc);
-            });
-
-            //Select
-            seq = seq
-                .first(this.stmt.Select.Limit || Number.MAX_VALUE)
-                .map(item => {
-                return lazy(this.stmt.Select.SelectList)
-                    .map(selectable =>
-                    this.EvaluateAliased(selectable.Expression, item)
-                        .map(aliasValue => {
-                        return {
-                            Alias: selectable.Alias || aliasValue.Alias,
-                            Value: aliasValue.Value
-                        };
-                    })
-                    )
-                    .flatten()
-                    .map((aliasValue: any) => [aliasValue.Alias, aliasValue.Value])
-                    .toObject();
-            });
-                
-
-            return JsoqlQuery.SequenceToArray(seq);
+            return JsoqlQuery.SequenceToArray(this.SelectUngrouped(seq));
         }
     }
 
+    private GroupBySync(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, expressions: any[]): LazyJS.Sequence<Group> {
+        var groupKey = (item: any) => {
+            var object = lazy(expressions)
+                .map(exp => [this.Key(exp), this.Evaluate(exp, item)])
+                .toObject();
 
-    /*Group(): Q.Promise<JqlQuery> {
-        return (<any>this.sequence
-            .toArray())
-            .then(arr => {
-                var group: Group = {
-                    Items: arr
-                };
-                return new JqlQuery(lazy([group]));
-            });
-    }*/
+            return JSON.stringify(object);
+        };
 
+        var items = JsoqlQuery.SequenceToArraySync(seq);
+          
+        var grouped = lazy(items).groupBy(groupKey);
+        var lazyGroups = grouped.toArray();
+        var groups: Group[] = lazyGroups.map(lg => {
+            return {
+                Key: JSON.parse(lg[0]),
+                Items: lg[1]
+            };
+        });
+
+        return lazy(groups);
+    }
 
     private GroupBy(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, expressions: any[]): Q.Promise<LazyJS.Sequence<Group>> {
         var groupKey = (item: any) => {
@@ -408,6 +462,15 @@ export class JsoqlQuery {
         return !!expression
             && !!expression.Call
             && !!aggregateFunctions[expression.Call.toLowerCase()];
+    }
+
+    private static SequenceToArraySync<T>(seq: LazyJS.Sequence<T>|LazyJS.AsyncSequence<any>): T[] {
+        var arrayPromise: any = seq.toArray();
+
+        if (util.IsArray(arrayPromise)) return arrayPromise;
+        else {
+            throw new Error('Sequence is asynchronous');
+        }
     }
 
     private static SequenceToArray<T>(seq: LazyJS.Sequence<T>|LazyJS.AsyncSequence<any>): Q.Promise<T[]> {
