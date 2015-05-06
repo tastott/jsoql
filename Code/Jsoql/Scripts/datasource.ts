@@ -117,7 +117,7 @@ class JsonsFileDataSource extends AbstractLinedFileDataSource {
 class JsonFileDataSource extends AbstractFileDataSource {
     protected GetFromFile(fullPath: string, parameters: DataSourceParameters): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
 
-        return lazyJson.lazyJsonFile(fullPath).async(0);
+        return lazyJson.lazyJsonFile(fullPath);
 
     }
 }
@@ -181,6 +181,8 @@ export class VariableDataSource implements DataSource {
             throw new Error("Target variable not found in context: '" + value + "'");
         }
 
-        return lazy(context.Data[value]);
+        var data : any[] = context.Data[value];
+
+        return lazy(data);
     }
 }
