@@ -306,3 +306,5 @@ FakesAssemblies/
 /Code/Jsoql/app.d.ts
 /Code/Jsoql.Tests/selectSubQueryTests.js
 /Code/Jsoql.Tests/selectSubQueryTests.js.map
+/Code/Jsoql.Tests/fromUrlTests.js
+/Code/Jsoql.Tests/fromUrlTests.js.map

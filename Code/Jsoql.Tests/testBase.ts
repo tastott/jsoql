@@ -1,5 +1,6 @@
 ﻿///<reference path="Scripts/typings/jsoql/jsoql.d.ts"/>
 
+import http = require('http');
 import assert = require('assert');
 var Jsoql: JsoqlStatic = require('../Jsoql/jsoql') //Bit of a workaround to speed development
 import Q = require('q')
@@ -36,4 +37,20 @@ export function ExecuteAndAssertFail(jsoql: string,
         //.fail(error => setTimeout(() => assert.fail(error)));
 
 
+}
+
+export function ExecuteAndAssertWithServer(jsoql: string, data : any[], port : number,
+    assertCallback: (results: any[]) => void): Q.Promise<any> {
+
+    var server = http.createServer((req, res) => {
+        res.write(JSON.stringify(data));
+        res.end();
+    });
+
+    server.listen(port);
+
+    return ExecuteArrayQuery(jsoql, {})
+        .then(results => setTimeout(() => assertCallback(results)))
+        .fail(error => setTimeout(() => assert.fail(null, null, error)))
+        .finally(() => server.close());
 }

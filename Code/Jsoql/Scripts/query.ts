@@ -49,7 +49,8 @@ export class JsoqlQuery {
     private queryContext: m.QueryContext
     private static dataSources: { [scheme: string]: ds.DataSource } = {
         "var": new ds.VariableDataSource(),
-        "file": new ds.SmartFileDataSource()
+        "file": new ds.SmartFileDataSource(),
+        "http": new ds.HttpDataSource()
     };
 
     constructor(private stmt: parse.Statement,

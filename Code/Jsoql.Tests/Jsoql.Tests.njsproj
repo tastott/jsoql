@@ -45,6 +45,9 @@
       <SubType>Code</SubType>
       <TestFramework>ExportRunner</TestFramework>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="fromUrlTests.ts">
+      <TestFramework>ExportRunner</TestFramework>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="groupByTests.ts">
       <TestFramework>ExportRunner</TestFramework>
     </TypeScriptCompile>
