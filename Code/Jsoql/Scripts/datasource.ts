@@ -118,6 +118,8 @@ class SimpleJsonFileDataSource extends AbstractFileDataSource {
     protected GetFromFile(fullPath: string, parameters: DataSourceParameters): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
 
         var json = fs.readFileSync(fullPath, 'utf8');
+        json = json.replace(/^\uFEFF/, '');
+
         var results = JSON.parse(json);
 
         if (util.IsArray(results)) return lazy(<any[]>results);
