@@ -20,13 +20,14 @@ class QueryTab {
         this.QueryText = new m.EditableText(QueryText || '');
         this.QueryResult = {};
         this.BaseDirectory = new m.EditableText(BaseDirectory || process.cwd());
-       
+        this.IsExecuting = false;
     }
 
     QueryText: m.EditableText;
     QueryResult: m.QueryResult;
     BaseDirectory: m.EditableText;
     StorageId: string;
+    IsExecuting: boolean;
 
     IsEdited = () => {
         return !this.StorageId || this.QueryText.IsEdited() || this.BaseDirectory.IsEdited();
@@ -42,10 +43,18 @@ class QueryTab {
                 BaseDirectory: this.BaseDirectory.GetValue()
             };
 
+            this.IsExecuting = true;
+
             Jsoql.ExecuteQuery(this.QueryText.GetValue(), context)
                 .then(result => {
-                this.$scope.$apply(() => this.QueryResult = result); //TOOD: Better way to do this?
-            });
+                    this.$scope.$apply(() => this.QueryResult = result); //TOOD: Better way to do this?
+                })
+                .fail(error => {
+                    this.$scope.$apply(() => this.QueryResult = { Errors: [error] });
+                })
+                .finally(() => {
+                    this.$scope.$apply(() => this.IsExecuting = false);
+                });
         }
     }
 
