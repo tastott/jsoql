@@ -54,6 +54,7 @@
         </div>
     </div>
     <div class="col-lg-6">
-        <query-result value="SelectedTab.QueryResult"></query-result>
+        <query-result value="SelectedTab.QueryResult" ng-show="!SelectedTab.IsExecuting"></query-result>
+        <i class="fa fa-cog fa-spin fa-2x" ng-show="SelectedTab.IsExecuting"></i>
     </div>
 </div>
