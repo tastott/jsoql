@@ -184,3 +184,37 @@ export function SelectSubQueryWithSumOfObjectProperty() {
     return testBase.ExecuteAndAssert(query, data,
         results => assert.deepEqual(results, expected));
 }
+
+export function SelectSubQueryWithNestedPropertyAsFrom() {
+    var data = [
+        {
+            Name: 'Bob',
+            Pets: [
+                { Name: 'Dog', Eats: ['Bones', 'Cats', 'Chips'] },
+                { Name: 'Chicken', Eats: ['Corn'] }
+            ]
+        },
+        {
+            Name: 'Jim',
+            Pets: [
+                { Name: 'Giraffe', Eats: ['Leaves', 'Burgers'] },
+                { Name: 'Ocelot', Eats: ['Small mammals'] },
+                { Name: 'Goldfish', Eats: ['Fish food', 'Each other'] }
+            ]
+        }
+    ];
+    var query = "SELECT Name, (SELECT COUNT() FROM Pets[0].Eats) AS FirstPetFoods FROM 'var://Test'";
+    var expected = [
+        {
+            Name: 'Bob',
+            FirstPetFoods: 3
+        },
+        {
+            Name: 'Jim',
+            FirstPetFoods: 2
+        }
+    ];
+
+    return testBase.ExecuteAndAssert(query, data,
+        results => assert.deepEqual(results, expected));
+}

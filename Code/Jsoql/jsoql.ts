@@ -19,8 +19,8 @@ export function ExecuteQuery(jsoql: string, context?: m.QueryContext): Q.Promise
 
         return query.Execute()
             .then(results => {
-            return { Results: results }
-        });
+                return { Results: results }
+            });
     }
     catch (ex) {
         var result: QueryResult = {

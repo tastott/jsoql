@@ -26,10 +26,16 @@ if (args['w']){
 
 jsoql.ExecuteQuery(query)
     .then(results => {
-        console.log('\n' + query);
-        console.log('\n\nNumber of results: ' + results.Results.length);
-        console.log('\n\nResults:\n');
-        console.log(results.Results);
+
+        if (results.Errors && results.Errors.length) {
+            console.log(results.Errors);
+        }
+        else {
+            console.log('\n' + query);
+            console.log('\n\nNumber of results: ' + results.Results.length);
+            console.log('\n\nResults:\n');
+            console.log(results.Results);
+        }
     })
     .fail(error => console.log(error));
 

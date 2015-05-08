@@ -139,7 +139,7 @@ SelectList
 	;
 
 FromTarget
-    : Identifier
+    : Property
     | Quoted
     ;
 
