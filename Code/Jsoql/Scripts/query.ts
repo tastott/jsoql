@@ -5,44 +5,9 @@ import parse = require('./parse')
 import m = require('./models')
 import qstring = require('./query-string')
 import util = require('./utilities')
+import evl = require('./evaluate')
 var clone = require('clone')
       
-
-interface Group {
-    Key: any;
-    Items: any[];
-}
-
-        
-
-interface FunctionMappings {
-    [key: string]: (items: any[]) => any;
-}
-
-var operators: FunctionMappings = {
-    '=': args => args[0] == args[1],
-    '!=': args => args[0] !== args[1],
-    '>': args => args[0] > args[1],
-    '>=': args => args[0] >= args[1],
-    '<': args => args[0] < args[1],
-    '<=': args => args[0] <= args[1],
-    'and': args => args[0] && args[1],
-    'or': args => args[0] || args[1]
-};
-
-var aggregateFunctions: FunctionMappings = {
-    'count': items => items.length,
-    'max': items => lazy(items).max(),
-    'min': items => lazy(items).min(),
-    'sum': items => lazy(items).sum(),
-    'avg': items => {
-        var count = items.length;
-        if (count) return lazy(items).sum() / count;
-        else return undefined;
-    }
-};
-
-     
 
 export class JsoqlQuery {
 
@@ -61,150 +26,33 @@ export class JsoqlQuery {
             BaseDirectory: queryContext.BaseDirectory || process.cwd(),
             Data: queryContext.Data || {}
         };
-        //this.queryContext = extend(queryContext,
-        //    {
-        //        BaseDirectory: process.cwd(),
-        //        Data: {}
-        //    });
-
+        
     }
 
-    private DoOperation(operator: string, args: any[]) {
-        var func = operators[operator.toLowerCase()];
-
-        if (!func) throw 'Unrecognized operator: ' + name;
-
-        return func(args);
-    }
-
-    private DoAggregateFunction(name: string, items: any[]) {
-
-        var func = aggregateFunctions[name.toLowerCase()];
-
-        if (!func) throw 'Unrecognized function: ' + name;
-
-        return func(items);
-    }
-
-    private EvaluateAliased(expression: any, target: any, alias?: string): { Alias: string; Value: any }[]{
-        if (expression.Operator) {
-            var args = expression.Args.map(arg => this.Evaluate(arg, target));
-            return [{ Alias: '', Value: this.DoOperation(expression.Operator, args) }];
-        }
-        else if (expression.Property == '*') {
-            if (!target) return [];
-            else return Object.keys(target)
-                .map(key => {
-                    return {
-                        Alias: key,
-                        Value: target[key]
-                    };
-                });
-        }
-        else if (expression.Property) {
-            var aliasPrefix = alias ? alias + '.' : '';
-            var propTarget, propAlias;
-            if (expression.Index != undefined) {
-                //TODO: Check index is integer and target property is array
-                propTarget = target[expression.Property][expression.Index];
-                propAlias = aliasPrefix + expression.Property + '[' + expression.Index + ']';
-            } else {
-                propTarget = target[expression.Property];
-                propAlias = aliasPrefix + expression.Property
-            }
-
-            if (expression.Child) return this.EvaluateAliased(expression.Child, propTarget, propAlias);
-            else return [{ Alias: propAlias, Value: propTarget }];
-        }
-        else if (expression.Quoted) return [{ Alias: expression.Quoted, Value: expression.Quoted }];
-        else if (expression.SubQuery) {
-            var context: m.QueryContext = {
-                Data: target
-            };
-            var subquery = new JsoqlQuery(expression.SubQuery, context);
-            var results = subquery.ExecuteSync();
-
-            return [{ Alias: alias, Value: util.MonoProp(results[0]) }];
-        }
-        else return [{ Alias: '', Value: expression }];
-    }
-
-    private Evaluate(expression: any, target: any) {
-        if (expression.Operator) {
-            var args = expression.Args.map(arg => this.Evaluate(arg, target));
-            return this.DoOperation(expression.Operator, args);
-        }
-        else if (expression.Property) {
-            var propTarget;
-            if (expression.Index != undefined) {
-                //TODO: Check index is integer and target property is array
-                propTarget = target[expression.Property][expression.Index];
-            } else propTarget = target[expression.Property];
-
-            if (expression.Child) return this.Evaluate(expression.Child, propTarget);
-            else return propTarget;
-        }
-        else if (expression.Quoted) return expression.Quoted;
-        else return expression;
-    }
-
-    private Key(expression: any): string {
-        if (expression.Property) {
-            var propKey;
-            if (expression.Index != undefined) {
-                propKey = expression.Property + '[' + expression.Index + ']';
-            } else propKey = expression.Property
-
-            if (expression.Child) return propKey + '.' + this.Key(expression.Child);
-            else return propKey;
-        }
-        else if (expression.Call) {
-            return expression.Call;
-        }
-        else return '';
-    }
-
-    private EvaluateGroup(expression: any, group: Group) {
-        if (JsoqlQuery.IsAggregate(expression)) {
-            var items = expression.Arg
-                ? group.Items.map(item => this.Evaluate(expression.Arg, item))
-                : group.Items;
-
-            return this.DoAggregateFunction(expression.Call, items);
-        }
-        else if (expression.Property) {
-            var key = this.Key(expression);
-            return group.Key[key];
-        }
-
-        /*if (expression.Operator) {
-            var args = expression.Args.map(arg => this.Evaluate(arg, target)[1]);
-            return ['', this.DoOperation(expression.Operator, args)];
-        }
-        else if (expression.Property) {
-            if (expression.Child) return this.Evaluate(expression.Child, target[expression.Property]);
-            else return [expression.Property, target[expression.Property]];
-        }
-        else if (expression.Quoted) return ['', expression.Quoted];
-        else return ['', expression];*/
-    }
-
-    private GetSequence(target: string): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+    private GetSequence(target: any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
         var fromTargetRegex = new RegExp('^([A-Za-z]+)://([^?]+)(?:\\?(.+))?$', 'i');
-        var match = target.match(fromTargetRegex);
 
-        if (!match) {
+        //Property
+        if (typeof target != 'string') {
             return JsoqlQuery.dataSources['var'].Get(target, {}, this.queryContext);
         }
         else {
-            var scheme = match[1].toLowerCase();
-            var parameters = match[3] ? qstring.Parse(match[3]) : {};
-            var dataSource = JsoqlQuery.dataSources[scheme];
-            if (!dataSource) throw new Error("Invalid scheme for from clause target: '" + scheme + "'");
+            var match = target.match(fromTargetRegex);
 
-            return dataSource.Get(match[2], parameters, this.queryContext);
-        } 
+            if (!match) {
+                return JsoqlQuery.dataSources['var'].Get(target, {}, this.queryContext);
+            }
+            else {
+                var scheme = match[1].toLowerCase();
+                var parameters = match[3] ? qstring.Parse(match[3]) : {};
+                var dataSource = JsoqlQuery.dataSources[scheme];
+                if (!dataSource) throw new Error("Invalid scheme for from clause target: '" + scheme + "'");
+
+                return dataSource.Get(match[2], parameters, this.queryContext);
+            } 
+        }
+        
     }
 
     private From(fromClause: any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
@@ -245,7 +93,7 @@ export class JsoqlQuery {
                         merged[target.Alias] = ri;
 
                         //Return non-null value to indicate match
-                        if (this.Evaluate(target.Condition, merged)) return merged;
+                        if (evl.Evaluate(target.Condition, merged)) return merged;
                         else return null;
                     })
                         .compact() //Throw away null (non-matching) values
@@ -297,20 +145,20 @@ export class JsoqlQuery {
 
     private Where(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, whereClause : any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
         return seq.filter(item => {
-            return this.Evaluate(this.stmt.FromWhere.Where, item);
+            return evl.Evaluate(this.stmt.FromWhere.Where, item);
         })
     }
 
     private SelectGrouped(groups: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>): LazyJS.Sequence<any>|LazyJS.AsyncSequence <any>{
         (this.stmt.OrderBy || []).forEach(orderByExp => {
-            groups = groups.sortBy(group => this.EvaluateGroup(orderByExp.Expression, group), !orderByExp.Asc);
+            groups = groups.sortBy(group => evl.EvaluateGroup(orderByExp.Expression, group), !orderByExp.Asc);
         });
 
         return groups.map(group =>
             lazy(this.stmt.Select.SelectList)
                 .map(selectable => [
-                selectable.Alias || this.Key(selectable.Expression),
-                this.EvaluateGroup(selectable.Expression, group)
+                selectable.Alias || evl.Key(selectable.Expression),
+                evl.EvaluateGroup(selectable.Expression, group)
             ])
                 .toObject()
             )
@@ -318,7 +166,7 @@ export class JsoqlQuery {
     }
     private SelectMonoGroup(items : any[]): any[] {
         
-        var group: Group = {
+        var group: m.Group = {
             Key: null,
             Items: items
         };
@@ -326,8 +174,8 @@ export class JsoqlQuery {
         return [
             lazy(this.stmt.Select.SelectList)
                 .map(selectable => [
-                selectable.Alias || this.Key(selectable.Expression),
-                this.EvaluateGroup(selectable.Expression, group)
+                selectable.Alias || evl.Key(selectable.Expression),
+                evl.EvaluateGroup(selectable.Expression, group)
             ])
             .toObject()
         ];
@@ -335,7 +183,7 @@ export class JsoqlQuery {
 
     private SelectUngrouped(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>): LazyJS.Sequence<any>|LazyJS.AsyncSequence <any>{
         (this.stmt.OrderBy || []).forEach(orderByExp => {
-            seq = seq.sortBy(item => this.Evaluate(orderByExp.Expression, item), !orderByExp.Asc);
+            seq = seq.sortBy(item => evl.Evaluate(orderByExp.Expression, item), !orderByExp.Asc);
         });
 
         //Select
@@ -344,7 +192,7 @@ export class JsoqlQuery {
             .map(item => {
             return lazy(this.stmt.Select.SelectList)
                 .map(selectable =>
-                this.EvaluateAliased(selectable.Expression, item)
+                evl.EvaluateAliased(selectable.Expression, item)
                     .map(aliasValue => {
                     return {
                         Alias: selectable.Alias || aliasValue.Alias,
@@ -374,7 +222,7 @@ export class JsoqlQuery {
             return JsoqlQuery.SequenceToArraySync(seq);
         }
         //Implicitly
-        else if (lazy(this.stmt.Select.SelectList).some(selectable => JsoqlQuery.IsAggregate(selectable.Expression))) {
+        else if (lazy(this.stmt.Select.SelectList).some(selectable => evl.IsAggregate(selectable.Expression))) {
 
             var items = JsoqlQuery.SequenceToArraySync(seq);
             return this.SelectMonoGroup(items);
@@ -401,7 +249,7 @@ export class JsoqlQuery {
                 .then(resultSeq => resultSeq.toArray());
         }
         //Implicitly
-        else if (lazy(this.stmt.Select.SelectList).some(selectable => JsoqlQuery.IsAggregate(selectable.Expression))) {
+        else if (lazy(this.stmt.Select.SelectList).some(selectable => evl.IsAggregate(selectable.Expression))) {
 
             return JsoqlQuery.SequenceToArray(seq)
                 .then(items => this.SelectMonoGroup(items));
@@ -412,10 +260,10 @@ export class JsoqlQuery {
         }
     }
 
-    private GroupBySync(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, expressions: any[]): LazyJS.Sequence<Group> {
+    private GroupBySync(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, expressions: any[]): LazyJS.Sequence<m.Group> {
         var groupKey = (item: any) => {
             var object = lazy(expressions)
-                .map(exp => [this.Key(exp), this.Evaluate(exp, item)])
+                .map(exp => [evl.Key(exp), evl.Evaluate(exp, item)])
                 .toObject();
 
             return JSON.stringify(object);
@@ -425,7 +273,7 @@ export class JsoqlQuery {
           
         var grouped = lazy(items).groupBy(groupKey);
         var lazyGroups = grouped.toArray();
-        var groups: Group[] = lazyGroups.map(lg => {
+        var groups: m.Group[] = lazyGroups.map(lg => {
             return {
                 Key: JSON.parse(lg[0]),
                 Items: lg[1]
@@ -435,10 +283,10 @@ export class JsoqlQuery {
         return lazy(groups);
     }
 
-    private GroupBy(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, expressions: any[]): Q.Promise<LazyJS.Sequence<Group>> {
+    private GroupBy(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, expressions: any[]): Q.Promise<LazyJS.Sequence<m.Group>> {
         var groupKey = (item: any) => {
             var object = lazy(expressions)
-                .map(exp => [this.Key(exp), this.Evaluate(exp, item)])
+                .map(exp => [evl.Key(exp), evl.Evaluate(exp, item)])
                 .toObject();
 
             return JSON.stringify(object);
@@ -448,7 +296,7 @@ export class JsoqlQuery {
             .then(items => {
             var grouped = lazy(items).groupBy(groupKey);
             var lazyGroups = grouped.toArray();
-            var groups: Group[] = lazyGroups.map(lg => {
+            var groups: m.Group[] = lazyGroups.map(lg => {
                 return {
                     Key: JSON.parse(lg[0]),
                     Items: lg[1]
@@ -457,12 +305,6 @@ export class JsoqlQuery {
 
             return lazy(groups);
         });
-    }
-
-    private static IsAggregate(expression: any): boolean {
-        return !!expression
-            && !!expression.Call
-            && !!aggregateFunctions[expression.Call.toLowerCase()];
     }
 
     private static SequenceToArraySync<T>(seq: LazyJS.Sequence<T>|LazyJS.AsyncSequence<any>): T[] {

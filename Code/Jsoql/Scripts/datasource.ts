@@ -5,6 +5,7 @@ var csv = require('csv-string')
 import lazy = require('lazy.js')
 import util = require('./utilities')
 import lazyJson = require('./lazy-json')
+import evl = require('./evaluate')
 
 export interface DataSourceParameters {
     format?: string;
@@ -181,12 +182,21 @@ export class SmartFileDataSource implements DataSource {
 export class VariableDataSource implements DataSource {
     Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any> {
 
-        if (!context.Data || !context.Data[value]) {
-            console.log(context);
-            throw new Error("Target variable not found in context: '" + value + "'");
-        }
+        var data: any[];
 
-        var data : any[] = context.Data[value];
+        if (!context.Data) {
+            throw new Error("No context data");
+        }
+        else if (typeof value == 'string') {
+            if (!context.Data[value]) {
+                throw new Error("Target variable not found in context: '" + value + "'");
+            }
+            data = context.Data[value];
+        }
+        else {
+            data = evl.Evaluate(value, context.Data) || []; //TODO: Is this OK?
+            if (!util.IsArray(data)) data = [data];
+        }
 
         return lazy(data);
     }

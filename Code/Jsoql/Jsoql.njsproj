@@ -41,6 +41,7 @@
     <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="jsoql.ts" />
     <TypeScriptCompile Include="Scripts\datasource.ts" />
+    <TypeScriptCompile Include="Scripts\evaluate.ts" />
     <TypeScriptCompile Include="Scripts\lazy-json.ts" />
     <TypeScriptCompile Include="Scripts\models.ts" />
     <TypeScriptCompile Include="Scripts\parse.ts" />
