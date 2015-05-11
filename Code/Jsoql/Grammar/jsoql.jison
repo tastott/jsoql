@@ -16,6 +16,7 @@
 \s*\>\s*			return '>'
 \s*\!\=\s*          return '!='
 \s*\=\s*            return '='
+\s*\+\s*			return '+'
 <<EOF>>             return 'EOF'
 \s*SELECT\sTOP\s+   return 'SELECTTOP'
 \s*SELECT\s+        return 'SELECT'
@@ -112,6 +113,8 @@ Expression
 	| Expression '<' Expression
 		{ $$ = {Operator: $2.trim(), Args: [$1,$3]}}
 	| Expression '<=' Expression
+		{ $$ = {Operator: $2.trim(), Args: [$1,$3]}}
+	| Expression '+' Expression
 		{ $$ = {Operator: $2.trim(), Args: [$1,$3]}}
 	| '(' Stmt ')'
 		{ $$ = {SubQuery: $2}}

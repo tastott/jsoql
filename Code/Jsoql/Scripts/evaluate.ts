@@ -22,7 +22,8 @@ var operators: FunctionMappings = {
     '<': args => args[0] < args[1],
     '<=': args => args[0] <= args[1],
     'and': args => args[0] && args[1],
-    'or': args => args[0] || args[1]
+    'or': args => args[0] || args[1],
+    '+': args => args[0] + args[1]
 };
 
 var aggregateFunctions: FunctionMappings = {
@@ -39,7 +40,7 @@ var aggregateFunctions: FunctionMappings = {
 
 export function Evaluate(expression: any, target: any) {
     if (expression.Operator) {
-        var args = expression.Args.map(arg => this.Evaluate(arg, target));
+        var args = expression.Args.map(arg => Evaluate(arg, target));
         return DoOperation(expression.Operator, args);
     }
     else if (expression.Property) {

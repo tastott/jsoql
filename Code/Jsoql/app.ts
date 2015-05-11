@@ -24,6 +24,8 @@ if (args['w']){
     });
 }
 
+console.log('\n' + query);
+
 jsoql.ExecuteQuery(query)
     .then(results => {
 
@@ -31,7 +33,6 @@ jsoql.ExecuteQuery(query)
             console.log(results.Errors);
         }
         else {
-            console.log('\n' + query);
             console.log('\n\nNumber of results: ' + results.Results.length);
             console.log('\n\nResults:\n');
             console.log(results.Results);

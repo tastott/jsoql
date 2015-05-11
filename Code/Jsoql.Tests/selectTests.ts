@@ -166,3 +166,27 @@ export function SelectTopX() {
         setTimeout(() => assert.deepEqual(results, expected));
     });
 }
+
+export function SelectNumericExpression() {
+    var data = [
+        { A: 1, B: 2 },
+        { A: 3, B: -4 }
+    ];
+    var query = "SELECT A + B AS C FROM 'var://Test'";
+    var expected = [{ C: 3 }, { C: -1 }];
+
+    return testBase.ExecuteAndAssert(query, data,
+        results => assert.deepEqual(results, expected));
+}
+
+export function SelectStringExpression() {
+    var data = [
+        { Name: 'Bob', HairColour: 'Green' },
+        { Name: 'Janet', HairColour: 'Blue' }
+    ];
+    var query = "SELECT Name + ' has ' + HairColour + ' hair.' AS Sentence FROM 'var://Test'";
+    var expected = [{ Sentence: 'Bob has Green hair.' }, { Sentence: 'Janet has Blue hair.' }];
+
+    return testBase.ExecuteAndAssert(query, data,
+        results => assert.deepEqual(results, expected));
+}

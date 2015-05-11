@@ -1,13 +1,17 @@
 [
 	{
-		"Name": "Bob",
+        "Name": "Bob",
+        "Age": 42,
+        "HairColour":  "Stupid",
 		"Pets": [
 			{ "Name": "Dog", "Eats": ["Bones", "Cats", "Chips"] },
 			{ "Name": "Chicken", "Eats": ["Corn"] }
 		]
 	},
 	{
-		"Name": "Jim",
+        "Name": "Jim",
+        "Age": 64,
+        "HairColour":  "Grey",
 		"Pets": [
 			{ "Name": "Giraffe", "Eats": ["Leaves", "Burgers"] },
 			{ "Name": "Ocelot", "Eats": ["Small mammals"] },
