@@ -311,3 +311,5 @@ FakesAssemblies/
 /Code/Jsoql/Scripts/evaluate.d.ts
 /Code/Jsoql/Scripts/evaluate.js
 /Code/Jsoql/Scripts/evaluate.js.map
+/Code/Jsoql.Tests/overTests.js
+/Code/Jsoql.Tests/overTests.js.map

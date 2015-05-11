@@ -5,7 +5,7 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>Jsoql</Name>
     <RootNamespace>Jql</RootNamespace>
-    <ScriptArguments>-q "SELECT Name, (SELECT COUNT() FROM Pets[0].Eats) AS FirstPetFoods FROM 'file://../Data/pets.json'"</ScriptArguments>
+    <ScriptArguments>-q "SELECT * FROM 'file://../Data/pets.json' AS person OVER person.Pets AS pet OVER pet.Eats AS food"</ScriptArguments>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>

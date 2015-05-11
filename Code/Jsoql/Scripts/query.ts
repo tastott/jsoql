@@ -79,26 +79,13 @@ export class JsoqlQuery {
                 return mapped;
             });
 
-            //Join each subsequent table
+            //Join/over each subsequent table
             lazy(targets).slice(1).each(target => {
 
-                //Get sequence of items from right of join
-                var rightItems = this.GetSequence(target.Target);
-
-                //For each item on left of join, find 0 to many matching items from the right side, using the ON expression
-                seq = seq.map(li => {
-                    return rightItems.map(ri => {
-                        //Create prospective merged item containing left and right side items
-                        var merged = clone(li);
-                        merged[target.Alias] = ri;
-
-                        //Return non-null value to indicate match
-                        if (evl.Evaluate(target.Condition, merged)) return merged;
-                        else return null;
-                    })
-                        .compact() //Throw away null (non-matching) values
-                })
-                    .flatten(); //Flatten the sequence of sequences
+                if (target.Condition) seq = this.Join(seq, this.GetSequence(target.Target), target.Alias, target.Condition);
+                else if (target.Over) seq = this.Over(seq, target.Target, target.Alias);
+                else throw new Error("Unsupported FROM clause");
+               
             });
         }
         else {
@@ -108,17 +95,60 @@ export class JsoqlQuery {
         return seq;
     }
 
-    private CollectFromTargets(fromClauseNode: any): { Target: string; Alias: string; Condition?: any }[] {
+    private Over(left: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
+        childExpression : any,
+        childAlias: string): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+
+        return left.map(li => {
+            var children = evl.Evaluate(childExpression, li) || [];
+            return children.map(child => {
+                var merged = clone(li);
+                merged[childAlias] = child;
+                return merged;
+            });
+        })
+        .flatten();
+
+    }
+
+    private Join(left: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
+        right: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
+        rightAlias: string,
+        condition : any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+
+        //For each item on left of join, find 0 to many matching items from the right side, using the ON expression
+        return left.map(li => {
+            return right.map(ri => {
+                //Create prospective merged item containing left and right side items
+                var merged = clone(li);
+                merged[rightAlias] = ri;
+
+                //Return non-null value to indicate match
+                if (evl.Evaluate(condition, merged)) return merged;
+                else return null;
+            })
+            .compact() //Throw away null (non-matching) values
+        })
+        .flatten(); //Flatten the sequence of sequences
+
+    }
+
+    private CollectFromTargets(fromClauseNode: any): { Target: string; Alias: string; Condition?: any; Over?: boolean; }[] {
 
         //Join
-        if (fromClauseNode.Left) {
+        if (fromClauseNode.Expression) {
             return this.CollectFromTargets(fromClauseNode.Left)
                 .concat(this.CollectFromTargets(fromClauseNode.Right)
                 .map(n => {
-                n.Condition = fromClauseNode.Expression;
-                return n;
-            })
+                        n.Condition = fromClauseNode.Expression;
+                        return n;
+                    })
                 );
+        }
+        //Over
+        else if (fromClauseNode.Over) {
+            return this.CollectFromTargets(fromClauseNode.Left)
+                .concat([{ Target: fromClauseNode.Over, Alias: fromClauseNode.Alias, Over: true }]);       
         }
         //Aliased
         else if (fromClauseNode.Target) {

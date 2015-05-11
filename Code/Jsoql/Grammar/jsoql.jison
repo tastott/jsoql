@@ -28,6 +28,7 @@
 \s+AS\s+			return 'AS'
 \s+JOIN\s+			return 'JOIN'
 \s+ON\s+			return 'ON'
+\s+OVER\s+			return 'OVER'
 'true'              return 'True'
 'false'             return 'False'
 \s+AND\s+           return 'AND'
@@ -153,6 +154,8 @@ FromClause
 	| AliasedFromTarget
 	| FromClause JOIN AliasedFromTarget ON Expression
 		{ $$ = { Left: $1, Right: $3, Expression: $5}}
+	| FromClause OVER Property AS 'PlainIdentifier'
+		{ $$ = { Left: $1, Over: $3, Alias: $5}}
     ;
 
 OrderByExpression
