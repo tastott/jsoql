@@ -145,11 +145,17 @@ export class FolderDataSource implements DataSource {
             .zip(files)
             .map((entry : string[]) => {
                 var obj = JSON.parse(entry[0]);
-                obj[FolderDataSource.FilenameProperty] = entry[1];
+                var fStats = fs.statSync(entry[1]);
+                obj[FolderDataSource.FileInfoProperty] = {
+                    path: entry[1],
+                    name: path.basename(entry[1]),
+                    modifiedDate: fStats.mtime.toJSON(),
+                    createdDate: fStats.ctime.toJSON()
+                };
                 return obj;             
             });
     }
-    static FilenameProperty = '@@Filename'
+    static FileInfoProperty = '@@File'
 }
 
 export class SmartFileDataSource implements DataSource {

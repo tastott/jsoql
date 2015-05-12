@@ -18,8 +18,16 @@ export function ExecuteArrayQuery(jsoql: string, values: any[]| JsoqlQueryContex
         }
         : <JsoqlQueryContext>values;
 
-    return Jsoql.ExecuteQuery(jsoql, context)
-        .then(result => result.Results);
+    try {
+        return Jsoql.ExecuteQuery(jsoql, context)
+            .then(result => {
+                if (result.Errors) throw result.Errors;
+                else return result.Results;
+            });
+    }
+    catch (ex) {
+        return Q.reject<any[]>(ex);
+    }
 }
 
 export function ExecuteAndAssert(jsoql: string,

@@ -71,23 +71,17 @@ export function GroupByWithAggregate() {
         { Thing: true , Count: 2},
         { Thing: false, Count: 1}
     ];
-    return testBase.ExecuteArrayQuery("SELECT Thing, COUNT() AS Count FROM 'var://Test' GROUP BY Thing", data)
-        .then(results => {
-        setTimeout(() => assert.deepEqual(results, expected));
-    });
+    return testBase.ExecuteAndAssertDeepEqual("SELECT Thing, COUNT() AS Count FROM 'var://Test' GROUP BY Thing", data, expected);
 }
 
 export function WhereGroupBy() {
     var data = [
-        { Value: 1, Thing: true },
-        { Value: 2, Thing: true },
-        { Value: 3, Thing: false }
+        { Value: '1', Thing: true },
+        { Value: '2', Thing: true },
+        { Value: '3', Thing: false }
     ];
     var expected = [
         { Thing: true }
     ];
-    return testBase.ExecuteArrayQuery("SELECT Thing FROM 'var://Test' WHERE Value < 3 GROUP BY Thing", data)
-        .then(results => {
-        setTimeout(() => assert.deepEqual(results, expected));
-    });
+    return testBase.ExecuteAndAssertDeepEqual("SELECT Thing FROM 'var://Test' WHERE Value != '3' GROUP BY Thing", data, expected);
 }

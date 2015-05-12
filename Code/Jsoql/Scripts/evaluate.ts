@@ -156,7 +156,7 @@ export function Key(expression: any): string {
             propKey = expression.Property + '[' + expression.Index + ']';
         } else propKey = expression.Property
 
-        if (expression.Child) return propKey + '.' + this.Key(expression.Child);
+        if (expression.Child) return propKey + '.' + Key(expression.Child);
         else return propKey;
     }
     else if (expression.Call) {

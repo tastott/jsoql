@@ -35,7 +35,7 @@
 \s+AND\s+           return 'AND'
 \s+OR\s+			return 'OR'
 \s*[0-9\.-]+\s*		return 'Number'
-[A-Za-z0-9_\*]+     return 'PlainIdentifier'
+[@A-Za-z0-9_\*]+    return 'PlainIdentifier'
 \'[^\']+\'          return 'Quotation'
 .                   return 'INVALID'
 

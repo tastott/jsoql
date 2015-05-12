@@ -60,10 +60,7 @@ export function NonUniversalParentProperty() {
         { "Thing.A": 1 },
         { "Thing.A": undefined }
     ];
-    return testBase.ExecuteArrayQuery("SELECT Thing.A FROM 'var://Test'", data)
-        .then(results => {
-        setTimeout(() => assert.deepEqual(results, expected));
-    });
+    return testBase.ExecuteAndAssertDeepEqual("SELECT Thing.A FROM 'var://Test'", data, expected);
 }
 
 export function NonUniversalChildProperty() {
@@ -187,6 +184,19 @@ export function SelectStringExpression() {
     var query = "SELECT Name + ' has ' + HairColour + ' hair.' AS Sentence FROM 'var://Test'";
     var expected = [{ Sentence: 'Bob has Green hair.' }, { Sentence: 'Janet has Blue hair.' }];
 
-    return testBase.ExecuteAndAssert(query, data,
-        results => assert.deepEqual(results, expected));
+    return testBase.ExecuteAndAssertDeepEqual(query, data,expected);
+}
+
+export function SelectWithNumericConstant() {
+    var data = [
+        { Value: 1 },
+        { Value: 2 }
+    ];
+    var query = "SELECT Value + 1 AS Incremented FROM 'var://Test'";
+    var expected = [
+        { Incremented: 2 },
+        { Incremented: 3 }
+    ];
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
 }

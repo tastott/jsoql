@@ -1,26 +1,27 @@
 {
-    "name": "jsoql",
-    "version": "0.0.6",
-    "description": "jsoql",
-    "main": "app.js",
-    "author": {
-        "name": "Tim",
-        "email": ""
-    },
-    "dependencies": {
-        "clone": "^1.0.2",
-        "csv-string": "^2.2.5",
-        "lazy.js": "^0.4.0",
-        "minimist": "^1.1.1",
-        "oboe": "^2.1.1",
-        "q": "^1.2.0"
-    },
-    "devDependencies": {
-        "jison": "0.4.13"
-    },
-    "files": [
-        "app.js",
-        "jsoql.js",
-        "jsoql-parser.js"
-    ]
+  "name": "jsoql",
+  "version": "0.0.6",
+  "description": "jsoql",
+  "main": "app.js",
+  "author": {
+    "name": "Tim",
+    "email": ""
+  },
+  "dependencies": {
+    "clone": "^1.0.2",
+    "csv-string": "^2.2.5",
+    "glob": "^5.0.5",
+    "lazy.js": "^0.4.0",
+    "minimist": "^1.1.1",
+    "oboe": "^2.1.1",
+    "q": "^1.2.0"
+  },
+  "devDependencies": {
+    "jison": "0.4.13"
+  },
+  "files": [
+    "app.js",
+    "jsoql.js",
+    "jsoql-parser.js"
+  ]
 }
