@@ -5,7 +5,7 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>Jsoql</Name>
     <RootNamespace>Jql</RootNamespace>
-    <ScriptArguments>-q "SELECT Name +  ' has ' + HairColour + ' hair.' AS HairSentence FROM 'file://../Data/pets.json'"</ScriptArguments>
+    <ScriptArguments>-q "SELECT Order.Id AS Id FROM 'file://../Jsoql.Tests/Data/Folder'"</ScriptArguments>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -42,6 +42,7 @@
     <TypeScriptCompile Include="jsoql.ts" />
     <TypeScriptCompile Include="Scripts\datasource.ts" />
     <TypeScriptCompile Include="Scripts\evaluate.ts" />
+    <TypeScriptCompile Include="Scripts\lazy-files.ts" />
     <TypeScriptCompile Include="Scripts\lazy-json.ts" />
     <TypeScriptCompile Include="Scripts\models.ts" />
     <TypeScriptCompile Include="Scripts\parse.ts" />

@@ -5,6 +5,7 @@ var csv = require('csv-string')
 import lazy = require('lazy.js')
 import util = require('./utilities')
 import lazyJson = require('./lazy-json')
+import lf = require('./lazy-files')
 import evl = require('./evaluate')
 
 export interface DataSourceParameters {
@@ -128,6 +129,22 @@ class SimpleJsonFileDataSource extends AbstractFileDataSource {
     }
 }
 
+export class FolderDataSource implements DataSource {
+    Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+        
+        var files = [
+            'C:\\Users\\Tim Stott\\Code\\GitHub\\jql\\Code\\Jsoql.Tests\\Data\\Folder\\order1.json',
+            'C:\\Users\\Tim Stott\\Code\\GitHub\\jql\\Code\\Jsoql.Tests\\Data\\Folder\\order2.json'
+        ];
+
+        return lf.lazyFiles(files)
+            .map(content => {
+                var obj = JSON.parse(content);
+                return obj;             
+            });
+    }
+}
+
 export class SmartFileDataSource implements DataSource {
 
     private datasources: {
@@ -142,7 +159,8 @@ export class SmartFileDataSource implements DataSource {
         this.datasources = {
             'csv': new CsvFileDataSource(),
             'jsons': new JsonsFileDataSource(),
-            'json': new SimpleJsonFileDataSource()
+            'json': new SimpleJsonFileDataSource(),
+            '': new FolderDataSource()
         };
 
         this.extensionToDataSource = {
@@ -160,8 +178,12 @@ export class SmartFileDataSource implements DataSource {
 
     protected GetSubSource(filepath: string, parameters: DataSourceParameters) : DataSource{
 
+        //Folder
+        if (!path.extname(filepath)) {
+            return this.datasources[''];
+        }
         //Explicit format
-        if (parameters.format) {
+        else if (parameters.format) {
             var format = parameters.format.toLowerCase();
             if (!this.datasources[format]) throw new Error("Unrecognized format specified: " + parameters.format);
             return this.datasources[format];

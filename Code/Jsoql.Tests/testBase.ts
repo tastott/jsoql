@@ -5,6 +5,8 @@ import assert = require('assert');
 var Jsoql: JsoqlStatic = require('../Jsoql/jsoql') //Bit of a workaround to speed development
 import Q = require('q')
 
+//Have to assert inside setTimeout to get the async test to work
+//https://nodejstools.codeplex.com/discussions/550545
 
 export function ExecuteArrayQuery(jsoql: string, values: any[]| JsoqlQueryContext): Q.Promise<any[]> {
 
@@ -26,6 +28,15 @@ export function ExecuteAndAssert(jsoql: string,
 
     return ExecuteArrayQuery(jsoql, values)
         .then(results => setTimeout(() => assertCallback(results)))
+        .fail(error => setTimeout(() => assert.fail(null, null, error)));
+}
+
+export function ExecuteAndAssertDeepEqual(jsoql: string,
+    values: any[]| JsoqlQueryContext,
+    expected: any[]): Q.Promise<any> {
+
+    return ExecuteArrayQuery(jsoql, values)
+        .then(results => setTimeout(() => assert.deepEqual(results, expected)))
         .fail(error => setTimeout(() => assert.fail(null, null, error)));
 }
 

@@ -313,3 +313,8 @@ FakesAssemblies/
 /Code/Jsoql/Scripts/evaluate.js.map
 /Code/Jsoql.Tests/overTests.js
 /Code/Jsoql.Tests/overTests.js.map
+/Code/Jsoql.Tests/fromFolderTests.js
+/Code/Jsoql.Tests/fromFolderTests.js.map
+/Code/Jsoql/Scripts/lazy-files.d.ts
+/Code/Jsoql/Scripts/lazy-files.js
+/Code/Jsoql/Scripts/lazy-files.js.map
