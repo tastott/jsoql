@@ -7,6 +7,7 @@ import util = require('./utilities')
 import lazyJson = require('./lazy-json')
 import lf = require('./lazy-files')
 import evl = require('./evaluate')
+var glob = require('glob')
 
 export interface DataSourceParameters {
     format?: string;
@@ -132,17 +133,23 @@ class SimpleJsonFileDataSource extends AbstractFileDataSource {
 export class FolderDataSource implements DataSource {
     Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
         
-        var files = [
-            'C:\\Users\\Tim Stott\\Code\\GitHub\\jql\\Code\\Jsoql.Tests\\Data\\Folder\\order1.json',
-            'C:\\Users\\Tim Stott\\Code\\GitHub\\jql\\Code\\Jsoql.Tests\\Data\\Folder\\order2.json'
-        ];
+        var fullPath = path.isAbsolute(value)
+            ? value
+            : path.join(context.BaseDirectory, value);
+
+        var pattern = parameters['pattern'] || '*.json';
+
+        var files = glob.sync(fullPath + '/' + (parameters['recurse'] ? '**/' : '') + pattern);
 
         return lf.lazyFiles(files)
-            .map(content => {
-                var obj = JSON.parse(content);
+            .zip(files)
+            .map((entry : string[]) => {
+                var obj = JSON.parse(entry[0]);
+                obj[FolderDataSource.FilenameProperty] = entry[1];
                 return obj;             
             });
     }
+    static FilenameProperty = '@@Filename'
 }
 
 export class SmartFileDataSource implements DataSource {
