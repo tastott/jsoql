@@ -101,7 +101,7 @@ class CsvFileDataSource extends AbstractLinedFileDataSource {
     }
 }
 
-class JsonsFileDataSource extends AbstractLinedFileDataSource {
+class JsonlFileDataSource extends AbstractLinedFileDataSource {
     protected GetLineHandler(fullPath: string, parameters: DataSourceParameters): LineHandler {
         return {
             Mapper: line => {
@@ -171,14 +171,14 @@ export class SmartFileDataSource implements DataSource {
     constructor() {
         this.datasources = {
             'csv': new CsvFileDataSource(),
-            'jsons': new JsonsFileDataSource(),
+            'jsonl': new JsonlFileDataSource(),
             'json': new SimpleJsonFileDataSource(),
             '': new FolderDataSource()
         };
 
         this.extensionToDataSource = {
             '.csv': 'csv',
-            '.jsons': 'jsons',
+            '.jsonl': 'jsonl',
             '.json': 'json'
         }
     }

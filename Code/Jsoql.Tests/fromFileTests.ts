@@ -8,7 +8,7 @@ var Jsoql: JsoqlStatic = require('../Jsoql/jsoql');
 //https://nodejstools.codeplex.com/discussions/550545
 
 export function FromRelativeFileWithNoSpecifiedBaseDirectory() {
-    var jsoql = "SELECT Order.Id FROM 'file://Data/orders.jsons'";
+    var jsoql = "SELECT Order.Id FROM 'file://Data/orders.jsonl'";
     return Jsoql.ExecuteQuery(jsoql)
         .then(result => {
             setTimeout(() => assert.equal(result.Results.length, 20));
@@ -21,7 +21,7 @@ export function FromRelativeFileWithNoSpecifiedBaseDirectory() {
 export function FromRelativeFileWithSpecifiedBaseDirectory() {
     var baseDirectory = path.join(process.cwd() ,'Data');
 
-    var jsoql = "SELECT Order.Id FROM 'file://orders.jsons'";
+    var jsoql = "SELECT Order.Id FROM 'file://orders.jsonl'";
     return Jsoql.ExecuteQuery(jsoql, { BaseDirectory: baseDirectory })
         .then(result => {
             setTimeout(() => assert.equal(result.Results.length, 20));
@@ -32,7 +32,7 @@ export function FromRelativeFileWithSpecifiedBaseDirectory() {
 }
 
 export function FromAbsoluteFile() {
-    var absolutePath = path.join(process.cwd() ,'Data/orders.jsons');
+    var absolutePath = path.join(process.cwd() ,'Data/orders.jsonl');
    
     var jsoql = "SELECT Order.Id FROM 'file://" + absolutePath + "'";
     return Jsoql.ExecuteQuery(jsoql)

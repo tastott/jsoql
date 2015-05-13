@@ -44,7 +44,7 @@
     <Content Include="Data\Folder\order3.json" />
     <Content Include="Data\single-order.json" />
     <Content Include="Data\orders.json" />
-    <Content Include="Data\orders.jsons" />
+    <Content Include="Data\orders.jsonl" />
     <Content Include="package.json" />
     <Content Include="README.md" />
     <TypeScriptCompile Include="fromCsvFileTests.ts">
