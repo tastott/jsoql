@@ -175,7 +175,7 @@ class FileUriCompleter implements AceCompleter{
     static ExtensionScores: d.Dictionary<number> = {
         '.csv': 99,
         '.json': 100,
-        '.jsons': 101
+        '.jsonl': 101
     }
 
     constructor(private getBaseDirectory: () => string) {
