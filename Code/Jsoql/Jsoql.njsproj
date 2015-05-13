@@ -5,7 +5,7 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>Jsoql</Name>
     <RootNamespace>Jql</RootNamespace>
-    <ScriptArguments>-q "SELECT Order.ShipCountry, COUNT()  FROM 'file://../Data/orders.jsons'  WHERE Order.Id &gt; 11074 GROUP BY Order.ShipCountry"</ScriptArguments>
+    <ScriptArguments>-q "SELECT Order.Id FROM 'file://../Jsoql.Tests/Data/Folder?recurse=true' ORDER BY Order.Id"</ScriptArguments>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
