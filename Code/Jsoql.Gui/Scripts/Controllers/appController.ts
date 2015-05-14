@@ -133,8 +133,26 @@ export class AppController {
     OnQueryFileDrop = (file: File) => {
         //NW only
         if (file['path']) {
-            var query = `SELECT\n\t*\nFROM\n\t'file://${file['path']}'`;
-            this.$scope.$apply(() => this.$scope.SelectedTab.QueryText.Value(query));
+            var folder = require('path').dirname(file['path']);
+            var filename = require('path').basename(file['path']);
+
+            //Replace empty query with SELECT *
+            if (!this.$scope.SelectedTab.QueryText.Value().trim()) {
+                var query = `SELECT\n\t*\nFROM\n\t'file://${filename}'`;
+                this.$scope.$apply(() => {
+                    this.$scope.SelectedTab.BaseDirectory.SetValue(folder);
+                    this.$scope.SelectedTab.QueryText.SetValue(query);
+                });
+            }
+            //Add FROM target only to an existing query
+            else {
+                var query = this.$scope.SelectedTab.QueryText.Value() + `\n'file://${file['path']}'`;
+                this.$scope.$apply(() => {
+                    this.$scope.SelectedTab.QueryText.SetValue(query);
+                });
+            }
+
+            
         }
     }
 

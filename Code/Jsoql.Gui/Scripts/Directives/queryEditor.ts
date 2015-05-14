@@ -115,8 +115,8 @@ export class AceQueryEditorDirective  {
             editor.getSession().on('change', function (e) {
                 if ($scope.Query) $scope.Query.SetValue(editor.getValue());
             });
-            $scope.$watch('Query',(newValue: m.EditableText) => {
-                if (newValue) editor.setValue(newValue.GetValue(), -1); //Move cursor to start
+            $scope.$watch('Query.Value()',(newValue: string) => {
+                if (newValue) editor.setValue(newValue, -1); //Move cursor to start
                 else editor.setValue('');
             });
 
