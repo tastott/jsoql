@@ -45,6 +45,9 @@ export function Evaluate(expression: any, target: any) {
     }
     else if (expression.Property) {
         var propTarget;
+
+        if (target[expression.Property] == undefined) return undefined;
+
         if (expression.Index != undefined) {
             //TODO: Check index is integer and target property is array
             propTarget = target[expression.Property][expression.Index];
@@ -73,16 +76,19 @@ export function EvaluateAliased(expression: any, target: any, alias ?: string): 
         });
     }
     else if (expression.Property) {
+
         var aliasPrefix = alias ? alias + '.' : '';
-        var propTarget, propAlias;
-        if (expression.Index != undefined) {
-            //TODO: Check index is integer and target property is array
-            propTarget = target[expression.Property][expression.Index];
-            propAlias = aliasPrefix + expression.Property + '[' + expression.Index + ']';
-        } else {
-            propTarget = target[expression.Property];
-            propAlias = aliasPrefix + expression.Property
-        }
+        var propAlias = expression.Index != undefined 
+            ? aliasPrefix + expression.Property + '[' + expression.Index + ']'
+            :  propAlias = aliasPrefix + expression.Property;
+
+         //TODO: Check index is integer and target property is array
+        var propTarget = target != undefined
+            ? expression.Index != undefined
+                ? propTarget = target[expression.Property][expression.Index]
+                : propTarget = target[expression.Property]
+            : undefined; //Keep passing 'undefineds' down to get full alias
+           
 
         if (expression.Child) return EvaluateAliased(expression.Child, propTarget, propAlias);
         else return [{ Alias: propAlias, Value: propTarget }];
