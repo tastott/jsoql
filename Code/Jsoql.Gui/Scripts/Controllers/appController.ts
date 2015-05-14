@@ -106,6 +106,7 @@ interface AppScope extends angular.IScope {
     SelectedTab: QueryTab;
     AddTab: () => void;
     Reload: () => void;
+    OnQueryFileDrop: (file: File) => void;
 }
 
 export class AppController {
@@ -119,6 +120,7 @@ export class AppController {
         $scope.Tabs = [];
         $scope.AddTab = this.AddTab;
         $scope.Reload = this.Reload;
+        $scope.OnQueryFileDrop = this.OnQueryFileDrop;
 
         this.GetInitialTabs()
             .then(tabs => {
@@ -127,6 +129,14 @@ export class AppController {
                 $scope.SelectedTab = $scope.Tabs[0];
             });
         }
+
+    OnQueryFileDrop = (file: File) => {
+        //NW only
+        if (file['path']) {
+            var query = `SELECT\n\t*\nFROM\n\t'file://${file['path']}'`;
+            this.$scope.$apply(() => this.$scope.SelectedTab.QueryText.Value(query));
+        }
+    }
 
     AddTab = (tab?: QueryTab) => {
         tab = tab || new QueryTab(this.$scope, this.queryStorageService, this.fileService, 'new');;
