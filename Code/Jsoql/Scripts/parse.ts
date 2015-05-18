@@ -9,6 +9,10 @@ export interface Selectable {
     Alias: string;
 }
 
+export interface GroupByClause {
+    Groupings: any[];
+    Having: any
+}
 export interface Statement {
     Select: {
         SelectList: Selectable[];
@@ -18,7 +22,7 @@ export interface Statement {
         From: any;
         Where: any;
     }
-    GroupBy: any;
+    GroupBy: GroupByClause;
     OrderBy: {
         Expression: any;
         Asc: boolean

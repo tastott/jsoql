@@ -85,3 +85,18 @@ export function WhereGroupBy() {
     ];
     return testBase.ExecuteAndAssertDeepEqual("SELECT Thing FROM 'var://Test' WHERE Value != '3' GROUP BY Thing", data, expected);
 }
+
+export function GroupByHaving() {
+    var data = [
+        { Name: 'Bob', Message: 'Hello, my name is Bob' },
+        { Name: 'Dave', Message: 'Hi Bob, nice to meet you' },
+        { Name: 'Bob', Message: "Well this is nice isn't it?" }
+    ];
+    var query = "SELECT Name FROM 'var://Test' GROUP BY Name HAVING COUNT() > 1";
+
+    var expected = [
+        { Name: 'Bob'}
+    ];
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
+

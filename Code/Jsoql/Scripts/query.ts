@@ -179,7 +179,14 @@ export class JsoqlQuery {
         })
     }
 
-    private SelectGrouped(groups: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>): LazyJS.Sequence<any>|LazyJS.AsyncSequence <any>{
+    private SelectGrouped(groups: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
+        having: any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
+
+        if (having) {
+            groups = groups.filter(group => evl.EvaluateGroup(having, group));
+        }
+
+
         (this.stmt.OrderBy || []).forEach(orderByExp => {
             groups = groups.sortBy(group => evl.EvaluateGroup(orderByExp.Expression, group), !orderByExp.Asc);
         });
@@ -247,8 +254,8 @@ export class JsoqlQuery {
         //Grouping
         //Explicitly
         if (this.stmt.GroupBy) {
-            seq = this.GroupBySync(seq, this.stmt.GroupBy)
-            seq = this.SelectGrouped(seq);
+            seq = this.GroupBySync(seq, this.stmt.GroupBy.Groupings)
+            seq = this.SelectGrouped(seq, this.stmt.GroupBy.Having);
             return JsoqlQuery.SequenceToArraySync(seq);
         }
         //Implicitly
@@ -274,8 +281,8 @@ export class JsoqlQuery {
         //Grouping
         //Explicitly
         if (this.stmt.GroupBy) {
-            return this.GroupBy(seq, this.stmt.GroupBy)
-                .then(groups => this.SelectGrouped(groups))
+            return this.GroupBy(seq, this.stmt.GroupBy.Groupings)
+                .then(groups => this.SelectGrouped(groups, this.stmt.GroupBy.Having))
                 .then(resultSeq => resultSeq.toArray());
         }
         //Implicitly
@@ -290,7 +297,7 @@ export class JsoqlQuery {
         }
     }
 
-    private GroupBySync(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, expressions: any[]): LazyJS.Sequence<m.Group> {
+    private GroupBySync(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, expressions : any[]): LazyJS.Sequence<m.Group> {
         var groupKey = (item: any) => {
             var object = lazy(expressions)
                 .map(exp => [evl.Key(exp), evl.Evaluate(exp, item)])

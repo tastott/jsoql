@@ -26,6 +26,7 @@ SELECT              return 'SELECT'
 FROM                return 'FROM'
 WHERE               return 'WHERE'
 GROUP\sBY           return 'GROUPBY'
+HAVING              return 'HAVING'
 ORDER\sBY           return 'ORDERBY'
 ASC			        return 'ASC'
 DESC		        return 'DESC'
@@ -194,13 +195,20 @@ SelectClause
         { $$ = { SelectList: $2}}
     ;
 
+GroupByClause
+    : GROUPBY ExpressionList
+        { $$ = { Groupings: $2}}
+    | GROUPBY ExpressionList HAVING Expression
+        { $$ = { Groupings: $2, Having: $4}}
+    ;
+
 Stmt
     : SelectClause FROM FromWhere
         { $$ = { Select: $1, FromWhere: $3} }
-    | SelectClause FROM FromWhere GROUPBY ExpressionList
-		{ $$ = { Select: $1, FromWhere: $3, GroupBy: $5}}
-	| SelectClause FROM FromWhere GROUPBY ExpressionList ORDERBY OrderByList
-		{ $$ = { Select: $1, FromWhere: $3, GroupBy: $5, OrderBy: $7}}
+    | SelectClause FROM FromWhere GroupByClause
+		{ $$ = { Select: $1, FromWhere: $3, GroupBy: $4}}
+	| SelectClause FROM FromWhere GroupByClause ORDERBY OrderByList
+		{ $$ = { Select: $1, FromWhere: $3, GroupBy: $4, OrderBy: $6}}
 	| SelectClause FROM FromWhere ORDERBY OrderByList
 		{ $$ = { Select: $1, FromWhere: $3, OrderBy: $5}}
     ;

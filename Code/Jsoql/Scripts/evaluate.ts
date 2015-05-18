@@ -118,17 +118,16 @@ export function EvaluateGroup(expression: any, group: m.Group) {
         var key = Key(expression);
         return group.Key[key];
     }
-
-    /*if (expression.Operator) {
-        var args = expression.Args.map(arg => this.Evaluate(arg, target)[1]);
-        return ['', this.DoOperation(expression.Operator, args)];
+    else if (expression.Operator) {
+        var args = expression.Args.map(arg => this.EvaluateGroup(arg, group));
+        return DoOperation(expression.Operator, args);
     }
-    else if (expression.Property) {
-        if (expression.Child) return this.Evaluate(expression.Child, target[expression.Property]);
-        else return [expression.Property, target[expression.Property]];
-    }
-    else if (expression.Quoted) return ['', expression.Quoted];
-    else return ['', expression];*/
+    //else if (expression.Property) {
+    //    if (expression.Child) return this.Evaluate(expression.Child, target[expression.Property]);
+    //    else return [expression.Property, target[expression.Property]];
+    //}
+    else if (expression.Quoted) return expression.Quoted;
+    else return expression;
 }
 
 function DoOperation(operator: string, args: any[]) {
