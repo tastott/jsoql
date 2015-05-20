@@ -1,0 +1,6 @@
+!node_modules
+node_modules/*
+!node_modules/bootswatch
+node_modules/bootswatch/*
+!node_modules/bootswatch/slate
+node_modules/bootswatch/slate/*
