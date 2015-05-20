@@ -57,6 +57,7 @@
     <TypeScriptCompile Include="Scripts\typings\ace\ace.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\angularjs\angular-route.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\angularjs\angular.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\browserify\browserify.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\jquery\jquery.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\jsoql\jsoql.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\node\node.d.ts" />
@@ -74,6 +75,7 @@
     <Folder Include="Scripts\typings\" />
     <Folder Include="Scripts\typings\ace\" />
     <Folder Include="Scripts\typings\angularjs\" />
+    <Folder Include="Scripts\typings\browserify\" />
     <Folder Include="Scripts\typings\jquery\" />
     <Folder Include="Scripts\typings\jsoql\" />
     <Folder Include="Scripts\typings\node\" />

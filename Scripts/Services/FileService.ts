@@ -22,21 +22,73 @@ export interface FileService {
     Download(data: string, filename: string): Q.Promise<boolean>;
 }
 
-export class DesktopFileService implements FileService {
+export class BaseFileService {
+    protected fileIdsRepo: repo.TypedRepository<d.Dictionary<string>>;
 
-    constructor(private savedQueryIdsRepo: repo.TypedRepository<d.Dictionary<string>>) {
+    constructor(serviceId: string) {
+        this.fileIdsRepo = new repo.LocalStorageRepository<d.Dictionary<string>>(serviceId)
     }
 
-    private IdToFileEntry(id: string): SavedFile {
+    protected IdToFileEntry(id: string): SavedFile {
+        throw new Error("Abstract method");
+    }
+
+    protected AddFileId(id: string) {
+        var ids = this.fileIdsRepo.Get() || {};
+        ids[id] = id;
+        this.fileIdsRepo.Put(ids);
+    }
+
+    GetAll(): SavedFile[] {
+        var ids = this.fileIdsRepo.Get() || {};
+        return Object.keys(ids).map(this.IdToFileEntry);
+    }
+}
+
+export class OnlineFileService extends BaseFileService implements FileService {
+
+    constructor(private serviceId: string) {
+        super(serviceId);
+    }
+
+    protected IdToFileEntry(id: string): SavedFile {
         return {
-            Name: path.basename(id, path.extname(id)), //File name without extension
+            Name: id, //File name and id are identical
             Id: id
         };
     }
 
-    GetAll(): SavedFile[]{
-        var ids = this.savedQueryIdsRepo.Get() || {};
-        return Object.keys(ids).map(this.IdToFileEntry);
+    Load(id: string): Q.Promise<string> {
+        var content = localStorage.getItem(this.serviceId + ":content:" + id);
+        return Q(content);
+    }
+
+    Save(data: string, id: string): Q.Promise<SavedFile> {
+        localStorage.setItem(this.serviceId + ":content:" + id, data);
+        super.AddFileId(id);
+        return Q(this.IdToFileEntry(id));
+    }
+
+    SaveAs(data: string, options: FileSaveOptions): Q.Promise<SavedFile> {
+        throw new Error("Not implemented in Online version");
+    }
+
+    Download(data: string, filename: string): Q.Promise<boolean> {
+        throw new Error("Not implemented yet");
+    }
+}
+
+export class DesktopFileService extends BaseFileService implements FileService {
+
+    constructor(serviceId: string) {
+        super(serviceId);
+    }
+
+    protected IdToFileEntry(id: string): SavedFile {
+        return {
+            Name: path.basename(id, path.extname(id)), //File name without extension
+            Id: id
+        };
     }
 
     Load(id: string): Q.Promise<string> {
@@ -46,10 +98,7 @@ export class DesktopFileService implements FileService {
     Save(data: string, id: string): Q.Promise<SavedFile> {
         return Q.denodeify(require('fs').writeFile)(id, data)
             .then(() => {
-                var ids = this.savedQueryIdsRepo.Get() || {};
-                ids[id] = id;
-                this.savedQueryIdsRepo.Put(ids);
-
+                super.AddFileId(id);
                 return this.IdToFileEntry(id);
             });
     }

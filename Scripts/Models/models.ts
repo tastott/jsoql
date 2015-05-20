@@ -1,9 +1,15 @@
-﻿export interface Configuration {
-    Environment: Environment
+﻿export class Configuration {
+    constructor(public Environment: Environment) {
+    }
+
+    IsOnline() {
+        return this.Environment == Environment.Online;
+    }
 }
 
 export enum Environment {
-    Desktop
+    Desktop,
+    Online
 }
 
 export interface QueryResult {

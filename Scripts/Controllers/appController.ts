@@ -5,12 +5,13 @@ import qss = require('../Services/queryStorageService')
 import _fs = require('../Services/fileService')
 var Jsoql: JsoqlStatic = require('../../../Jsoql/jsoql') //TODO: Replace with npm module eventually
 import m = require('../models/models')
+import util = require('../utilities')
 
 class QueryTab {
 
     constructor(private $scope: ng.IScope,
         private queryService: qss.QueryStorageService,
-        private fileService: _fs.FileService,
+        private queryFileService: _fs.FileService,
         private name: string,
         StorageId?: string,
         QueryText?: string,
@@ -82,7 +83,7 @@ class QueryTab {
         if (this.SaveResultsEnabled()) {
             var json = JSON.stringify(this.QueryResult.Results, null, 4);
 
-            this.fileService.Download(json, 'results.json')
+            this.queryFileService.Download(json, 'results.json')
                 .fail(error => {
                     console.log(error);
                 })
@@ -112,8 +113,10 @@ interface AppScope extends angular.IScope {
 export class AppController {
 
     constructor(private $scope: AppScope,
-        private fileService: _fs.FileService,
-        private queryStorageService: qss.QueryStorageService) {
+        private queryFileService: _fs.FileService,
+        private queryStorageService: qss.QueryStorageService,
+        private dataFileService: _fs.FileService,
+        private configuration : m.Configuration) {
 
         $scope.SelectTab = this.SelectTab;
         $scope.CloseTab = this.CloseTab;
@@ -131,8 +134,8 @@ export class AppController {
         }
 
     OnQueryFileDrop = (file: File) => {
-        //NW only
-        if (file['path']) {
+        //NW
+        if (!this.configuration.IsOnline()) {
             var folder = require('path').dirname(file['path']);
             var filename = require('path').basename(file['path']);
 
@@ -151,13 +154,37 @@ export class AppController {
                     this.$scope.SelectedTab.QueryText.SetValue(query);
                 });
             }
+        }
+        //Online
+        else {
+            //Copy file to local storage
+            util.ReadTextFile(file)
+                .then(content => this.dataFileService.Save(content, file.name))
+                .then(savedFile => {
 
+                    //Replace empty query with SELECT *
+                    if (!this.$scope.SelectedTab.QueryText.Value().trim()) {
+                        var query = `SELECT\n\t*\nFROM\n\t'file://${savedFile.Name}'`;
+                        this.$scope.$apply(() => {
+                            this.$scope.SelectedTab.QueryText.SetValue(query);
+                        });
+                    }
+                    //Add FROM target only to an existing query
+                    else {
+                        var query = this.$scope.SelectedTab.QueryText.Value() + `\n'file://${savedFile.Name}'`;
+                        this.$scope.$apply(() => {
+                            this.$scope.SelectedTab.QueryText.SetValue(query);
+                        });
+                    }
+
+                })
+                .fail(error => console.log(`Failed to read from file '${file.name}'`));
             
         }
     }
 
     AddTab = (tab?: QueryTab) => {
-        tab = tab || new QueryTab(this.$scope, this.queryStorageService, this.fileService, 'new');;
+        tab = tab || new QueryTab(this.$scope, this.queryStorageService, this.queryFileService, 'new');;
 
         this.$scope.Tabs.push(tab);
     }
@@ -165,7 +192,7 @@ export class AppController {
     GetInitialTabs(): Q.Promise<QueryTab[]> {
         return this.queryStorageService.GetAll()
             .then(queries => queries.map(query => 
-                new QueryTab(this.$scope, this.queryStorageService, this.fileService,
+                new QueryTab(this.$scope, this.queryStorageService, this.queryFileService,
                     query.Name, query.Id, query.Query, query.Settings.BaseDirectory)
             ));
     }
