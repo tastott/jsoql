@@ -12,15 +12,19 @@ import repo = require('./Scripts/Services/typedRepository')
 import d = require('./Scripts/models/dictionary')
 import m = require('./Scripts/models/models')
 
-var config: m.Configuration = {
-    Environment: m.Environment.Desktop
-};
+var config = new m.Configuration(process['browser'] ? m.Environment.Online : m.Environment.Desktop);
 
 angular.module('Jsoql', ['ngRoute', 'ui.bootstrap'])
     .constant('querySettingsRepo', new repo.LocalStorageRepository<d.Dictionary<qServ.QuerySettings>>('querySettings'))
     .constant('configuration', config)
-    .constant('savedQueryIdsRepo', new repo.LocalStorageRepository<d.Dictionary<string>>('queryIds'))
-    .service('fileService', fServ.DesktopFileService)
+    .factory('queryFileService',() => config.Environment == m.Environment.Desktop 
+        ? new fServ.DesktopFileService('queryFileIds')
+        : new fServ.OnlineFileService('queryFileIds')
+    )
+    .factory('dataFileService',() => config.Environment == m.Environment.Desktop
+        ? new fServ.DesktopFileService('dataFileIds')
+        : new fServ.OnlineFileService('dataFileIds')
+    )
     .service('queryStorageService', qServ.QueryStorageService)
     .controller('AppController', appCtrl.AppController)
     .directive('queryResult',() => new qrDir.QueryResultDirective())

@@ -1,28 +1,18 @@
 ﻿import assert = require('assert');
-var Jsoql: JsoqlStatic = require('../Jsoql/jsoql');
+import testBase = require('./testBase')
 
 export function ArrayRoot() {
     var jsoql = "SELECT Order.Id FROM 'file://Data/orders.json'";
-    return Jsoql.ExecuteQuery(jsoql)
-        .then(result => {
-            setTimeout(() => assert.equal(result.Results.length, 20));
-        })
-        .fail(error => {
-            setTimeout(() => assert.fail(null, null, error));
-        });
+    return testBase.ExecuteAndAssert(jsoql, null, 
+        results => assert.equal(results.length, 20));
 }
 
 export function ObjectRoot() {
     var jsoql = "SELECT Order.Id FROM 'file://Data/single-order.json'";
-    return Jsoql.ExecuteQuery(jsoql)
-        .then(result => {
-            setTimeout(() => {
-                assert.equal(result.Results.length, 1);
-                assert.equal(result.Results[0]['Order.Id'], 11074);
+    return testBase.ExecuteAndAssert(jsoql, null, 
+        results => {
+                assert.equal(results.length, 1);
+                assert.equal(results[0]['Order.Id'], 11074);
             });
-        })
-        .fail(error => {
-            setTimeout(() => assert.fail(null, null, error));
-        });
 }
 

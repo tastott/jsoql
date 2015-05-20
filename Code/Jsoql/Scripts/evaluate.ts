@@ -98,7 +98,7 @@ export function EvaluateAliased(expression: any, target: any, alias ?: string): 
         var context: m.QueryContext = {
             Data: target
         };
-        var subquery = new query.JsoqlQuery(expression.SubQuery, context);
+        var subquery = new query.JsoqlQuery(expression.SubQuery, this.dataSources, context);
         var results = subquery.ExecuteSync();
 
         return [{ Alias: alias, Value: util.MonoProp(results[0]) }];

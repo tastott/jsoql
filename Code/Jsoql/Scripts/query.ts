@@ -8,18 +8,18 @@ import util = require('./utilities')
 import evl = require('./evaluate')
 var clone = require('clone')
       
+export interface DataSources {
+    [scheme: string]: ds.DataSource;
+}
 
 export class JsoqlQuery {
 
-    private queryContext: m.QueryContext
-    private static dataSources: { [scheme: string]: ds.DataSource } = {
-        "var": new ds.VariableDataSource(),
-        "file": new ds.SmartFileDataSource(),
-        "http": new ds.HttpDataSource()
-    };
+    private queryContext: m.QueryContext;
 
     constructor(private stmt: parse.Statement,
+        private dataSources : DataSources,
         queryContext?: m.QueryContext) {
+
         queryContext = queryContext || {};
 
         this.queryContext = {
@@ -35,18 +35,18 @@ export class JsoqlQuery {
 
         //Property
         if (typeof target != 'string') {
-            return JsoqlQuery.dataSources['var'].Get(target, {}, this.queryContext);
+            return this.dataSources['var'].Get(target, {}, this.queryContext);
         }
         else {
             var match = target.match(fromTargetRegex);
 
             if (!match) {
-                return JsoqlQuery.dataSources['var'].Get(target, {}, this.queryContext);
+                return this.dataSources['var'].Get(target, {}, this.queryContext);
             }
             else {
                 var scheme = match[1].toLowerCase();
                 var parameters = match[3] ? qstring.Parse(match[3]) : {};
-                var dataSource = JsoqlQuery.dataSources[scheme];
+                var dataSource = this.dataSources[scheme];
                 if (!dataSource) throw new Error("Invalid scheme for from clause target: '" + scheme + "'");
 
                 return dataSource.Get(match[2], parameters, this.queryContext);

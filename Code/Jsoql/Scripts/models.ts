@@ -7,3 +7,8 @@ export interface Group {
     Key: any;
     Items: any[];
 }
+
+export interface QueryResult {
+    Results?: any[];
+    Errors?: string[]
+}

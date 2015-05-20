@@ -2,7 +2,6 @@
 
 import testBase = require('./testBase')
 import assert = require('assert');
-var Jsoql: JsoqlStatic = require('../Jsoql/jsoql');
     
 //Have to assert inside setTimeout to get the async test to work
 //https://nodejstools.codeplex.com/discussions/550545

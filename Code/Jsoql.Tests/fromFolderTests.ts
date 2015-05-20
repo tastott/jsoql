@@ -4,9 +4,8 @@ import fs = require('fs')
 import path = require('path');
 import assert = require('assert');
 import testBase = require('./testBase')
-var Jsoql: JsoqlStatic = require('../Jsoql/jsoql');
-    
 
+    
 export function FromFolderDefault() {
     var query = "SELECT Order.Id AS Id FROM 'file://Data/Folder'";
     var expected = [

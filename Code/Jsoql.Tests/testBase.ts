@@ -2,7 +2,7 @@
 
 import http = require('http');
 import assert = require('assert');
-var Jsoql: JsoqlStatic = require('../Jsoql/jsoql') //Bit of a workaround to speed development
+var Jsoql: JsoqlEngine = new (require('../Jsoql/Scripts/engine')).DesktopJsoqlEngine() //Bit of a workaround to speed development
 import Q = require('q')
 
 //Have to assert inside setTimeout to get the async test to work

@@ -1,4 +1,4 @@
-﻿import jsoql = require('./jsoql')
+﻿import eng = require('./Scripts/engine')
 import http = require('http');
 var args = require('minimist')(process.argv.slice(2));
 
@@ -24,9 +24,11 @@ if (args['w']){
     });
 }
 
+var engine = new eng.DesktopJsoqlEngine();
+
 console.log('\n' + query);
 
-jsoql.ExecuteQuery(query)
+engine.ExecuteQuery(query)
     .then(results => {
 
         if (results.Errors && results.Errors.length) {

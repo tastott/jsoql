@@ -35,3 +35,15 @@ export function ShowSaveFileDialog(options? : SaveFileOptions): Q.Promise<string
     return deferred.promise;   
 
 }
+
+export function ReadTextFile(file: File): Q.Promise<string> {
+    var deferred = Q.defer<string>();
+
+    var reader = new FileReader();
+    reader.onload = e => deferred.resolve(e.target['result']);
+    reader.onerror = e => deferred.reject(e.message);
+
+    reader.readAsText(file);
+
+    return deferred.promise;
+}

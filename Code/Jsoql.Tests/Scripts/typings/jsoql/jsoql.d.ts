@@ -10,6 +10,10 @@ interface JsoqlQueryResult {
     Errors?: string[]
 }
 
-interface JsoqlStatic {
+interface JsoqlEngine {
     ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryResult>;
 } 
+
+declare class DesktopJsoqlEngine implements JsoqlEngine {
+    ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryResult>;
+}

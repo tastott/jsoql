@@ -19,16 +19,16 @@ export class QueryStorageService {
 
     public static QueryExtension = 'jsoql';
 
-    constructor(private fileService: fServ.FileService,
+    constructor(private queryFileService: fServ.FileService,
         private querySettingsRepo : repo.TypedRepository<d.Dictionary<QuerySettings>>) {
     }
 
     GetAll(): Q.Promise<SavedQuery[]> {
         var querySettings = this.querySettingsRepo.Get() || {};
-        var loadFiles = this.fileService.GetAll().map(entry => {
+        var loadFiles = this.queryFileService.GetAll().map(entry => {
             if (!querySettings[entry.Id].InWorkspace) return Q(<SavedQuery>null);
             else {
-                return this.fileService.Load(entry.Id)
+                return this.queryFileService.Load(entry.Id)
                     .fail(() => {
                         console.log('Failed to load file, it will be ignored:  ' + entry.Id);
                         return null;
@@ -50,8 +50,8 @@ export class QueryStorageService {
 
     Save(query: SavedQuery): Q.Promise<SavedQuery> {
         return (query.Id
-                ? this.fileService.Save(query.Query, query.Id)
-                : this.fileService.SaveAs(query.Query, { Extensions: [QueryStorageService.QueryExtension] })
+                ? this.queryFileService.Save(query.Query, query.Id)
+                : this.queryFileService.SaveAs(query.Query, { Extensions: [QueryStorageService.QueryExtension] })
             )
             .then(saved => {
                 var allSettings = this.querySettingsRepo.Get() || {};
