@@ -3,7 +3,7 @@
 import Q = require('q')
 import qss = require('../Services/queryStorageService')
 import _fs = require('../Services/fileService')
-var Jsoql: JsoqlStatic = require('../../../Jsoql/jsoql') //TODO: Replace with npm module eventually
+var jsoqlEngine: JsoqlEngine = new (require('../../../Jsoql/Scripts/engine').DesktopJsoqlEngine)(); //TODO: Replace with npm module eventually
 import m = require('../models/models')
 import util = require('../utilities')
 
@@ -46,7 +46,7 @@ class QueryTab {
 
             this.IsExecuting = true;
 
-            Jsoql.ExecuteQuery(this.QueryText.GetValue(), context)
+            jsoqlEngine.ExecuteQuery(this.QueryText.GetValue(), context)
                 .then(result => {
                     this.$scope.$apply(() => this.QueryResult = result); //TOOD: Better way to do this?
                 })

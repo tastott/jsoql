@@ -6,7 +6,7 @@ import m = require('./models')
 import ds = require('./datasource')
 
 export class JsoqlEngine {
-    constructor(private datasources: q.DataSources) {
+    constructor(private datasources: ds.DataSources) {
     }
 
     public ExecuteQuery(jsoql: string, context?: m.QueryContext): Q.Promise<m.QueryResult> {
@@ -33,6 +33,16 @@ export class JsoqlEngine {
 }
 
 export class DesktopJsoqlEngine extends JsoqlEngine {
+    constructor() {
+        super({
+            "var": new ds.VariableDataSource(),
+            "file": new ds.SmartFileDataSource(),
+            "http": new ds.HttpDataSource()
+        });
+    }
+}
+
+export class OnlineJsoqlEngine extends JsoqlEngine {
     constructor() {
         super({
             "var": new ds.VariableDataSource(),

@@ -20,6 +20,11 @@ export interface DataSource {
 }
 
 
+export interface DataSources {
+    [scheme: string]: DataSource;
+}
+
+
 interface LineHandler {
     Mapper: (line: string) => any;
     Skip: number;
@@ -229,7 +234,7 @@ export class VariableDataSource implements DataSource {
             data = context.Data[value];
         }
         else {
-            data = evl.Evaluate(value, context.Data) || []; //TODO: Is this OK?
+            data = evl.Evaluator.Evaluate(value, context.Data) || []; //TODO: Is this OK?
             if (!util.IsArray(data)) data = [data];
         }
 

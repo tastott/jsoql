@@ -1,4 +1,4 @@
-﻿///<reference path="../q/Q.d.ts" />
+///<reference path="../q/Q.d.ts" />
 
 interface JsoqlQueryContext {
     BaseDirectory?: string;
@@ -10,6 +10,10 @@ interface JsoqlQueryResult {
     Errors?: string[]
 }
 
-interface JsoqlStatic {
-    ExecuteQuery(jsoql: string, context ? : JsoqlQueryContext): Q.Promise<JsoqlQueryResult>;
+interface JsoqlEngine {
+    ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryResult>;
 } 
+
+declare class DesktopJsoqlEngine implements JsoqlEngine {
+    ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryResult>;
+}

@@ -320,3 +320,6 @@ FakesAssemblies/
 /Code/Jsoql/Scripts/lazy-files.js.map
 /Code/Jsoql.Gui/server.js
 /Code/Jsoql.Gui/Scripts/Directives/fileDrop.js
+/Code/Jsoql/Scripts/engine.d.ts
+/Code/Jsoql/Scripts/engine.js
+/Code/Jsoql/Scripts/engine.js.map
