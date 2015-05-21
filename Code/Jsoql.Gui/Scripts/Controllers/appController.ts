@@ -3,7 +3,7 @@
 import Q = require('q')
 import qss = require('../Services/queryStorageService')
 import _fs = require('../Services/fileService')
-var jsoqlEngine: JsoqlEngine = new (require('../../../Jsoql/Scripts/engine').DesktopJsoqlEngine)(); //TODO: Replace with npm module eventually
+
 import m = require('../models/models')
 import util = require('../utilities')
 
@@ -12,6 +12,7 @@ class QueryTab {
     constructor(private $scope: ng.IScope,
         private queryService: qss.QueryStorageService,
         private queryFileService: _fs.FileService,
+        private jsoqlEngine: JsoqlEngine,
         private name: string,
         StorageId?: string,
         QueryText?: string,
@@ -46,7 +47,7 @@ class QueryTab {
 
             this.IsExecuting = true;
 
-            jsoqlEngine.ExecuteQuery(this.QueryText.GetValue(), context)
+            this.jsoqlEngine.ExecuteQuery(this.QueryText.GetValue(), context)
                 .then(result => {
                     this.$scope.$apply(() => this.QueryResult = result); //TOOD: Better way to do this?
                 })
@@ -116,7 +117,8 @@ export class AppController {
         private queryFileService: _fs.FileService,
         private queryStorageService: qss.QueryStorageService,
         private dataFileService: _fs.FileService,
-        private configuration : m.Configuration) {
+        private configuration: m.Configuration,
+        private jsoqlEngine : JsoqlEngine) {
 
         $scope.SelectTab = this.SelectTab;
         $scope.CloseTab = this.CloseTab;
@@ -184,7 +186,12 @@ export class AppController {
     }
 
     AddTab = (tab?: QueryTab) => {
-        tab = tab || new QueryTab(this.$scope, this.queryStorageService, this.queryFileService, 'new');;
+        tab = tab || new QueryTab(
+            this.$scope,
+            this.queryStorageService,
+            this.queryFileService,
+            this.jsoqlEngine,
+            'new');;
 
         this.$scope.Tabs.push(tab);
     }
@@ -192,7 +199,9 @@ export class AppController {
     GetInitialTabs(): Q.Promise<QueryTab[]> {
         return this.queryStorageService.GetAll()
             .then(queries => queries.map(query => 
-                new QueryTab(this.$scope, this.queryStorageService, this.queryFileService,
+                new QueryTab(this.$scope, this.queryStorageService,
+                    this.queryFileService,
+                    this.jsoqlEngine,
                     query.Name, query.Id, query.Query, query.Settings.BaseDirectory)
             ));
     }

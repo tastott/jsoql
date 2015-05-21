@@ -25,6 +25,17 @@ if (args['w']){
 }
 
 var engine = new eng.DesktopJsoqlEngine();
+//var engine = new eng.OnlineJsoqlEngine(
+//    url => {
+//        var result = `www.whateverorigin.org/get?url=${encodeURIComponent('http://' + url) }&callback=?`;
+//        return result;
+//    },
+//    response => {
+//        //Response is of the form ?({})
+//        var json = response.slice(2, response.length - 1);
+//        return JSON.parse(json).contents;
+//    }
+//);
 
 console.log('\n' + query);
 

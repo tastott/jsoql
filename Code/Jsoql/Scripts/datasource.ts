@@ -243,10 +243,21 @@ export class VariableDataSource implements DataSource {
 }
 
 export class HttpDataSource implements DataSource {
+    private urlTransform: (url: string) => string;
+    private responseParser: (response: string) => any;
+
+    constructor(urlTransform: (url: string) => string = null,
+        responseParser: (response: string) => any = null) {
+
+        this.urlTransform = urlTransform || (url => url);
+        this.responseParser = responseParser || (response => JSON.parse(response));
+    }
+
     Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
-        return lazy.makeHttpRequest('http://' + value)
+        return lazy.makeHttpRequest('http://' + this.urlTransform(value))
             .map(response => {
-                return JSON.parse(response);
+                var parsed = this.responseParser(response);
+                return parsed;
             })
             .flatten();
     }

@@ -2,17 +2,16 @@
 
 import testBase = require('./testBase')
 import assert = require('assert');
-    
-//Have to assert inside setTimeout to get the async test to work
-//https://nodejstools.codeplex.com/discussions/550545
+import fs = require('fs')
+import Q = require('q')
+
+var readFilePromised : (filename:string, encoding:string) => Q.Promise<string> = Q.denodeify<string>(fs.readFile);
 
 export function FromUrl() {
-    var data = [
-        { Value: 1 },
-        { Value: 2 },
-        { Value: 3 }
-    ];
+
     var jsoql = "SELECT * FROM 'http://localhost:8000/whatever.json'";
 
-    return testBase.ExecuteAndAssertWithServer(jsoql, data, 8000, results => assert.deepEqual(results, data));
+    return readFilePromised('../Data/orders.json', 'utf8')
+        .then(json => JSON.parse(json))
+        .then(data => testBase.ExecuteAndAssertWithServer(jsoql, data, 8000, results => assert.deepEqual(results, data)));
 }

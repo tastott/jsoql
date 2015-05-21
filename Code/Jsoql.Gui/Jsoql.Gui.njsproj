@@ -45,6 +45,7 @@
     <Content Include="package.json" />
     <Content Include="README.md" />
     <TypeScriptCompile Include="Scripts\Controllers\appController.ts" />
+    <TypeScriptCompile Include="Scripts\cors.ts" />
     <TypeScriptCompile Include="Scripts\Directives\fileDrop.ts" />
     <TypeScriptCompile Include="Scripts\Directives\folderInput.ts" />
     <TypeScriptCompile Include="Scripts\Directives\queryEditor.ts" />
@@ -71,7 +72,6 @@
     <Folder Include="Scripts\Directives\" />
     <Folder Include="Scripts\Models\" />
     <Folder Include="Scripts\Services\" />
-    <Folder Include="Scripts\Tests\" />
     <Folder Include="Scripts\typings\" />
     <Folder Include="Scripts\typings\ace\" />
     <Folder Include="Scripts\typings\angularjs\" />

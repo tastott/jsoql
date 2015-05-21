@@ -17,3 +17,8 @@ interface JsoqlEngine {
 declare class DesktopJsoqlEngine implements JsoqlEngine {
     ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryResult>;
 }
+
+declare class OnlineJsoqlEngine implements JsoqlEngine {
+    constructor(urlTransform: (url: string) => string);
+    ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryResult>;
+}

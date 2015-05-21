@@ -43,11 +43,12 @@ export class DesktopJsoqlEngine extends JsoqlEngine {
 }
 
 export class OnlineJsoqlEngine extends JsoqlEngine {
-    constructor() {
+    constructor(urlTransform: (url: string) => string,
+        responseParser: (response: string) => any) {
         super({
             "var": new ds.VariableDataSource(),
             "file": new ds.SmartFileDataSource(),
-            "http": new ds.HttpDataSource()
+            "http": new ds.HttpDataSource(urlTransform, responseParser)
         });
     }
 }
