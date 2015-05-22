@@ -13,6 +13,7 @@ export interface DataSourceParameters {
     format?: string;
     headers?: string;
     skip?: string;
+    path?: string;
 }
 
 export interface DataSource {
@@ -135,6 +136,13 @@ class SimpleJsonFileDataSource extends AbstractFileDataSource {
     }
 }
 
+class OboeJsonFileDataSource extends AbstractFileDataSource {
+    protected GetFromFile(fullPath: string, parameters: DataSourceParameters): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+
+        return lazyJson.lazyOboeFile(fullPath, parameters.path);
+    }
+}
+
 export class FolderDataSource implements DataSource {
     Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
         
@@ -177,7 +185,8 @@ export class SmartFileDataSource implements DataSource {
         this.datasources = {
             'csv': new CsvFileDataSource(),
             'jsonl': new JsonlFileDataSource(),
-            'json': new SimpleJsonFileDataSource(),
+            //'json': new SimpleJsonFileDataSource(),
+            'json': new OboeJsonFileDataSource(),
             '': new FolderDataSource()
         };
 
