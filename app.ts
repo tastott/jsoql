@@ -27,7 +27,7 @@ angular.module('Jsoql', ['ngRoute', 'ui.bootstrap'])
         ? new fServ.DesktopFileService('dataFileIds')
         : new fServ.OnlineFileService('dataFileIds')
     )
-    .factory('jsoqlEngine',() => config.Environment != m.Environment.Desktop
+    .factory('jsoqlEngine',() => config.Environment == m.Environment.Desktop
         ? new jsoql.DesktopJsoqlEngine()
         : new jsoql.OnlineJsoqlEngine(cors.Workaround)
     )
