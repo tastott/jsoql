@@ -11,16 +11,18 @@ export function FromUrl() {
 
     var jsoql = "SELECT * FROM 'http://localhost:8000/whatever.json'";
 
-    return readFilePromised('../Data/orders.json', 'utf8')
+    return readFilePromised('./Data/orders.json', 'utf8')
         .then(json => JSON.parse(json))
-        .then(data => testBase.ExecuteAndAssertWithServer(jsoql, data, 8000, results => assert.deepEqual(results, data)));
+        .then(data => testBase.ExecuteAndAssertWithServer(jsoql, data, 8000, results => assert.deepEqual(results, data)))
+        .fail(error => setTimeout(() => assert.fail(null, null, error)));
 }
 
 export function FromUrlWithPath() {
 
-    var jsoql = "SELECT * FROM 'http://localhost:8000/whatever.json'";
+    var jsoql = "SELECT * FROM 'http://localhost:8000/whatever.json?path=SomeProperty'";
 
-    return readFilePromised('../Data/nested-orders.json', 'utf8')
-        .then(json => JSON.parse(json).SomePropertyx)
-        .then(data => testBase.ExecuteAndAssertWithServer(jsoql, data, 8000, results => assert.deepEqual(results, data)));
+    return readFilePromised('./Data/nested-orders.json', 'utf8')
+        .then(json => JSON.parse(json))
+        .then(data => testBase.ExecuteAndAssertWithServer(jsoql, data, 8000, results => assert.deepEqual(results, data.SomeProperty)))
+        .fail(error => setTimeout(() => assert.fail(null, null, error)));
 }
