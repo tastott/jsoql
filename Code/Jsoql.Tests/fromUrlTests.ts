@@ -15,3 +15,12 @@ export function FromUrl() {
         .then(json => JSON.parse(json))
         .then(data => testBase.ExecuteAndAssertWithServer(jsoql, data, 8000, results => assert.deepEqual(results, data)));
 }
+
+export function FromUrlWithPath() {
+
+    var jsoql = "SELECT * FROM 'http://localhost:8000/whatever.json'";
+
+    return readFilePromised('../Data/nested-orders.json', 'utf8')
+        .then(json => JSON.parse(json).SomePropertyx)
+        .then(data => testBase.ExecuteAndAssertWithServer(jsoql, data, 8000, results => assert.deepEqual(results, data)));
+}

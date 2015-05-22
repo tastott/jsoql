@@ -3,48 +3,42 @@ import oboe = require('oboe')
 import fs = require('fs')
 
 
-class OboeIterator  {
-    private values = [1, 2, 3, 4].map(i => {
-        return {
-            Value: i
-        };
+function OboeHttpSequence(url : string, path : string) {
+    this.url = url;
+    this.path = path;
+}
+OboeHttpSequence.prototype = new (<any>lazy).StreamLikeSequence();
+OboeHttpSequence.prototype.each = function (fn) {
+    var cancelled = false;
+
+    var handle = new (<any>lazy).AsyncHandle(function cancel() { cancelled = true; });
+    var oboeStream = oboe(this.url);
+
+    var listener = function (e) {
+        try {
+            if (cancelled || fn(e) === false) {
+                oboeStream.removeListener("node", listener);
+                handle._resolve(false);
+            }
+        } catch (e) {
+            handle._reject(e);
+        }
+    };
+
+    var pattern = this.path
+        ? `!.${this.path}.*`
+        : '!.*';
+
+    oboeStream.node(pattern, listener);
+    oboeStream.done(function () {
+        handle._resolve(true);
     });
-    private index = -1;
 
-    constructor() {
 
-    }
-    current(): any {
-        return this.values[this.index];
-    }
-    moveNext(): boolean {
-        this.index++;
-        return this.index < this.values.length;
-    }
-}
-
-function OboeSequence() {
-    var self = this;
-}
-OboeSequence.prototype = new (<any>lazy).AsyncSequence();
-OboeSequence.prototype.getIterator = () => {
-    return new OboeIterator();
-}
-
-var lazyJsonFileSequenceFactory = lazy.createWrapper(filepath => {
-    var sequence = this;
-
-    oboe(fs.createReadStream(filepath))
-        .on('node', '!',(items: any[]) => {
-            items.forEach(item => sequence.emit(item));
-        })
-        .start(() => { });
-    
-});
+    return handle;
+};
 
 //export var lazyJsonFile: (file: string) => LazyJS.Sequence<any> = lazyJsonFileSequenceFactory;
-export var lazyJsonFile: (file: string) => LazyJS.Sequence<any> = () => {
-    var sequence = new (<any>lazy).AsyncSequence();
-    sequence.parent = new OboeSequence();
-    return sequence;
+export var lazyOboeHttp: (url: string, path? : string) => LazyJS.AsyncSequence<any> = (url, path) => {
+    return new OboeHttpSequence(url, path);
 }

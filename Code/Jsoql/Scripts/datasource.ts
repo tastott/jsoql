@@ -254,11 +254,7 @@ export class HttpDataSource implements DataSource {
     }
 
     Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
-        return lazy.makeHttpRequest('http://' + this.urlTransform(value))
-            .map(response => {
-                var parsed = this.responseParser(response);
-                return parsed;
-            })
-            .flatten();
+        var url = 'http://' + this.urlTransform(value);
+        return lazyJson.lazyOboeHttp(url, parameters['path']);
     }
 }

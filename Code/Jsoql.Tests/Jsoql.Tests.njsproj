@@ -42,6 +42,7 @@
     <Content Include="Data\Folder\order2.blah" />
     <Content Include="Data\Folder\order2.json" />
     <Content Include="Data\Folder\order3.json" />
+    <Content Include="Data\nested-orders.json" />
     <Content Include="Data\single-order.json" />
     <Content Include="Data\orders.json" />
     <Content Include="Data\orders.jsonl" />
