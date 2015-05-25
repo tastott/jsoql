@@ -37,18 +37,17 @@ export class DesktopJsoqlEngine extends JsoqlEngine {
         super({
             "var": new ds.VariableDataSource(),
             "file": new ds.SmartFileDataSource(),
-            "http": new ds.HttpDataSource()
+            "http": new ds.StreamingHttpDataSource()
         });
     }
 }
 
 export class OnlineJsoqlEngine extends JsoqlEngine {
-    constructor(urlTransform: (url: string) => string,
-        responseParser: (response: string) => any) {
+    constructor(whateverOriginBaseUrl : string) {
         super({
             "var": new ds.VariableDataSource(),
             "file": new ds.SmartFileDataSource(),
-            "http": new ds.HttpDataSource(urlTransform, responseParser)
+            "http": new ds.WhateverOriginStreamingHttpDataSource(whateverOriginBaseUrl)
         });
     }
 }

@@ -1,5 +1,7 @@
 ﻿import eng = require('./Scripts/engine')
 import http = require('http');
+import fs = require('fs')
+
 var args = require('minimist')(process.argv.slice(2));
 
 var query = args['q'];
@@ -24,18 +26,9 @@ if (args['w']){
     });
 }
 
-var engine = new eng.DesktopJsoqlEngine();
-//var engine = new eng.OnlineJsoqlEngine(
-//    url => {
-//        var result = `www.whateverorigin.org/get?url=${encodeURIComponent('http://' + url) }&callback=?`;
-//        return result;
-//    },
-//    response => {
-//        //Response is of the form ?({})
-//        var json = response.slice(2, response.length - 1);
-//        return JSON.parse(json).contents;
-//    }
-//);
+//var engine = new eng.DesktopJsoqlEngine();
+var engine = new eng.OnlineJsoqlEngine('http://www.whateverorigin.org');
+
 
 console.log('\n' + query);
 
@@ -52,4 +45,27 @@ engine.ExecuteQuery(query)
         }
     })
     .fail(error => console.log(error));
+
+
+//var replaceStream = require('replacestream')
+
+//var url = 'http://www.whateverorigin.org/get?url=http%3A%2F%2Fnorthwind.servicestack.net%2Fcustomers.json&callback=callback';
+
+//require('http').get(url, stream => {
+//    var transformed = stream
+//        .pipe(replaceStream(/^callback\(/, ''))
+//        .pipe(replaceStream(/\)$/, ''))
+//        .pipe(replaceStream(/\\"/g, ''));
+
+//    transformed.pause();
+
+//    require('oboe')(transformed)
+//        .node('Customers', data => {
+//            console.log(data);
+//        })
+//        .fail(error => console.log(error))
+//        .done(blah => console.log(blah));
+
+//    transformed.resume();
+//});
 

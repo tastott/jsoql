@@ -14,7 +14,8 @@
     "lazy.js": "^0.4.0",
     "minimist": "^1.1.1",
     "oboe": "^2.1.1",
-    "q": "^1.2.0"
+    "q": "^1.2.0",
+    "replacestream": "^2.1.0"
   },
   "devDependencies": {
     "jison": "0.4.13"

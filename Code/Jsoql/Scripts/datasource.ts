@@ -8,6 +8,7 @@ import lazyJson = require('./lazy-json')
 import lf = require('./lazy-files')
 import evl = require('./evaluate')
 var glob = require('glob')
+var replaceStream = require('replaceStream')
 
 export interface DataSourceParameters {
     format?: string;
@@ -251,19 +252,35 @@ export class VariableDataSource implements DataSource {
     }
 }
 
-export class HttpDataSource implements DataSource {
-    private urlTransform: (url: string) => string;
-    private responseParser: (response: string) => any;
+export class StreamingHttpDataSource implements DataSource {
 
-    constructor(urlTransform: (url: string) => string = null,
-        responseParser: (response: string) => any = null) {
+    Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+        var url = 'http://' + value;
+        return lazyJson.lazyOboeHttp({
+            url: url,
+            nodePath: parameters['path']
+        });
+    }
+}
 
-        this.urlTransform = urlTransform || (url => url);
-        this.responseParser = responseParser || (response => JSON.parse(response));
+//Nice idea, but it doesn't work yet for a couple of reasons:
+//1) oboe doesn't think the transformed stream counts as a stream (can be hacked)
+//2) the JSON to be streamed is double-encoded (i.e. quotes are escaped, etc.). There would have to be some additional step to decode it.
+export class WhateverOriginStreamingHttpDataSource implements DataSource {
+
+    constructor(private baseUrl: string) {
     }
 
     Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
-        var url = 'http://' + this.urlTransform(value);
-        return lazyJson.lazyOboeHttp(url, parameters['path']);
+        var url = `${this.baseUrl}/get?url=${encodeURIComponent('http://'+ value)}&callback=callback`;
+       
+        return lazyJson.lazyOboeHttp({
+            url: url,
+            nodePath: parameters['path'],
+            streamTransform: stream => stream
+                    .pipe(replaceStream(/^callback\({"contents":"/, ''))
+                    .pipe(replaceStream(/","status":.+$/, ''))
+                    .pipe(replaceStream(/\\"/g, '"'))
+        });
     }
 }
