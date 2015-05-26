@@ -2,8 +2,9 @@
 import oboe = require('oboe')
 import fs = require('fs')
 import http = require('http')
+import _url = require('url')
 import _stream = require('stream')
-
+var XhrStream = require('buffered-xhr-stream')
 
 //Basically a copy of StreamedSequence from lazy.node.js because I don't know how to extend that "class"
 function LazyStreamedSequence(openStream: (callback: (stream: _stream.Readable) => void) => void) {
@@ -52,8 +53,20 @@ interface StreamListener {
 class OboeStream {
     private oboeObj: oboe.Oboe;
 
-    constructor(private stream: _stream.Readable, private path : string) {
+    constructor(private stream: _stream.Readable, private path: string) {
+        OboeStream.FudgeStreamForOboe(stream);
         this.oboeObj = oboe(stream);
+    }
+
+    //Oboe checks for the presence of these methods to determine whether or not
+    //the value passed to the constructor is a stream
+    //So let's make sure they're present! 
+    static FudgeStreamForOboe(stream: _stream.Readable) {
+        ['resume', 'pause', 'pipe', 'unpipe', 'unshift'].forEach(method => {
+            if (!stream[method]) stream[method] = () => {
+                throw new Error('Not implemented. Only here to fool Oboe!');
+            }
+        });
     }
 
     removeListener = (event: string, listener: StreamListener) => {
@@ -66,7 +79,7 @@ class OboeStream {
         switch (event) {
             case 'data':
                 var pattern = this.path
-                    ? `!.${this.path}.*`
+                    ? `${this.path}.*`
                     : '!.*';
                // pattern = '!.contents.*';
                 this.oboeObj.node(pattern, listener);
@@ -82,7 +95,7 @@ class OboeStream {
     }
 
     resume = () => {
-        this.stream.resume();
+        if(this.stream.resume) this.stream.resume();
     }
 }
 
@@ -110,7 +123,7 @@ OboeHttpSequence.prototype.each = function (fn) {
     };
 
     var pattern = this.path
-        ? `!.${this.path}.*`
+        ? `${this.path}.*`
         : '!.*';
 
     oboeStream.node(pattern, listener);
@@ -122,24 +135,43 @@ OboeHttpSequence.prototype.each = function (fn) {
 };
 
 
-//export var lazyJsonFile: (file: string) => LazyJS.Sequence<any> = lazyJsonFileSequenceFactory;
 export function lazyOboeHttp(options: {
     url: string;
     nodePath: string;
+    noCredentials?: boolean;
     streamTransform?: (stream: _stream.Readable) => _stream.Readable
 }): LazyJS.AsyncSequence<any>  {
 
     var sequence = new LazyStreamedSequence(callback => {
-        http.get(options.url, (sourceStream : _stream.Readable) => {
+
+        //Create an XHR manually if we need to omit credentials (i.e. to avoid issues with CORS)
+        if (options.noCredentials) {
+
+            var xhr = new XMLHttpRequest();
+            xhr.withCredentials = false;
+            xhr.open('GET', options.url, true);
+
+            var sourceStream = new XhrStream({ xhr: xhr });
 
             if (options.streamTransform) {
                 sourceStream = options.streamTransform(sourceStream);
             }
 
             var oboeStream = new OboeStream(sourceStream, options.nodePath);
-
             callback(<any>oboeStream);
-        });
+
+        } else {
+            http.get(options.url, (sourceStream : _stream.Readable) => {
+
+                if (options.streamTransform) {
+                    sourceStream = options.streamTransform(sourceStream);
+                }
+
+                var oboeStream = new OboeStream(sourceStream, options.nodePath);
+
+                callback(<any>oboeStream);
+            });
+        }
     });
 
     return <any>sequence;

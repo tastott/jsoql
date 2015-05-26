@@ -43,11 +43,11 @@ export class DesktopJsoqlEngine extends JsoqlEngine {
 }
 
 export class OnlineJsoqlEngine extends JsoqlEngine {
-    constructor(whateverOriginBaseUrl : string) {
+    constructor() {
         super({
             "var": new ds.VariableDataSource(),
             "file": new ds.SmartFileDataSource(),
-            "http": new ds.WhateverOriginStreamingHttpDataSource(whateverOriginBaseUrl)
+            "http": new ds.YqlStreamingHttpDataSource('http://query.yahooapis.com/v1/public/yql')
         });
     }
 }

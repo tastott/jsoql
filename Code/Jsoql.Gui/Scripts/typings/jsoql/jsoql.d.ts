@@ -19,6 +19,6 @@ declare class DesktopJsoqlEngine implements JsoqlEngine {
 }
 
 declare class OnlineJsoqlEngine implements JsoqlEngine {
-    constructor(whateverOriginBaseUrl: string);
+    constructor();
     ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryResult>;
 }

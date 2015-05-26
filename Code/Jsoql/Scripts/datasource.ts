@@ -263,9 +263,7 @@ export class StreamingHttpDataSource implements DataSource {
     }
 }
 
-//Nice idea, but it doesn't work yet for a couple of reasons:
-//1) oboe doesn't think the transformed stream counts as a stream (can be hacked)
-//2) the JSON to be streamed is double-encoded (i.e. quotes are escaped, etc.). There would have to be some additional step to decode it.
+//This is a bit useless because it is still subject to cross-origin restrictions in a browser
 export class WhateverOriginStreamingHttpDataSource implements DataSource {
 
     constructor(private baseUrl: string) {
@@ -281,6 +279,22 @@ export class WhateverOriginStreamingHttpDataSource implements DataSource {
                     .pipe(replaceStream(/^callback\({"contents":"/, ''))
                     .pipe(replaceStream(/","status":.+$/, ''))
                     .pipe(replaceStream(/\\"/g, '"'))
+        });
+    }
+}
+
+export class YqlStreamingHttpDataSource implements DataSource {
+
+    constructor(private baseUrl: string) {
+    }
+
+    Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+        var url = `${this.baseUrl}?q=${encodeURIComponent('select * from json where url="http://' + value + '"') }&format=json`;
+
+        return lazyJson.lazyOboeHttp({
+            url: url,
+            nodePath: parameters['path'] ? `query.results.json.${parameters['path']}` : 'query.results.json',
+            noCredentials: true
         });
     }
 }
