@@ -29,7 +29,7 @@ angular.module('Jsoql', ['ngRoute', 'ui.bootstrap'])
     )
     .factory('jsoqlEngine',() => config.Environment == m.Environment.Desktop
         ? new jsoql.DesktopJsoqlEngine()
-        : new jsoql.OnlineJsoqlEngine('http://www.whateverorigin.org')
+        : new jsoql.OnlineJsoqlEngine()
     )
     .service('queryStorageService', qServ.QueryStorageService)
     .controller('AppController', appCtrl.AppController)
