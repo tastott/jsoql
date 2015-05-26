@@ -94,9 +94,9 @@ Property
 
 Expression
 	: Identifier '(' ')'
-		{ $$ = { Call: $1}}
-	| Identifier '(' Expression ')'
-		{ $$ = { Call: $1, Arg: $3}}
+		{ $$ = { Call: $1, Args: []}}
+	| Identifier '(' ExpressionList ')'
+		{ $$ = { Call: $1, Args: $3}}
     | Property
     | Quoted
     | Boolean  

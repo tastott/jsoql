@@ -26,6 +26,17 @@ var operators: FunctionMappings = {
     '+': args => args[0] + args[1]
 };
 
+var scalarFunctions: FunctionMappings = {
+    'regexmatch': args => {
+        if (args[0] && typeof args[0] === 'string') {
+            var match = (<string>args[0]).match(new RegExp(args[1], args[2] || ''));
+            if (match) return match[0];
+            else return null;
+        }
+        else return null;
+    }
+}
+
 var aggregateFunctions: FunctionMappings = {
     'count': items => items.length,
     'max': items => lazy(items).max(),
@@ -60,6 +71,10 @@ export class Evaluator {
             else return propTarget;
         }
         else if (expression.Quoted) return expression.Quoted;
+        else if (expression.Call) {
+            var args = expression.Args.map(arg => this.Evaluate(arg, target));
+            return this.DoScalarFunction(expression.Call, args);
+        }
         else return expression;
     }
 
@@ -110,13 +125,20 @@ export class Evaluator {
 
             return [{ Alias: alias, Value: util.MonoProp(results[0]) }];
         }
+        else if (expression.Call) {
+            var args = expression.Args.map(arg => this.Evaluate(arg, target));
+            return [{ Alias: '', Value: this.DoScalarFunction(expression.Call, args) }];
+        }
         else return [{ Alias: '', Value: expression }];
     }
 
     public EvaluateGroup(expression: any, group: m.Group) {
         if (Evaluator.IsAggregate(expression)) {
-            var items = expression.Arg
-                ? group.Items.map(item => this.Evaluate(expression.Arg, item))
+            if (expression.Args && expression.Args.length > 1)
+                throw new Error('Aggregate function expected zero or one arguments');
+
+            var items = expression.Args[0]
+                ? group.Items.map(item => this.Evaluate(expression.Args[0], item))
                 : group.Items;
 
             return this.DoAggregateFunction(expression.Call, items);
@@ -135,6 +157,15 @@ export class Evaluator {
         //}
         else if (expression.Quoted) return expression.Quoted;
         else return expression;
+    }
+
+    private DoScalarFunction(name: string, args: any[]) {
+
+        var func = scalarFunctions[name.toLowerCase()];
+
+        if (!func) throw 'Unrecognized function: ' + name;
+
+        return func(args);
     }
 
     private DoOperation(operator: string, args: any[]) {
