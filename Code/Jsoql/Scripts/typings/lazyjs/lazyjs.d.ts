@@ -137,7 +137,7 @@ declare module LazyJS {
         dropWhile(predicateFn: TestCallback<T>): Sequence<T>;
         every(predicateFn: TestCallback<T>): boolean;
         filter(predicateFn: TestCallback<T>): Sequence<T>;
-        find(predicateFn: TestCallback<T>): Sequence<T>;
+        find(predicateFn: TestCallback<T>): T;
         findWhere(properties: Object): Sequence<T>;
 
         flatten(): Sequence<T>;

@@ -14,7 +14,7 @@ export interface DataSourceParameters {
     format?: string;
     headers?: string;
     skip?: string;
-    path?: string;
+    root?: string;
 }
 
 export interface DataSource {
@@ -140,7 +140,7 @@ class SimpleJsonFileDataSource extends AbstractFileDataSource {
 class OboeJsonFileDataSource extends AbstractFileDataSource {
     protected GetFromFile(fullPath: string, parameters: DataSourceParameters): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
-        return lazyJson.lazyOboeFile(fullPath, parameters.path);
+        return lazyJson.lazyOboeFile(fullPath, parameters.root);
     }
 }
 
@@ -254,11 +254,11 @@ export class VariableDataSource implements DataSource {
 
 export class StreamingHttpDataSource implements DataSource {
 
-    Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+    Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
         var url = 'http://' + value;
         return lazyJson.lazyOboeHttp({
             url: url,
-            nodePath: parameters['path']
+            nodePath: parameters.root
         });
     }
 }

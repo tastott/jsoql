@@ -172,6 +172,7 @@ SelectList
 FromTarget
     : Property
     | Quoted
+	| Object
     ;
 
 AliasedFromTarget

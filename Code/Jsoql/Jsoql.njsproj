@@ -5,7 +5,10 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>Jsoql</Name>
     <RootNamespace>Jql</RootNamespace>
-    <ScriptArguments>-q "SELECT * FROM 'file://../Data/pets.json' ORDER BY Name "</ScriptArguments>
+    <ScriptArguments>-q "SELECT 
+    * 
+FROM 
+  { uri:  'http://northwind.servicestack.net/customers.json', path :'Customers'}"</ScriptArguments>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>

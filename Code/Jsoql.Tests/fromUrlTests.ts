@@ -17,9 +17,9 @@ export function FromUrl() {
         .fail(error => setTimeout(() => assert.fail(null, null, error)));
 }
 
-export function FromUrlWithPath() {
+export function FromUrlWithExplicitRoot() {
 
-    var jsoql = "SELECT * FROM 'http://localhost:8000/whatever.json?path=SomeProperty'";
+    var jsoql = "SELECT * FROM {uri: 'http://localhost:8000/whatever.json', root: 'SomeProperty'}";
 
     return readFilePromised('./Data/nested-orders.json', 'utf8')
         .then(json => JSON.parse(json))

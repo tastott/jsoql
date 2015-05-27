@@ -8,9 +8,17 @@ import util = require('./utilities')
 import evl = require('./evaluate')
 var clone = require('clone')
 
+interface DatasourceConfig {
+    Target: any;
+    Alias: string;
+    Parameters?: any;
+    Condition?: any;
+    Over?: boolean; 
+}
+
 export class JsoqlQuery {
 
-    private static FromTargetRegex = new RegExp('^([A-Za-z]+)://([^?]+)(?:\\?(.+))?$', 'i');
+    private static UriRegex = new RegExp('^([A-Za-z]+)://(.+)$', 'i');
     private queryContext: m.QueryContext;
     private evaluator: evl.Evaluator;
 
@@ -28,21 +36,21 @@ export class JsoqlQuery {
         this.evaluator = new evl.Evaluator(dataSources); 
     }
 
-    private GetSequence(target: any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+    private GetSequence(target: any, parameters: any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
         //Property
         if (typeof target != 'string') {
             return this.dataSources['var'].Get(target, {}, this.queryContext);
         }
         else {
-            var match = target.match(JsoqlQuery.FromTargetRegex);
+            var match = target.match(JsoqlQuery.UriRegex);
 
             if (!match) {
                 return this.dataSources['var'].Get(target, {}, this.queryContext);
             }
             else {
                 var scheme = match[1].toLowerCase();
-                var parameters = match[3] ? qstring.Parse(match[3]) : {};
+                parameters = parameters || {};
                 var dataSource = this.dataSources[scheme];
                 if (!dataSource) throw new Error("Invalid scheme for from clause target: '" + scheme + "'");
 
@@ -54,9 +62,9 @@ export class JsoqlQuery {
 
     private From(fromClause: any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
-        var targets = this.CollectFromTargets(fromClause);
+        var targets = this.CollectDatasources(fromClause);
 
-        var seq = this.GetSequence(targets[0].Target);
+        var seq = this.GetSequence(targets[0].Target, targets[0].Parameters);
 
         if (targets.length > 1) {
             var aliases = lazy(targets).map(t => t.Alias);
@@ -79,7 +87,7 @@ export class JsoqlQuery {
             //Join/over each subsequent table
             lazy(targets).slice(1).each(target => {
 
-                if (target.Condition) seq = this.Join(seq, this.GetSequence(target.Target), target.Alias, target.Condition);
+                if (target.Condition) seq = this.Join(seq, this.GetSequence(target.Target, target.Parameters), target.Alias, target.Condition);
                 else if (target.Over) seq = this.Over(seq, target.Target, target.Alias);
                 else throw new Error("Unsupported FROM clause");
                
@@ -130,12 +138,12 @@ export class JsoqlQuery {
 
     }
 
-    private CollectFromTargets(fromClauseNode: any): { Target: string; Alias: string; Condition?: any; Over?: boolean; }[] {
+    private CollectDatasources(fromClauseNode: parse.FromClauseNode): DatasourceConfig[] {
 
         //Join
         if (fromClauseNode.Expression) {
-            return this.CollectFromTargets(fromClauseNode.Left)
-                .concat(this.CollectFromTargets(fromClauseNode.Right)
+            return this.CollectDatasources(fromClauseNode.Left)
+                .concat(this.CollectDatasources(fromClauseNode.Right)
                 .map(n => {
                         n.Condition = fromClauseNode.Expression;
                         return n;
@@ -144,7 +152,7 @@ export class JsoqlQuery {
         }
         //Over
         else if (fromClauseNode.Over) {
-            return this.CollectFromTargets(fromClauseNode.Left)
+            return this.CollectDatasources(fromClauseNode.Left)
                 .concat([{ Target: fromClauseNode.Over, Alias: fromClauseNode.Alias, Over: true }]);       
         }
         //Aliased
@@ -154,7 +162,31 @@ export class JsoqlQuery {
                 return [{ Target: fromClauseNode.Target.Quoted, Alias: fromClauseNode.Alias }];
             }
             //Unquoted
-            else return [{ Target: fromClauseNode.Target, Alias: fromClauseNode.Alias }];
+            else {
+                var collected = this.CollectDatasources(fromClauseNode.Target);
+                return [{ Target: collected[0].Target, Alias: fromClauseNode.Alias }];
+            }
+        }
+        //Object
+        else if (fromClauseNode.KeyValues) {
+            var keyValues = lazy(fromClauseNode.KeyValues)
+                .map(kv => {
+                    return {
+                        Key: kv.Key,
+                        Value: evl.Evaluator.Evaluate(kv.Value, null)
+                    };
+                });
+            var uri = keyValues.find(kv => kv.Key === 'uri');
+            if (!uri) throw new Error("Datasource is missing the 'uri' property.");
+
+            return [{
+                Target: uri.Value,
+                Alias: null,
+                Parameters: keyValues
+                    .filter(kv => kv.Key !== 'uri')
+                    .map(kv => [kv.Key, kv.Value])
+                    .toObject()
+            }];
         }
         //Un-aliased
         else {
@@ -295,10 +327,10 @@ export class JsoqlQuery {
     }
 
     GetDatasources(): m.Datasource[]{
-        return this.CollectFromTargets(this.stmt.FromWhere.From)
+        return this.CollectDatasources(this.stmt.FromWhere.From)
             .filter(t => typeof t.Target === 'string')
             .map(t => {
-                var match = t.Target.match(JsoqlQuery.FromTargetRegex);
+                var match = t.Target.match(JsoqlQuery.UriRegex);
                 return {
                     Type: match[1],
                     Value: match[2] + (match[3] || '')

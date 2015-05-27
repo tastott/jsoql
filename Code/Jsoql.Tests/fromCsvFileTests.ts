@@ -17,7 +17,7 @@ export function FromCsvFileWithDefaults() {
 }
 
 export function FromCsvFileWithExplicitHeaders() {
-    var jsoql = "SELECT * FROM 'file://Data/customers.csv?headers=MyHeader1,MyHeader2,MyHeader3'";
+    var jsoql = "SELECT * FROM {uri: 'file://Data/customers.csv', headers:'MyHeader1,MyHeader2,MyHeader3'}";
     return testBase.ExecuteAndAssert(jsoql, null,
         results => {
             assert.equal(results.length, 92);
@@ -30,7 +30,7 @@ export function FromCsvFileWithExplicitHeaders() {
 }
 
 export function FromCsvFileWithExplicitHeadersAndSkip() {
-    var jsoql = "SELECT * FROM 'file://Data/customers.csv?headers=MyHeader1,MyHeader2,MyHeader3&skip=1'";
+    var jsoql = "SELECT * FROM {uri: 'file://Data/customers.csv', headers: 'MyHeader1,MyHeader2,MyHeader3', skip:1}";
     return testBase.ExecuteAndAssert(jsoql, null,
         results => {
             assert.equal(results.length, 91);
@@ -44,7 +44,7 @@ export function FromCsvFileWithExplicitHeadersAndSkip() {
 }
 
 export function FromCsvFileWithDifferentExtension() {
-    var jsoql = "SELECT * FROM 'file://Data/customers.csv2?format=csv'";
+    var jsoql = "SELECT * FROM {uri: 'file://Data/customers.csv2', format:'csv'}";
     return testBase.ExecuteAndAssert(jsoql, null,
         results => {
             assert.equal(results.length, 91);

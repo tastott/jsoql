@@ -32,7 +32,7 @@ export function FromFolderDefaultWithFileInfo() {
 }
 
 export function FromFolderWithRecursion() {
-    var query = "SELECT Order.Id AS Id FROM 'file://Data/Folder?recurse=true' ORDER BY Order.Id";
+    var query = "SELECT Order.Id AS Id FROM {uri: 'file://Data/Folder', recurse: true } ORDER BY Order.Id";
     var expected = [
         { Id: 11074 },
         { Id: 11075 },
@@ -43,7 +43,7 @@ export function FromFolderWithRecursion() {
 }
 
 export function FromFolderWithPattern() {
-    var query = "SELECT Order.Id AS Id FROM 'file://Data/Folder?pattern=*.blah'";
+    var query = "SELECT Order.Id AS Id FROM {uri: 'file://Data/Folder', pattern:'*.blah'}";
     var expected = [
         { Id: 11074 },
         { Id: 11075 }
