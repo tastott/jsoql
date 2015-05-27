@@ -20,13 +20,16 @@ export class QueryStorageService {
     public static QueryExtension = 'jsoql';
 
     constructor(private queryFileService: fServ.FileService,
-        private querySettingsRepo : repo.TypedRepository<d.Dictionary<QuerySettings>>) {
+        private querySettingsRepository : d.IDictionary<string, QuerySettings>) {
     }
 
     GetAll(): Q.Promise<SavedQuery[]> {
-        var querySettings = this.querySettingsRepo.Get() || {};
+    
         var loadFiles = this.queryFileService.GetAll().map(entry => {
-            if (!querySettings[entry.Id].InWorkspace) return Q(<SavedQuery>null);
+            var querySetttingsEntry = this.querySettingsRepository.Get(entry.Id);
+            if (!querySetttingsEntry || !querySetttingsEntry.InWorkspace) {
+                return Q(<SavedQuery>null);
+            }
             else {
                 return this.queryFileService.Load(entry.Id)
                     .fail(() => {
@@ -38,7 +41,7 @@ export class QueryStorageService {
                             Id: entry.Id,
                             Name: entry.Name,
                             Query: data,
-                            Settings: querySettings[entry.Id]
+                            Settings: querySetttingsEntry
                         };
                     });
                 }
@@ -54,9 +57,7 @@ export class QueryStorageService {
                 : this.queryFileService.SaveAs(query.Query, { Extensions: [QueryStorageService.QueryExtension] })
             )
             .then(saved => {
-                var allSettings = this.querySettingsRepo.Get() || {};
-                allSettings[saved.Id] = query.Settings;
-                this.querySettingsRepo.Put(allSettings);
+                this.querySettingsRepository.Set(saved.Id, query.Settings);
 
                 return {
                     Id: saved.Id,
@@ -68,10 +69,6 @@ export class QueryStorageService {
     }
 
     Unload(id : string) {
-        var settings = this.querySettingsRepo.Get();
-        if (settings[id]) {
-            settings[id].InWorkspace = false;
-            this.querySettingsRepo.Put(settings);
-        }
+        this.querySettingsRepository.Remove(id);
     }
 }

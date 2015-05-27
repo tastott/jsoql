@@ -3,9 +3,10 @@
 import $ = require('jquery')
 import m = require('../models/models')
 import Q = require('q')
-import fServ = require('../Services/fileService')
+import dshs = require('../Services/datasourceHistoryService')
 import d = require('../models/dictionary')
 import path = require('path') //OK in browser?
+import lazy = require('lazy.js')
 
 var keywords = [
     /select\s+/ig,
@@ -84,16 +85,18 @@ export class AceQueryEditorDirective  {
     }
 
     public static Factory() {
-        var directive = (configuration: m.Configuration) => {
-            return new AceQueryEditorDirective(configuration);
+        var directive = (configuration: m.Configuration, datasourceHistoryService : dshs.DatasourceHistoryService) => {
+            return new AceQueryEditorDirective(configuration, datasourceHistoryService);
         };
 
-        directive['$inject'] = ['configuration'];
+        directive['$inject'] = ['configuration', 'datasourceHistoryService'];
 
         return directive;
     }
 
-    constructor(private configuration : m.Configuration) {
+    constructor(private configuration: m.Configuration,
+        private datasourceHistoryService: dshs.DatasourceHistoryService) {
+
         this.link = ($scope: QueryEditorScope, element: JQuery, attributes: ng.IAttributes) => {
             console.log('inside link')
 
@@ -135,6 +138,7 @@ export class AceQueryEditorDirective  {
         if (this.configuration.Environment == m.Environment.Desktop) {
             completers.push(new FileUriCompleter(() => $scope.BaseDirectory.Value()));
         }
+        completers.push(new RecentHttpCompleter(this.datasourceHistoryService));
 
         completers.forEach(c => langTools.addCompleter(c));
     } 
@@ -166,19 +170,19 @@ export interface FudgedAceEditor extends AceAjax.Editor {
     }
 }
 
-//Desktop-only
-class FileUriCompleter implements AceCompleter{
+class UriCompleter {
 
-    static UnclosedFileUriRegex = new RegExp("'file://([^']*)$", "i")
-    static FileUriPattern = "'file://[^']*'?"; //Warning: this could over-match?
+    private unclosedUriRegex: RegExp;
+    private uriPattern: string;
 
-    static ExtensionScores: d.Dictionary<number> = {
-        '.csv': 99,
-        '.json': 100,
-        '.jsonl': 101
+    constructor(private scheme: string) {
+        this.unclosedUriRegex = new RegExp("'" + scheme + "://([^']*)$", "i");
+        this.uriPattern = "'" + scheme + "://[^']*'?"; //Warning: this could over-match?
     }
 
-    constructor(private getBaseDirectory: () => string) {
+    //Override this in sub-class to suggest completions for this partial URI
+    protected GetUriSuggestions(uriPrefix: string): Q.Promise<AceCompletion[]> {
+        throw new Error('Abstract method');
     }
 
     getCompletions(editor: AceAjax.Editor, session: AceAjax.IEditSession, pos: AceAjax.Position, prefix, callback) {
@@ -192,14 +196,18 @@ class FileUriCompleter implements AceCompleter{
             if (!lineToHere) callback(null, []);
             else {
 
-                //Are we part-way through a file URI?
-                var fileUriMatch = lineToHere.match(FileUriCompleter.UnclosedFileUriRegex);
-                if (!fileUriMatch) callback(null, []);
+                //Are we part-way through a URI?
+                var uriMatch = lineToHere.match(this.unclosedUriRegex);
+                if (!uriMatch) callback(null, []);
                 else {
-                    var fileUriPrefix = fileUriMatch[1];
+                    var uriPrefix = uriMatch[1];
 
-                    this.GetFileUriSuggestions(this.getBaseDirectory(), fileUriPrefix)
-                        .then(suggestions => callback(null, suggestions))
+                    this.GetUriSuggestions(uriPrefix)
+                        .then(suggestions => {
+                            //Use this.insert() method to effect the completion
+                            suggestions.forEach(s => s.completer = this);
+                            callback(null, suggestions);
+                        })
                         .fail(error => console.log(error));
 
                 }
@@ -207,36 +215,63 @@ class FileUriCompleter implements AceCompleter{
         }
     }
 
+    //Override this in sub-class to indicate whether or not the caret should be moved out of the completed value
+    protected ExitUri(value: string): boolean {
+        throw new Error('Abstract method');
+    }
+
     public insertMatch = (editor: FudgedAceEditor, completion: AceCompletion) => {
 
         var position = editor.selection.getRange().start;
 
-        //Find this partial file URI with a search (probably a better way to do this?)
-        var search : AceAjax.Range = editor.find(FileUriCompleter.FileUriPattern, {
+        //Find this partial URI with a search (probably a better way to do this?)
+        var search: AceAjax.Range = editor.find(this.uriPattern, {
             caseSensitive: false,
             range: new Range(position.row, 0, position.row + 1, 0), //Search whole row
             regExp: true,
-            start: new Range(position.row, 0,position.row, 0)
+            start: new Range(position.row, 0, position.row, 0)
         });
-        editor.replace("'file://" + completion.value + "'");
+        editor.replace("'" + this.scheme + "://" + completion.value + "'");
 
-        if (!search)  throw new Error('Unable to find file URI to replace');
+        if (!search) throw new Error('Unable to find URI to replace');
 
         var selectionEnd = editor.selection.getRange().end;
         var newCursorPos: AceAjax.Position;
-        //If completion is a file, move cursor outside quotes
-        if (path.extname(completion.value)) newCursorPos = { row: selectionEnd.row, column: selectionEnd.column };
+        //Move cursor outside quotes if appropriate
+        if (this.ExitUri(completion.value)) newCursorPos = { row: selectionEnd.row, column: selectionEnd.column };
         //Otherwise keep cursor inside quotes
         else newCursorPos = { row: selectionEnd.row, column: selectionEnd.column - 1 };
 
         editor.selection.setRange(new Range(newCursorPos.row, newCursorPos.column, newCursorPos.row, newCursorPos.column), false);
 
     }
+}
 
+//Desktop-only
+class FileUriCompleter extends UriCompleter implements AceCompleter{
+
+    static UnclosedFileUriRegex = new RegExp("'file://([^']*)$", "i")
+    static FileUriPattern = "'file://[^']*'?"; //Warning: this could over-match?
+
+    static ExtensionScores = {
+        '.csv': 99,
+        '.json': 100,
+        '.jsonl': 101
+    }
+
+    constructor(private getBaseDirectory: () => string) {
+        super('file');
+    }
 
     private globPromised: (pattern: string, options: any) => Q.Promise<string[]> = <any>Q.denodeify(require('glob'));
 
-    private GetFileUriSuggestions(baseDirectory: string, prefix: string): Q.Promise<AceCompletion[]> {
+    protected ExitUri(value: string): boolean {
+        return !!path.extname(value);
+    }
+
+    protected GetUriSuggestions(prefix: string): Q.Promise<AceCompletion[]> {
+
+        var baseDirectory = this.getBaseDirectory();
 
         var pattern = (path.isAbsolute(prefix) || !baseDirectory)
             ? prefix + '*'
@@ -256,11 +291,39 @@ class FileUriCompleter implements AceCompleter{
                         name: path.basename(file),
                         value: file,
                         score: score,
-                        meta: ext ? 'file' : 'folder',
-                        completer: this
+                        meta: ext ? 'file' : 'folder'
                     };
                 })
             );
     }
 
+}
+
+
+class RecentHttpCompleter extends UriCompleter implements AceCompleter {
+
+    constructor(private datasourceHistoryService: dshs.DatasourceHistoryService) {
+        super('http');
+    }
+
+    protected ExitUri(value: string): boolean {
+        return true;
+    }
+
+    protected GetUriSuggestions(prefix: string): Q.Promise<AceCompletion[]> {
+        var suggestions = lazy(this.datasourceHistoryService.GetRecent('http'))
+            .filter(ds => !prefix || ds.Value.indexOf(prefix) >= 0)
+            .first(10)
+            .map(ds => {
+                return {
+                    name: ds.Value,
+                    value: ds.Value,
+                    score: 100,
+                    meta: 'url'
+                };
+            })
+            .toArray();
+            
+        return Q(suggestions);
+    }
 }

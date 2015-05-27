@@ -1,9 +1,9 @@
-﻿///<reference path="../typings/jsoql/jsoql.d.ts" />
+﻿
 ///<reference path="../models/models.ts"/>
 import Q = require('q')
 import qss = require('../Services/queryStorageService')
 import _fs = require('../Services/fileService')
-
+import qes = require('../Services/queryExecutionService')
 import m = require('../models/models')
 import util = require('../utilities')
 
@@ -12,7 +12,7 @@ class QueryTab {
     constructor(private $scope: ng.IScope,
         private queryService: qss.QueryStorageService,
         private queryFileService: _fs.FileService,
-        private jsoqlEngine: JsoqlEngine,
+        private queryExecutionService : qes.QueryExecutionService,
         private name: string,
         StorageId?: string,
         QueryText?: string,
@@ -41,13 +41,9 @@ class QueryTab {
 
     Execute = () => {
         if (this.QueryText.GetValue()) {
-            var context: JsoqlQueryContext = {
-                BaseDirectory: this.BaseDirectory.GetValue()
-            };
-
             this.IsExecuting = true;
 
-            this.jsoqlEngine.ExecuteQuery(this.QueryText.GetValue(), context)
+            this.queryExecutionService.ExecuteQuery(this.QueryText.GetValue(), this.BaseDirectory.GetValue())
                 .then(result => {
                     this.$scope.$apply(() => this.QueryResult = result); //TOOD: Better way to do this?
                 })
@@ -118,7 +114,7 @@ export class AppController {
         private queryStorageService: qss.QueryStorageService,
         private dataFileService: _fs.FileService,
         private configuration: m.Configuration,
-        private jsoqlEngine : JsoqlEngine) {
+        private queryExecutionService : qes.QueryExecutionService) {
 
         $scope.SelectTab = this.SelectTab;
         $scope.CloseTab = this.CloseTab;
@@ -190,7 +186,7 @@ export class AppController {
             this.$scope,
             this.queryStorageService,
             this.queryFileService,
-            this.jsoqlEngine,
+            this.queryExecutionService,
             'new');;
 
         this.$scope.Tabs.push(tab);
@@ -201,7 +197,7 @@ export class AppController {
             .then(queries => queries.map(query => 
                 new QueryTab(this.$scope, this.queryStorageService,
                     this.queryFileService,
-                    this.jsoqlEngine,
+                    this.queryExecutionService,
                     query.Name, query.Id, query.Query, query.Settings.BaseDirectory)
             ));
     }

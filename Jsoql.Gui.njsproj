@@ -52,7 +52,9 @@
     <TypeScriptCompile Include="Scripts\Directives\queryResult.ts" />
     <TypeScriptCompile Include="Scripts\Models\dictionary.ts" />
     <TypeScriptCompile Include="Scripts\Models\models.ts" />
+    <TypeScriptCompile Include="Scripts\Services\datasourceHistoryService.ts" />
     <TypeScriptCompile Include="Scripts\Services\fileService.ts" />
+    <TypeScriptCompile Include="Scripts\Services\queryExecutionService.ts" />
     <TypeScriptCompile Include="Scripts\Services\queryStorageService.ts" />
     <TypeScriptCompile Include="Scripts\Services\TypedRepository.ts" />
     <TypeScriptCompile Include="Scripts\typings\ace\ace.d.ts" />
@@ -61,6 +63,7 @@
     <TypeScriptCompile Include="Scripts\typings\browserify\browserify.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\jquery\jquery.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\jsoql\jsoql.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\lazy.js\lazyjs.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\node\node.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\q\Q.d.ts" />
     <TypeScriptCompile Include="Scripts\utilities.ts" />
@@ -78,6 +81,7 @@
     <Folder Include="Scripts\typings\browserify\" />
     <Folder Include="Scripts\typings\jquery\" />
     <Folder Include="Scripts\typings\jsoql\" />
+    <Folder Include="Scripts\typings\lazy.js\" />
     <Folder Include="Scripts\typings\node\" />
     <Folder Include="Scripts\typings\q\" />
     <Folder Include="Scripts\Vendor\" />
