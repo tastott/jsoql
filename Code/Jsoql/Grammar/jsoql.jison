@@ -41,6 +41,11 @@ OR			        return 'OR'
 [0-9\.-]+		    return 'Number'
 [@A-Za-z0-9_\*]+    return 'PlainIdentifier'
 \'[^\']+\'          return 'Quotation'
+
+'{'                 return '{'
+'}'                 return '}'
+':'                 return ':'
+
 .                   return 'INVALID'
 
 /lex
@@ -100,6 +105,7 @@ Expression
     | Property
     | Quoted
     | Boolean  
+    | Object
 	| Number
 		{ $$ = parseFloat($1)}
 	| Expression 'AND' Expression
@@ -124,6 +130,22 @@ Expression
 		{ $$ = {SubQuery: $2}}
     ;
 
+KeyValue
+    : Identifier ':' Expression
+        { $$ = {Key: $1, Value: $3}}
+    ;
+
+KeyValueList
+    : KeyValue
+        { $$ = [$1]}
+    | KeyValueList ',' KeyValue
+        { $$ = $1.concat([$3])}
+    ;
+
+Object
+    : '{' KeyValueList '}'
+        { $$ = {KeyValues: $2}}
+    ;
 
 ExpressionList
     : Expression
@@ -131,6 +153,7 @@ ExpressionList
     | ExpressionList ',' Expression
         { $$ = $1.concat([$3])}
     ;
+
 
 Selectable
 	: Expression

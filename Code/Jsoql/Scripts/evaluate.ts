@@ -75,6 +75,21 @@ export class Evaluator {
             var args = expression.Args.map(arg => this.Evaluate(arg, target));
             return this.DoScalarFunction(expression.Call, args);
         }
+        else if (expression.KeyValues) {
+            var keyValues: { Key: string; Value: any }[] = expression.KeyValues;
+            return lazy(keyValues)
+                .map(kv => [kv.Key, this.Evaluate(kv.Value, target)])
+                .toObject();
+        }
+        else if (expression.SubQuery) {
+            var context: m.QueryContext = {
+                Data: target
+            };
+            var subquery = new query.JsoqlQuery(expression.SubQuery, this.datasources, context);
+            var results = subquery.ExecuteSync();
+
+            return util.MonoProp(results[0]);
+        }
         else return expression;
     }
 
@@ -129,6 +144,15 @@ export class Evaluator {
             var args = expression.Args.map(arg => this.Evaluate(arg, target));
             return [{ Alias: '', Value: this.DoScalarFunction(expression.Call, args) }];
         }
+        else if (expression.KeyValues) {
+            var keyValues: { Key: string; Value: any }[] = expression.KeyValues;
+            return [{
+                Alias: alias,
+                Value: lazy(keyValues)
+                    .map(kv => [kv.Key, this.Evaluate(kv.Value, target)])
+                    .toObject()
+            }];
+        }
         else return [{ Alias: '', Value: expression }];
     }
 
@@ -155,10 +179,12 @@ export class Evaluator {
             var args = expression.Args.map(arg => this.EvaluateGroup(arg, group));
             return this.DoOperation(expression.Operator, args);
         }
-        //else if (expression.Property) {
-        //    if (expression.Child) return this.Evaluate(expression.Child, target[expression.Property]);
-        //    else return [expression.Property, target[expression.Property]];
-        //}
+        else if (expression.KeyValues) {
+            var keyValues: { Key: string; Value: any }[] = expression.KeyValues;
+            return lazy(keyValues)
+                .map(kv => [kv.Key, this.EvaluateGroup(kv.Value, group)])
+                .toObject();
+        }
         else if (expression.Quoted) return expression.Quoted;
         else return expression;
     }
