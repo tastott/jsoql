@@ -147,6 +147,10 @@ export class Evaluator {
             var key = Evaluator.Key(expression);
             return group.Key[key];
         }
+        else if (expression.Call) {
+            var args = expression.Args.map(arg => this.EvaluateGroup(arg, group));
+            return this.DoScalarFunction(expression.Call, args);
+        }
         else if (expression.Operator) {
             var args = expression.Args.map(arg => this.EvaluateGroup(arg, group));
             return this.DoOperation(expression.Operator, args);

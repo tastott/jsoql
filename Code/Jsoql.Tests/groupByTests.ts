@@ -100,3 +100,17 @@ export function GroupByHaving() {
     return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
 }
 
+export function GroupByWithScalarFunction() {
+    var data = [
+        { Name: 'Bob', Message: 'Hello, my name is Bob' },
+        { Name: 'Dave', Message: 'Hi Bob, nice to meet you' },
+        { Name: 'Bob', Message: "Well this is nice isn't it?" }
+    ];
+    var query = "SELECT REGEXMATCH(Name, '^[A-Z]') AS FirstLetter FROM 'var://Test' GROUP BY Name";
+
+    var expected = [
+        { FirstLetter: 'B' },
+        { FirstLetter: 'D' }
+    ];
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
