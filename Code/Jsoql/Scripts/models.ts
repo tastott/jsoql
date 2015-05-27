@@ -8,7 +8,13 @@ export interface Group {
     Items: any[];
 }
 
+export interface Datasource {
+    Type: string;
+    Value: string;
+}
+
 export interface QueryResult {
     Results?: any[];
-    Errors?: string[]
+    Errors?: string[];
+    Datasources?: Datasource[];
 }

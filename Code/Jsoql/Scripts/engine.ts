@@ -16,11 +16,15 @@ export class JsoqlEngine {
             statement = p.Parse(jsoql);
 
             var query = new q.JsoqlQuery(statement, this.datasources, context);
+            var datasources = query.GetDatasources();
 
             return query.Execute()
                 .then(results => {
-                return { Results: results }
-            });
+                    return {
+                        Results: results,
+                        Datasources: datasources
+                    }
+                });
         }
         catch (ex) {
             var result: m.QueryResult = {

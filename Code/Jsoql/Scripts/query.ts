@@ -10,6 +10,7 @@ var clone = require('clone')
 
 export class JsoqlQuery {
 
+    private static FromTargetRegex = new RegExp('^([A-Za-z]+)://([^?]+)(?:\\?(.+))?$', 'i');
     private queryContext: m.QueryContext;
     private evaluator: evl.Evaluator;
 
@@ -29,14 +30,12 @@ export class JsoqlQuery {
 
     private GetSequence(target: any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
-        var fromTargetRegex = new RegExp('^([A-Za-z]+)://([^?]+)(?:\\?(.+))?$', 'i');
-
         //Property
         if (typeof target != 'string') {
             return this.dataSources['var'].Get(target, {}, this.queryContext);
         }
         else {
-            var match = target.match(fromTargetRegex);
+            var match = target.match(JsoqlQuery.FromTargetRegex);
 
             if (!match) {
                 return this.dataSources['var'].Get(target, {}, this.queryContext);
@@ -293,6 +292,18 @@ export class JsoqlQuery {
         else {
             return JsoqlQuery.SequenceToArray(this.SelectUngrouped(seq));
         }
+    }
+
+    GetDatasources(): m.Datasource[]{
+        return this.CollectFromTargets(this.stmt.FromWhere.From)
+            .filter(t => typeof t.Target === 'string')
+            .map(t => {
+                var match = t.Target.match(JsoqlQuery.FromTargetRegex);
+                return {
+                    Type: match[1],
+                    Value: match[2] + (match[3] || '')
+                };
+            });
     }
 
     private GroupBySync(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, expressions : any[]): LazyJS.Sequence<m.Group> {
