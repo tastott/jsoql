@@ -3,8 +3,6 @@
 import assert = require('assert');
 import testBase = require('./testBase');
 
-//Have to assert inside setTimeout to get the async test to work
-//https://nodejstools.codeplex.com/discussions/550545
 
 export function OrderByAsc() {
     var data = [3, 1, 2]
@@ -19,10 +17,7 @@ export function OrderByAsc() {
         { Value: 2 },
         { Value: 3 }
     ];
-    return testBase.ExecuteArrayQuery("SELECT Value FROM 'var://Test' ORDER BY Value ASC", data)
-        .then(results => {
-        setTimeout(() => assert.deepEqual(results, expected));
-    });
+    return testBase.ExecuteAndAssertDeepEqual("SELECT Value FROM 'var://Test' ORDER BY Value ASC", data, expected);
 }
 
 export function OrderByDesc() {
@@ -38,10 +33,7 @@ export function OrderByDesc() {
         { Value: 2 },
         { Value: 1 }
     ];
-    return testBase.ExecuteArrayQuery("SELECT Value FROM 'var://Test' ORDER BY Value DESC", data)
-        .then(results => {
-        setTimeout(() => assert.deepEqual(results, expected));
-    });
+    return testBase.ExecuteAndAssertDeepEqual("SELECT Value FROM 'var://Test' ORDER BY Value DESC", data, expected);
 }
 
 export function OrderByImplicitAsc() {
@@ -57,10 +49,7 @@ export function OrderByImplicitAsc() {
         { Value: 2 },
         { Value: 3 }
     ];
-    return testBase.ExecuteArrayQuery("SELECT Value FROM 'var://Test' ORDER BY Value", data)
-        .then(results => {
-        setTimeout(() => assert.deepEqual(results, expected));
-    });
+    return testBase.ExecuteAndAssertDeepEqual("SELECT Value FROM 'var://Test' ORDER BY Value", data, expected);
 }
 
 export function OrderByMultiple() {
@@ -75,10 +64,7 @@ export function OrderByMultiple() {
         { Value: 2, Thing: 1 },
         { Value: 2, Thing: 3 }
     ];
-    return testBase.ExecuteArrayQuery("SELECT Value, Thing FROM 'var://Test' ORDER BY Value ASC, Thing ASC", data)
-        .then(results => {
-        setTimeout(() => assert.deepEqual(results, expected));
-    });
+    return testBase.ExecuteAndAssertDeepEqual("SELECT Value, Thing FROM 'var://Test' ORDER BY Value ASC, Thing ASC", data, expected);
 }
 
 export function OrderByGrouped() {
@@ -96,8 +82,5 @@ export function OrderByGrouped() {
         { Value: 'C' },
         { Value: 'A'}
     ];
-    return testBase.ExecuteArrayQuery("SELECT Value FROM 'var://Test' GROUP BY Value ORDER BY COUNT()", data)
-        .then(results => {
-        setTimeout(() => assert.deepEqual(results, expected));
-    });
+    return testBase.ExecuteAndAssertDeepEqual("SELECT Value FROM 'var://Test' GROUP BY Value ORDER BY COUNT()", data, expected);
 }

@@ -34,6 +34,12 @@ var scalarFunctions: FunctionMappings = {
             else return null;
         }
         else return null;
+    },
+    'length': args => {
+        if (args[0] && typeof args[0] === 'string') {
+            return (<string>args[0]).length;
+        }
+        else return null;
     }
 }
 
