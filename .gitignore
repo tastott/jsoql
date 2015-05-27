@@ -328,3 +328,5 @@ FakesAssemblies/
 /Code/Jsoql.Tests/stringTests.js.map
 /Code/Jsoql.Tests/deepSelectTests.js
 /Code/Jsoql.Tests/deepSelectTests.js.map
+/Code/Jsoql.Gui/Scripts/Services/datasourceHistoryService.js
+/Code/Jsoql.Gui/Scripts/Services/queryExecutionService.js

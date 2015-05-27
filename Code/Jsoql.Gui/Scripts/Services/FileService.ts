@@ -23,25 +23,24 @@ export interface FileService {
 }
 
 export class BaseFileService {
-    protected fileIdsRepo: repo.TypedRepository<d.Dictionary<string>>;
+    protected files: d.IDictionary<string, SavedFile>;
 
     constructor(serviceId: string) {
-        this.fileIdsRepo = new repo.LocalStorageRepository<d.Dictionary<string>>(serviceId)
+        this.files = new d.LocalStorageDictionary<string, SavedFile>(serviceId)
     }
 
     protected IdToFileEntry(id: string): SavedFile {
         throw new Error("Abstract method");
     }
 
-    protected AddFileId(id: string) {
-        var ids = this.fileIdsRepo.Get() || {};
-        ids[id] = id;
-        this.fileIdsRepo.Put(ids);
+    protected AddFileEntry(id: string) : SavedFile{
+        var entry = this.IdToFileEntry(id);
+        this.files.Set(id, entry);
+        return entry;
     }
 
     GetAll(): SavedFile[] {
-        var ids = this.fileIdsRepo.Get() || {};
-        return Object.keys(ids).map(this.IdToFileEntry);
+        return this.files.Values();
     }
 }
 
@@ -65,8 +64,8 @@ export class OnlineFileService extends BaseFileService implements FileService {
 
     Save(data: string, id: string): Q.Promise<SavedFile> {
         localStorage.setItem(this.serviceId + ":content:" + id, data);
-        super.AddFileId(id);
-        return Q(this.IdToFileEntry(id));
+        var entry = super.AddFileEntry(id);
+        return Q(entry);
     }
 
     SaveAs(data: string, options: FileSaveOptions): Q.Promise<SavedFile> {
@@ -97,10 +96,7 @@ export class DesktopFileService extends BaseFileService implements FileService {
 
     Save(data: string, id: string): Q.Promise<SavedFile> {
         return Q.denodeify(require('fs').writeFile)(id, data)
-            .then(() => {
-                super.AddFileId(id);
-                return this.IdToFileEntry(id);
-            });
+            .then(() => super.AddFileEntry(id));
     }
 
     SaveAs(data : string, options : FileSaveOptions): Q.Promise<SavedFile> {

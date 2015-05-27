@@ -1,5 +1,10 @@
 ///<reference path="../q/Q.d.ts" />
 
+interface Datasource {
+    Type: string;
+    Value: string;
+}
+
 interface JsoqlQueryContext {
     BaseDirectory?: string;
     Data?: { [key: string]: any[] };
@@ -7,7 +12,8 @@ interface JsoqlQueryContext {
 
 interface JsoqlQueryResult {
     Results?: any[];
-    Errors?: string[]
+    Errors?: string[];
+    Datasources?: Datasource[];
 }
 
 interface JsoqlEngine {
