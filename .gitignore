@@ -326,3 +326,5 @@ FakesAssemblies/
 /Code/Jsoql.Gui/Scripts/cors.js
 /Code/Jsoql.Tests/stringTests.js
 /Code/Jsoql.Tests/stringTests.js.map
+/Code/Jsoql.Tests/deepSelectTests.js
+/Code/Jsoql.Tests/deepSelectTests.js.map
