@@ -293,8 +293,37 @@ export class YqlStreamingHttpDataSource implements DataSource {
 
         return lazyJson.lazyOboeHttp({
             url: url,
-            nodePath: parameters['path'] ? `query.results.json.${parameters['path']}` : 'query.results.json',
+            nodePath: parameters['root'] ? `query.results.json.${parameters['root']}` : 'query.results.json',
             noCredentials: true
         });
+    }
+}
+
+export class OnlineStreamingHttpDataSource implements DataSource {
+
+    private restrictedOriginDatasource: DataSource;
+    private localOrAnyOriginDatasource: DataSource;
+
+    constructor(yqlBaseUrl: string, private appBaseUrl: string) {
+        this.restrictedOriginDatasource = new YqlStreamingHttpDataSource(yqlBaseUrl);
+        this.localOrAnyOriginDatasource = new StreamingHttpDataSource();
+    }
+
+    Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+
+        //Use any origin datasource if parameters indicate this explicitly
+        if (parameters.anyOrigin) {
+            return this.localOrAnyOriginDatasource.Get(value, parameters, context);
+        }
+        else {
+            //Identify relative URLs using ~
+            var relativeUrlMatch = value.match(/^~\/(.+)/);
+            if (relativeUrlMatch) {
+                var url = this.appBaseUrl + '/' + relativeUrlMatch[1];
+                return this.localOrAnyOriginDatasource.Get(url, parameters, context);
+            } else {
+                return this.restrictedOriginDatasource.Get(value, parameters, context);
+            }
+        }
     }
 }

@@ -62,11 +62,13 @@ class OboeStream {
     //the value passed to the constructor is a stream
     //So let's make sure they're present! 
     static FudgeStreamForOboe(stream: _stream.Readable) {
-        ['resume', 'pause', 'pipe', 'unpipe', 'unshift'].forEach(method => {
+        ['pause', 'pipe', 'unpipe', 'unshift'].forEach(method => {
             if (!stream[method]) stream[method] = () => {
                 throw new Error('Not implemented. Only here to fool Oboe!');
             }
         });
+
+        if (!stream['resume']) stream['resume'] = () => { };
     }
 
     removeListener = (event: string, listener: StreamListener) => {
