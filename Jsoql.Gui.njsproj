@@ -36,6 +36,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="app.css" />
+    <Content Include="Data\orders.json" />
     <Content Include="index.html" />
     <Content Include="index-nw.html" />
     <Content Include="Views\Directives\folderInput.html" />
@@ -70,6 +71,7 @@
     <TypeScriptCompile Include="server.ts" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Data\" />
     <Folder Include="Scripts\" />
     <Folder Include="Scripts\Controllers\" />
     <Folder Include="Scripts\Directives\" />

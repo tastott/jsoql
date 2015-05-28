@@ -114,7 +114,8 @@ export class AppController {
         private queryStorageService: qss.QueryStorageService,
         private dataFileService: _fs.FileService,
         private configuration: m.Configuration,
-        private queryExecutionService : qes.QueryExecutionService) {
+        private queryExecutionService: qes.QueryExecutionService,
+        private $routeParams: any) {
 
         $scope.SelectTab = this.SelectTab;
         $scope.CloseTab = this.CloseTab;
@@ -123,13 +124,24 @@ export class AppController {
         $scope.Reload = this.Reload;
         $scope.OnQueryFileDrop = this.OnQueryFileDrop;
 
-        this.GetInitialTabs()
-            .then(tabs => {
+        //For demo purposes, the URL can contain some initial query text
+        //If so, don't bother loading any other tabs
+        if ($routeParams['queryText']) {
+            var tab = new QueryTab(this.$scope, this.queryStorageService, this.queryFileService,
+                this.queryExecutionService, 'query', null, $routeParams['queryText'], $routeParams['baseDirectory']);
+
+            this.AddTab(tab);
+            $scope.SelectedTab = tab;
+        }
+        else {
+            this.GetInitialTabs()
+                .then(tabs => {
                 if (!tabs || !tabs.length) this.AddTab();
                 else tabs.forEach(tab => this.AddTab(tab));
                 $scope.SelectedTab = $scope.Tabs[0];
             });
         }
+    }
 
     OnQueryFileDrop = (file: File) => {
         //NW
