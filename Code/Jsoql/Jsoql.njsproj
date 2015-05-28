@@ -6,9 +6,9 @@
     <Name>Jsoql</Name>
     <RootNamespace>Jql</RootNamespace>
     <ScriptArguments>-q "SELECT 
-    * 
+* 
 FROM 
-  { uri:  'http://northwind.servicestack.net/customers.json', path :'Customers'}"</ScriptArguments>
+  { uri:  'http://northwind.servicestack.net/customers.json', root: 'Customers'} AS c JOIN { uri:  'http://northwind.servicestack.net/orders.json', root: 'Results'} AS o ON o.Order.CustomerId = c.Id"</ScriptArguments>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>

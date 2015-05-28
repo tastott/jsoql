@@ -164,7 +164,7 @@ export class JsoqlQuery {
             //Unquoted
             else {
                 var collected = this.CollectDatasources(fromClauseNode.Target);
-                return [{ Target: collected[0].Target, Alias: fromClauseNode.Alias }];
+                return [{ Target: collected[0].Target, Alias: fromClauseNode.Alias, Parameters: collected[0].Parameters }];
             }
         }
         //Object
