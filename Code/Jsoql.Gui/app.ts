@@ -30,9 +30,9 @@ angular.module('Jsoql', ['ngRoute', 'ui.bootstrap'])
         ? new fServ.DesktopFileService('dataFileIds')
         : new fServ.OnlineFileService('dataFileIds')
     )
-    .factory('jsoqlEngine',($location : ng.ILocationService) => config.Environment == m.Environment.Desktop
+    .factory('jsoqlEngine',() => config.Environment == m.Environment.Desktop
         ? new jsoql.DesktopJsoqlEngine()
-        : new jsoql.OnlineJsoqlEngine($location.host() + ($location.port() ? ':' + $location.port() : ''))
+        : new jsoql.OnlineJsoqlEngine(location.hostname + (location.port ? ':' + location.port : '') + location.pathname)
     )
     .service('queryStorageService', qServ.QueryStorageService)
     .service('queryExecutionService', qeServ.QueryExecutionService)

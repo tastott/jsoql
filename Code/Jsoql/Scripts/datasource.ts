@@ -319,6 +319,9 @@ export class OnlineStreamingHttpDataSource implements DataSource {
             //Identify relative URLs using ~
             var relativeUrlMatch = value.match(/^~\/(.+)/);
             if (relativeUrlMatch) {
+                //Strip base url of any scheme and trailing slash
+                var baseUrl = this.appBaseUrl.replace(/^.+:\/\//, '').replace(/\/$/, '');
+
                 var url = this.appBaseUrl + '/' + relativeUrlMatch[1];
                 return this.localOrAnyOriginDatasource.Get(url, parameters, context);
             } else {
