@@ -1,4 +1,4 @@
-﻿import lazy = require('lazy.js')
+﻿var lazy: LazyJS.LazyStatic = require('./Hacks/lazy.node')
 import Q = require('q')
 import ds = require('./datasource')
 import parse = require('./parse')

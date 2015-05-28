@@ -5,10 +5,7 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>Jsoql</Name>
     <RootNamespace>Jql</RootNamespace>
-    <ScriptArguments>-q "SELECT 
-* 
-FROM 
-  { uri:  'http://northwind.servicestack.net/customers.json', root: 'Customers'} AS c JOIN { uri:  'http://northwind.servicestack.net/orders.json', root: 'Results'} AS o ON o.Order.CustomerId = c.Id"</ScriptArguments>
+    <ScriptArguments>-q "SELECT Order.Id FROM 'file://../Jsoql.Tests/Data/orders.jsonl'</ScriptArguments>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -61,6 +58,7 @@ FROM
   <ItemGroup>
     <Folder Include="Grammar\" />
     <Folder Include="Scripts\" />
+    <Folder Include="Scripts\Hacks\" />
     <Folder Include="Scripts\typings\" />
     <Folder Include="Scripts\typings\lazyjs\" />
     <Folder Include="Scripts\typings\node\" />
@@ -70,6 +68,8 @@ FROM
   <ItemGroup>
     <Compile Include="jsoql-parser.js" />
     <Compile Include="Grammar\parser-build.js" />
+    <Compile Include="Scripts\Hacks\lazy.js" />
+    <Compile Include="Scripts\Hacks\lazy.node.js" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">

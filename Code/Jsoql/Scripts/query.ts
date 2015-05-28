@@ -1,4 +1,4 @@
-﻿import lazy = require('lazy.js')
+﻿var lazy : LazyJS.LazyStatic = require('./Hacks/lazy.node')
 import Q = require('q')
 import ds = require('./datasource')
 import parse = require('./parse')
@@ -333,7 +333,7 @@ export class JsoqlQuery {
                 var match = t.Target.match(JsoqlQuery.UriRegex);
                 return {
                     Type: match[1],
-                    Value: match[2] + (match[3] || '')
+                    Value: match[2]
                 };
             });
     }

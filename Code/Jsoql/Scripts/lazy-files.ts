@@ -1,4 +1,4 @@
-﻿import lazy = require('lazy.js')
+﻿var lazy: LazyJS.LazyStatic = require('./Hacks/lazy.node')
 import oboe = require('oboe')
 import fs = require('fs')
 

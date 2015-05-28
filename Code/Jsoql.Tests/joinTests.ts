@@ -3,9 +3,6 @@
 import assert = require('assert');
 import testBase = require('./testBase');
 
-//Have to assert inside setTimeout to get the async test to work
-//https://nodejstools.codeplex.com/discussions/550545
-
 
 export function Join() {
     
@@ -32,9 +29,21 @@ export function Join() {
             "Customers": dataB
         }
     };
+    var query = "SELECT c.CustomerId AS CustomerId, c.Name AS Name, o.Order AS Order FROM 'var://Orders' AS o JOIN 'var://Customers' AS c ON o.CustomerId = c.CustomerId";
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
 
-    return testBase.ExecuteArrayQuery("SELECT c.CustomerId AS CustomerId, c.Name AS Name, o.Order AS Order FROM 'var://Orders' AS o JOIN 'var://Customers' AS c ON o.CustomerId = c.CustomerId", data)
-        .then(results => {
-        setTimeout(() => assert.deepEqual(results, expected));
+export function JoinHttpDatasources() {
+
+    var data = [1, 2, 3, 4, 5, 6, 7, 8].map(i => {
+        return { Id: i };
+    });
+    var query = "SELECT a.Id AS A, b.Id AS B FROM 'http://localhost:8000' AS a JOIN 'http://localhost:8000' AS b ON a.Id = b.Id + 1";
+    var expected = [1, 2, 3, 4, 5, 6, 7].map(i => {
+        return { A: i+1, B: i };
+    });
+
+    return testBase.ExecuteAndAssertWithServer(query, data, 8000, results => {
+        assert.deepEqual(results, expected);
     });
 }

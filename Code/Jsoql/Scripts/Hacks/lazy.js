@@ -1370,10 +1370,21 @@
   SortedSequence.prototype.each = function each(fn) {
     var sortFn = this.sortFn,
         result = this.parent.toArray();
-
-    result.sort(sortFn);
-
-    return forEach(result, fn);
+        
+	//FIX BY TS - Allows sorting of async sequence
+    if (result instanceof AsyncHandle) {
+        return result
+            .then(function (array) {
+                array.sort(sortFn);
+                return forEach(array, fn);
+            });
+    }
+    else {
+            
+        result.sort(sortFn);
+            
+        return forEach(result, fn);
+    }
   };
 
   /**
@@ -1702,17 +1713,25 @@
   FlattenedSequence.prototype.each = function each(fn) {
     var index = 0;
 
-    return this.parent.each(function recurseVisitor(e) {
+	//FIX BY TS - Allows flattening of an async sequence inside this sequence
+	//The handle/promise for this sequence has to wait for any async sequences
+	//within to finish before it can be treated as finished
+    var handle = this.parent.each(function recurseVisitor(e) {
       if (e instanceof Array) {
         return forEach(e, recurseVisitor);
       }
 
       if (e instanceof Sequence) {
-        return e.each(recurseVisitor);
+        var subhandle = e.each(recurseVisitor);
+        if (handle instanceof AsyncHandle 
+			&& subhandle instanceof AsyncHandle) handle.waitFor(subhandle);
+        return subhandle;
       }
 
       return fn(e, index++);
     });
+
+    return handle;
   };
 
   /**
@@ -2158,7 +2177,9 @@
 
     // TODO: Think of a way more efficient solution to this problem.
     if (eachResult instanceof AsyncHandle) {
-      return eachResult.then(function() { return memo; });
+            return eachResult.then(function () {
+                return memo;
+            });
     }
 
     return memo;
@@ -5082,6 +5103,7 @@
     this.rejectListeners = [];
     this.state = PENDING;
     this.cancelFn = cancelFn;
+    this.waitingFor = [];
   }
 
   // Async handle states
@@ -5130,6 +5152,22 @@
 
     return promise;
   };
+    
+	//FIX BY TS - Prevents this handle from resolving until some other
+	//handle has been resolved (see FlattenedSequence.each())
+    AsyncHandle.prototype.waitFor = function waitFor(handle) {
+        var _this = this;
+        if (this.waitingFor.indexOf(handle) == -1) {
+            this.waitingFor.push(handle);
+            handle.then(function () {
+                var index = _this.waitingFor.indexOf(handle);
+                if (index > -1) {
+                    _this.waitingFor.splice(index, 1);
+                    if (_this.state === RESOLVED) _this._resolve(_this.value);
+                }
+            });
+        }
+   }
 
   AsyncHandle.prototype._resolve = function _resolve(value) {
     if (this.state === REJECTED) {
@@ -5141,7 +5179,7 @@
       this.value = value;
     }
 
-    consumeListeners(this.resolveListeners, this.value);
+    if(this.waitingFor.length == 0) consumeListeners(this.resolveListeners, this.value);
   };
 
   AsyncHandle.prototype._reject = function _reject(reason) {
@@ -5524,7 +5562,7 @@
     });
 
     handle.onComplete(function() {
-      fn(buffer, pieceIndex++);
+      //fn(buffer, pieceIndex++);
     });
 
     return handle;

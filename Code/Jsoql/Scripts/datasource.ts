@@ -2,7 +2,7 @@
 import fs =  require('fs')
 import path = require('path')
 var csv = require('csv-string')
-import lazy = require('lazy.js')
+var lazy : LazyJS.LazyStatic = require('./Hacks/lazy.node')
 import util = require('./utilities')
 import lazyJson = require('./lazy-json')
 import lf = require('./lazy-files')
