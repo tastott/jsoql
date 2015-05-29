@@ -67,30 +67,26 @@ class FileSystemFileSequencer implements FileSequencer {
     }
 }
 
-class LocalStorageFileSequencer implements FileSequencer {
-    constructor(private getStorageKey: (id: string)=> string) {
-    }
-
-    private GetContent(fileId: string) {
-        return window.localStorage.getItem(this.getStorageKey(fileId));
+class StoredFileSequencer implements FileSequencer {
+    constructor(private getStoredFile: (id: string)=> string) {
     }
 
     Validate(fileId: string, context: m.QueryContext): boolean {
-        return !!window.localStorage.getItem(this.getStorageKey(fileId));
+        return !!window.localStorage.getItem(this.getStoredFile(fileId));
     }
 
     Sequence(fileId: string, context: m.QueryContext, parameters: DataSourceParameters): LazyJS.FileStreamSequence|LazyJS.StringLikeSequence {
-        var content = this.GetContent(fileId);
+        var content = this.getStoredFile(fileId);
         return lazy(content);
     }
 
     FirstLine(fileId: string, context: m.QueryContext): string {
-        var content = window.localStorage.getItem(this.getStorageKey(fileId));
+        var content = this.getStoredFile(fileId);
         return lazy(content).split(/\r?\n/).first();
     }
 
     Stream(fileId: string, context: m.QueryContext, parameters: DataSourceParameters): _stream.Readable {
-        var content = this.GetContent(fileId);
+        var content = this.getStoredFile(fileId);
         var stream = new _stream.Readable();
        
         stream.push(content);
@@ -327,8 +323,8 @@ export class DesktopSmartFileDataSource implements DataSource{
 
 export class OnlineSmartFileDataSource implements DataSource {
     private source: SmartFileDataSource;
-    constructor(getStorageKey : (id : string) => string) {
-        this.source = new SmartFileDataSource(new LocalStorageFileSequencer(getStorageKey));
+    constructor(getStoredFile : (id : string) => string) {
+        this.source = new SmartFileDataSource(new StoredFileSequencer(getStoredFile));
     }
 
     Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {

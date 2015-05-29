@@ -25,6 +25,6 @@ declare class DesktopJsoqlEngine implements JsoqlEngine {
 }
 
 declare class OnlineJsoqlEngine implements JsoqlEngine {
-    constructor(appBaseUrl : string);
+    constructor(appBaseUrl : string, getStoredFile: (id :string) => string);
     ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryResult>;
 }

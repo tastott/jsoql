@@ -16,7 +16,7 @@ import m = require('./Scripts/models/models')
 import cors = require('./Scripts/cors')
 var jsoql = require('../Jsoql/Scripts/engine') //TODO: Replace with npm module eventually
 
-var config = new m.Configuration(process['browser'] ? m.Environment.Online : m.Environment.Desktop);
+var config = new m.Configuration(true /* process['browser'] */? m.Environment.Online : m.Environment.Desktop);
 
 angular.module('Jsoql', ['ngRoute', 'ui.bootstrap'])
     .constant('querySettingsRepository', new d.LocalStorageDictionary<string, qServ.QuerySettings>('querySettings'))
@@ -30,9 +30,12 @@ angular.module('Jsoql', ['ngRoute', 'ui.bootstrap'])
         ? new fServ.DesktopFileService('dataFileIds')
         : new fServ.OnlineFileService('dataFileIds')
     )
-    .factory('jsoqlEngine',() => config.Environment == m.Environment.Desktop
+    .factory('jsoqlEngine',(dataFileService : fServ.FileService) => config.Environment == m.Environment.Desktop
         ? new jsoql.DesktopJsoqlEngine()
-        : new jsoql.OnlineJsoqlEngine(location.hostname + (location.port ? ':' + location.port : '') + location.pathname)
+        : new jsoql.OnlineJsoqlEngine(
+            location.hostname + (location.port ? ':' + location.port : '') + location.pathname,
+            fileId => dataFileService.LoadSync(fileId)
+        )
     )
     .service('queryStorageService', qServ.QueryStorageService)
     .service('queryExecutionService', qeServ.QueryExecutionService)
