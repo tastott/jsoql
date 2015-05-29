@@ -4,6 +4,7 @@ import $ = require('jquery')
 import m = require('../models/models')
 import Q = require('q')
 import dshs = require('../Services/datasourceHistoryService')
+import _fs = require('../Services/fileService')
 import d = require('../models/dictionary')
 import path = require('path') //OK in browser?
 import lazy = require('lazy.js')
@@ -85,17 +86,20 @@ export class AceQueryEditorDirective  {
     }
 
     public static Factory() {
-        var directive = (configuration: m.Configuration, datasourceHistoryService : dshs.DatasourceHistoryService) => {
-            return new AceQueryEditorDirective(configuration, datasourceHistoryService);
+        var directive = (configuration: m.Configuration,
+            datasourceHistoryService: dshs.DatasourceHistoryService,
+            dataFileService: _fs.FileService) => {
+            return new AceQueryEditorDirective(configuration, datasourceHistoryService, dataFileService);
         };
 
-        directive['$inject'] = ['configuration', 'datasourceHistoryService'];
+        directive['$inject'] = ['configuration', 'datasourceHistoryService' ,'dataFileService'];
 
         return directive;
     }
 
     constructor(private configuration: m.Configuration,
-        private datasourceHistoryService: dshs.DatasourceHistoryService) {
+        private datasourceHistoryService: dshs.DatasourceHistoryService,
+        private dataFileService : _fs.FileService) {
 
         this.link = ($scope: QueryEditorScope, element: JQuery, attributes: ng.IAttributes) => {
             console.log('inside link')
@@ -134,12 +138,13 @@ export class AceQueryEditorDirective  {
 
         editor.setOptions({ enableBasicAutocompletion: true });
 
-        var completers: AceCompleter[] = [];
-        if (this.configuration.Environment == m.Environment.Desktop) {
-            completers.push(new FileUriCompleter(() => $scope.BaseDirectory.Value()));
-        }
-        completers.push(new RecentHttpCompleter(this.datasourceHistoryService));
-
+        var completers: AceCompleter[] = [
+            new RecentHttpCompleter(this.datasourceHistoryService),
+            this.configuration.Environment == m.Environment.Desktop
+                ? new FileSystemFileCompleter(() => $scope.BaseDirectory.Value())
+                : new StoredFileCompleter(this.dataFileService)
+        ];
+       
         completers.forEach(c => langTools.addCompleter(c));
     } 
 }
@@ -248,7 +253,7 @@ class UriCompleter {
 }
 
 //Desktop-only
-class FileUriCompleter extends UriCompleter implements AceCompleter{
+class AbstractFileUriCompleter extends UriCompleter implements AceCompleter{
 
     static UnclosedFileUriRegex = new RegExp("'file://([^']*)$", "i")
     static FileUriPattern = "'file://[^']*'?"; //Warning: this could over-match?
@@ -259,11 +264,13 @@ class FileUriCompleter extends UriCompleter implements AceCompleter{
         '.jsonl': 101
     }
 
-    constructor(private getBaseDirectory: () => string) {
+    constructor() {
         super('file');
     }
 
-    private globPromised: (pattern: string, options: any) => Q.Promise<string[]> = <any>Q.denodeify(require('glob'));
+    protected GetMatchingFiles(prefix: string): Q.Promise<string[]> {
+        throw new Error("Abstract method");
+    }
 
     protected ExitUri(value: string): boolean {
         return !!path.extname(value);
@@ -271,20 +278,13 @@ class FileUriCompleter extends UriCompleter implements AceCompleter{
 
     protected GetUriSuggestions(prefix: string): Q.Promise<AceCompletion[]> {
 
-        var baseDirectory = this.getBaseDirectory();
-
-        var pattern = (path.isAbsolute(prefix) || !baseDirectory)
-            ? prefix + '*'
-            : baseDirectory + '\\' + prefix + '*';
-        
-        return this.globPromised(pattern, null)
+        return this.GetMatchingFiles(prefix)
             .then(matches =>
                 matches.map(file => {
 
                     var ext = path.extname(file).toLowerCase();
-                    var score = FileUriCompleter.ExtensionScores[ext] || 99;
+                    var score = AbstractFileUriCompleter.ExtensionScores[ext] || 99;
 
-                    if (baseDirectory) file = path.relative(baseDirectory, file);
                     if (!ext) file += '\\'; //Directory
 
                     return {
@@ -297,6 +297,45 @@ class FileUriCompleter extends UriCompleter implements AceCompleter{
             );
     }
 
+}
+
+class FileSystemFileCompleter extends AbstractFileUriCompleter {
+    constructor(private getBaseDirectory: () => string) {
+        super();
+    }
+
+    private globPromised: (pattern: string, options: any) => Q.Promise<string[]> = Q.denodeify<string[]>(require('glob'));
+
+    protected GetMatchingFiles(prefix: string): Q.Promise<string[]>{
+
+        var baseDirectory = this.getBaseDirectory();
+
+        var pattern = (path.isAbsolute(prefix) || !baseDirectory)
+            ? prefix + '*'
+            : baseDirectory + '\\' + prefix + '*';
+
+        return this.globPromised(pattern, null)
+            .then(files =>
+                files.map(file => baseDirectory ? path.relative(baseDirectory, file) : file)
+            );
+    }
+}
+
+class StoredFileCompleter extends AbstractFileUriCompleter {
+    constructor(private dataFileService : _fs.FileService) {
+        super();
+    }
+
+    protected GetMatchingFiles(prefix: string): Q.Promise<string[]> {
+        var regex = new RegExp('^' + prefix, 'i');
+
+        var matches = this.dataFileService.GetAll()
+            .map(storedFile => storedFile.Id)
+            .filter(id => !!id.match(regex))
+        
+
+        return Q(matches);
+    }
 }
 
 
