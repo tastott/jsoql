@@ -3,6 +3,7 @@ import utilities = require('../utilities')
 import path = require('path')
 import repo = require('./typedRepository')
 import d = require('../models/dictionary')
+import fs = require('fs')
 
 export interface FileSaveOptions {
     Extensions?: string[];
@@ -17,6 +18,7 @@ export interface SavedFile {
 export interface FileService {
     GetAll(): SavedFile[];
     Load(id: string): Q.Promise<string>;
+    LoadSync(id: string): string;
     Save(data: string, id : string): Q.Promise<SavedFile>;
     SaveAs(data: string, options: FileSaveOptions): Q.Promise<SavedFile>;
     Download(data: string, filename: string): Q.Promise<boolean>;
@@ -57,13 +59,16 @@ export class OnlineFileService extends BaseFileService implements FileService {
         };
     }
 
+    LoadSync(id: string): string {
+        return window.localStorage.getItem(this.serviceId + ":content:" + id);
+    }
+
     Load(id: string): Q.Promise<string> {
-        var content = localStorage.getItem(this.serviceId + ":content:" + id);
-        return Q(content);
+        return Q(this.LoadSync(id));
     }
 
     Save(data: string, id: string): Q.Promise<SavedFile> {
-        localStorage.setItem(this.serviceId + ":content:" + id, data);
+        window.localStorage.setItem(this.serviceId + ":content:" + id, data);
         var entry = super.AddFileEntry(id);
         return Q(entry);
     }
@@ -91,7 +96,11 @@ export class DesktopFileService extends BaseFileService implements FileService {
     }
 
     Load(id: string): Q.Promise<string> {
-        return <any>Q.denodeify(require('fs').readFile)(id, 'utf8');
+        return Q.denodeify<string>(fs.readFile)(id, 'utf8');
+    }
+
+    LoadSync(id: string): string {
+        return fs.readFileSync(id, 'utf8');
     }
 
     Save(data: string, id: string): Q.Promise<SavedFile> {

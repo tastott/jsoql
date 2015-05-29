@@ -1,5 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-(function (process){
 ///<reference path="Scripts/typings/angularjs/angular.d.ts" />
 ///<reference path="Scripts/typings/angularjs/angular-route.d.ts" />
 var appCtrl = require('./Scripts/Controllers/appController');
@@ -14,8 +13,8 @@ var dshServ = require('./Scripts/Services/datasourceHistoryService');
 var d = require('./Scripts/models/dictionary');
 var m = require('./Scripts/models/models');
 var jsoql = require('../Jsoql/Scripts/engine'); //TODO: Replace with npm module eventually
-var config = new m.Configuration(process['browser'] ? 1 /* Online */ : 0 /* Desktop */);
-angular.module('Jsoql', ['ngRoute', 'ui.bootstrap']).constant('querySettingsRepository', new d.LocalStorageDictionary('querySettings')).constant('datasourceHistoryService', new dshServ.DatasourceHistoryService('datasourceHistory', 10)).constant('configuration', config).factory('queryFileService', function () { return config.Environment == 0 /* Desktop */ ? new fServ.DesktopFileService('queryFileIds') : new fServ.OnlineFileService('queryFileIds'); }).factory('dataFileService', function () { return config.Environment == 0 /* Desktop */ ? new fServ.DesktopFileService('dataFileIds') : new fServ.OnlineFileService('dataFileIds'); }).factory('jsoqlEngine', function () { return config.Environment == 0 /* Desktop */ ? new jsoql.DesktopJsoqlEngine() : new jsoql.OnlineJsoqlEngine(location.hostname + (location.port ? ':' + location.port : '') + location.pathname); }).service('queryStorageService', qServ.QueryStorageService).service('queryExecutionService', qeServ.QueryExecutionService).controller('AppController', appCtrl.AppController).directive('queryResult', function () { return new qrDir.QueryResultDirective(); }).directive('queryEditor', function () { return new qeDir.QueryEditorDirective(); }).directive('queryEditorAce', qeDir.AceQueryEditorDirective.Factory()).directive('folderInput', function () { return new fiDir.FolderInputDirective(); }).directive('fileDrop', function () { return new fdDir.FileDropDirective(); }).config(['$routeProvider', function ($routeProvider) {
+var config = new m.Configuration(true ? 1 /* Online */ : 0 /* Desktop */);
+angular.module('Jsoql', ['ngRoute', 'ui.bootstrap']).constant('querySettingsRepository', new d.LocalStorageDictionary('querySettings')).constant('datasourceHistoryService', new dshServ.DatasourceHistoryService('datasourceHistory', 10)).constant('configuration', config).factory('queryFileService', function () { return config.Environment == 0 /* Desktop */ ? new fServ.DesktopFileService('queryFileIds') : new fServ.OnlineFileService('queryFileIds'); }).factory('dataFileService', function () { return config.Environment == 0 /* Desktop */ ? new fServ.DesktopFileService('dataFileIds') : new fServ.OnlineFileService('dataFileIds'); }).factory('jsoqlEngine', function (dataFileService) { return config.Environment == 0 /* Desktop */ ? new jsoql.DesktopJsoqlEngine() : new jsoql.OnlineJsoqlEngine(location.hostname + (location.port ? ':' + location.port : '') + location.pathname, function (fileId) { return dataFileService.LoadSync(fileId); }); }).service('queryStorageService', qServ.QueryStorageService).service('queryExecutionService', qeServ.QueryExecutionService).controller('AppController', appCtrl.AppController).directive('queryResult', function () { return new qrDir.QueryResultDirective(); }).directive('queryEditor', function () { return new qeDir.QueryEditorDirective(); }).directive('queryEditorAce', qeDir.AceQueryEditorDirective.Factory()).directive('folderInput', function () { return new fiDir.FolderInputDirective(); }).directive('fileDrop', function () { return new fdDir.FileDropDirective(); }).config(['$routeProvider', function ($routeProvider) {
     $routeProvider.when('/home', {
         templateUrl: 'Views/home.html',
         controller: 'AppController'
@@ -24,8 +23,7 @@ angular.module('Jsoql', ['ngRoute', 'ui.bootstrap']).constant('querySettingsRepo
     });
 }]);
 
-}).call(this,require('_process'))
-},{"../Jsoql/Scripts/engine":83,"./Scripts/Controllers/appController":2,"./Scripts/Directives/fileDrop":3,"./Scripts/Directives/folderInput":4,"./Scripts/Directives/queryEditor":5,"./Scripts/Directives/queryResult":6,"./Scripts/Services/datasourceHistoryService":8,"./Scripts/Services/fileService":9,"./Scripts/Services/queryExecutionService":10,"./Scripts/Services/queryStorageService":11,"./Scripts/models/dictionary":13,"./Scripts/models/models":14,"_process":41}],2:[function(require,module,exports){
+},{"../Jsoql/Scripts/engine":83,"./Scripts/Controllers/appController":2,"./Scripts/Directives/fileDrop":3,"./Scripts/Directives/folderInput":4,"./Scripts/Directives/queryEditor":5,"./Scripts/Directives/queryResult":6,"./Scripts/Services/datasourceHistoryService":8,"./Scripts/Services/fileService":9,"./Scripts/Services/queryExecutionService":10,"./Scripts/Services/queryStorageService":11,"./Scripts/models/dictionary":13,"./Scripts/models/models":14}],2:[function(require,module,exports){
 (function (process){
 var m = require('../models/models');
 var util = require('../utilities');
@@ -682,6 +680,7 @@ var Q = require('q');
 var utilities = require('../utilities');
 var path = require('path');
 var d = require('../models/dictionary');
+var fs = require('fs');
 var BaseFileService = (function () {
     function BaseFileService(serviceId) {
         this.files = new d.LocalStorageDictionary(serviceId);
@@ -712,12 +711,14 @@ var OnlineFileService = (function (_super) {
             Id: id
         };
     };
+    OnlineFileService.prototype.LoadSync = function (id) {
+        return window.localStorage.getItem(this.serviceId + ":content:" + id);
+    };
     OnlineFileService.prototype.Load = function (id) {
-        var content = localStorage.getItem(this.serviceId + ":content:" + id);
-        return Q(content);
+        return Q(this.LoadSync(id));
     };
     OnlineFileService.prototype.Save = function (data, id) {
-        localStorage.setItem(this.serviceId + ":content:" + id, data);
+        window.localStorage.setItem(this.serviceId + ":content:" + id, data);
         var entry = _super.prototype.AddFileEntry.call(this, id);
         return Q(entry);
     };
@@ -742,7 +743,10 @@ var DesktopFileService = (function (_super) {
         };
     };
     DesktopFileService.prototype.Load = function (id) {
-        return Q.denodeify(require('fs').readFile)(id, 'utf8');
+        return Q.denodeify(fs.readFile)(id, 'utf8');
+    };
+    DesktopFileService.prototype.LoadSync = function (id) {
+        return fs.readFileSync(id, 'utf8');
     };
     DesktopFileService.prototype.Save = function (data, id) {
         var _this = this;
@@ -56139,48 +56143,77 @@ var util = require('./utilities');
 var lazyJson = require('./lazy-json');
 var lf = require('./lazy-files');
 var evl = require('./evaluate');
+var _stream = require('stream');
 var glob = require('glob');
 var replaceStream = require('replaceStream');
-var AbstractFileDataSource = (function () {
-    function AbstractFileDataSource() {
+var FileSystemFileSequencer = (function () {
+    function FileSystemFileSequencer() {
     }
-    AbstractFileDataSource.prototype.Get = function (value, parameters, context) {
-        var fullPath = path.isAbsolute(value) ? value : path.join(context.BaseDirectory, value);
-        if (!fs.existsSync(fullPath)) {
-            throw new Error('File not found: ' + fullPath);
-        }
-        else {
-            return this.GetFromFile(fullPath, parameters);
-        }
+    FileSystemFileSequencer.prototype.GetFullPath = function (fileId, context) {
+        return path.isAbsolute(fileId) ? fileId : path.join(context.BaseDirectory, fileId);
     };
-    AbstractFileDataSource.prototype.GetFromFile = function (fullPath, parameters) {
-        throw new Error("Abstract method");
+    FileSystemFileSequencer.prototype.Validate = function (fileId, context) {
+        return !fs.existsSync(this.GetFullPath(fileId, context));
     };
-    return AbstractFileDataSource;
+    FileSystemFileSequencer.prototype.Sequence = function (fileId, context, parameters) {
+        var fullPath = this.GetFullPath(fileId, context);
+        return lazy.readFile(fullPath, 'utf8');
+    };
+    FileSystemFileSequencer.prototype.Stream = function (fileId, context, parameters) {
+        var fullPath = this.GetFullPath(fileId, context);
+        return fs.createReadStream(fullPath);
+    };
+    FileSystemFileSequencer.prototype.FirstLine = function (fileId, context) {
+        return util.ReadFirstLineSync(this.GetFullPath(fileId, context));
+    };
+    return FileSystemFileSequencer;
 })();
-var AbstractLinedFileDataSource = (function (_super) {
-    __extends(AbstractLinedFileDataSource, _super);
-    function AbstractLinedFileDataSource() {
-        _super.apply(this, arguments);
+var StoredFileSequencer = (function () {
+    function StoredFileSequencer(getStoredFile) {
+        this.getStoredFile = getStoredFile;
     }
-    AbstractLinedFileDataSource.prototype.GetFromFile = function (fullPath, parameters) {
-        var lineHandler = this.GetLineHandler(fullPath, parameters);
-        var seq = lazy.readFile(fullPath, 'utf8').split(/\r?\n/).map(lineHandler.Mapper);
+    StoredFileSequencer.prototype.Validate = function (fileId, context) {
+        return !!window.localStorage.getItem(this.getStoredFile(fileId));
+    };
+    StoredFileSequencer.prototype.Sequence = function (fileId, context, parameters) {
+        var content = this.getStoredFile(fileId);
+        return lazy(content);
+    };
+    StoredFileSequencer.prototype.FirstLine = function (fileId, context) {
+        var content = this.getStoredFile(fileId);
+        return lazy(content).split(/\r?\n/).first();
+    };
+    StoredFileSequencer.prototype.Stream = function (fileId, context, parameters) {
+        var content = this.getStoredFile(fileId);
+        var stream = new _stream.Readable();
+        stream.push(content);
+        stream.push(null);
+        return stream;
+    };
+    return StoredFileSequencer;
+})();
+var AbstractLinedFileDataSource = (function () {
+    function AbstractLinedFileDataSource(fileSequencer) {
+        this.fileSequencer = fileSequencer;
+    }
+    AbstractLinedFileDataSource.prototype.Get = function (value, parameters, context) {
+        var lineHandler = this.GetLineHandler(this.fileSequencer.FirstLine(value, context), parameters);
+        var seq = this.fileSequencer.Sequence(value, context, parameters).split(/\r?\n/).map(lineHandler.Mapper);
         if (lineHandler.Skip)
             seq = seq.rest(lineHandler.Skip);
         return seq;
     };
-    AbstractLinedFileDataSource.prototype.GetLineHandler = function (fullPath, parameters) {
+    AbstractLinedFileDataSource.prototype.GetLineHandler = function (firstLine, parameters) {
         throw new Error("Abstract method");
     };
     return AbstractLinedFileDataSource;
-})(AbstractFileDataSource);
+})();
 var CsvFileDataSource = (function (_super) {
     __extends(CsvFileDataSource, _super);
-    function CsvFileDataSource() {
-        _super.apply(this, arguments);
+    function CsvFileDataSource(baseFileSequencer) {
+        _super.call(this, baseFileSequencer);
     }
-    CsvFileDataSource.prototype.GetLineHandler = function (fullPath, parameters) {
+    CsvFileDataSource.prototype.GetLineHandler = function (firstLine, parameters) {
         var headers;
         var skip;
         //Explicit headers
@@ -56189,7 +56222,6 @@ var CsvFileDataSource = (function (_super) {
             skip = 0;
         }
         else {
-            var firstLine = util.ReadFirstLineSync(fullPath);
             headers = csv.parse(firstLine)[0];
             skip = 1;
         }
@@ -56211,10 +56243,10 @@ var CsvFileDataSource = (function (_super) {
 })(AbstractLinedFileDataSource);
 var JsonlFileDataSource = (function (_super) {
     __extends(JsonlFileDataSource, _super);
-    function JsonlFileDataSource() {
-        _super.apply(this, arguments);
+    function JsonlFileDataSource(baseFileSequencer) {
+        _super.call(this, baseFileSequencer);
     }
-    JsonlFileDataSource.prototype.GetLineHandler = function (fullPath, parameters) {
+    JsonlFileDataSource.prototype.GetLineHandler = function (firstLine, parameters) {
         return {
             Mapper: function (line) {
                 try {
@@ -56229,6 +56261,23 @@ var JsonlFileDataSource = (function (_super) {
     };
     return JsonlFileDataSource;
 })(AbstractLinedFileDataSource);
+var AbstractFileDataSource = (function () {
+    function AbstractFileDataSource() {
+    }
+    AbstractFileDataSource.prototype.Get = function (value, parameters, context) {
+        var fullPath = path.isAbsolute(value) ? value : path.join(context.BaseDirectory, value);
+        if (!fs.existsSync(fullPath)) {
+            throw new Error('File not found: ' + fullPath);
+        }
+        else {
+            return this.GetFromFile(fullPath, parameters);
+        }
+    };
+    AbstractFileDataSource.prototype.GetFromFile = function (fullPath, parameters) {
+        throw new Error("Abstract method");
+    };
+    return AbstractFileDataSource;
+})();
 var SimpleJsonFileDataSource = (function (_super) {
     __extends(SimpleJsonFileDataSource, _super);
     function SimpleJsonFileDataSource() {
@@ -56245,16 +56294,16 @@ var SimpleJsonFileDataSource = (function (_super) {
     };
     return SimpleJsonFileDataSource;
 })(AbstractFileDataSource);
-var OboeJsonFileDataSource = (function (_super) {
-    __extends(OboeJsonFileDataSource, _super);
-    function OboeJsonFileDataSource() {
-        _super.apply(this, arguments);
+var OboeJsonFileDataSource = (function () {
+    function OboeJsonFileDataSource(fileSequencer) {
+        this.fileSequencer = fileSequencer;
     }
-    OboeJsonFileDataSource.prototype.GetFromFile = function (fullPath, parameters) {
-        return lazyJson.lazyOboeFile(fullPath, parameters.root);
+    OboeJsonFileDataSource.prototype.Get = function (value, parameters, context) {
+        var stream = this.fileSequencer.Stream(value, context, parameters);
+        return lazyJson.lazyOboeFromStream(stream, parameters.root);
     };
     return OboeJsonFileDataSource;
-})(AbstractFileDataSource);
+})();
 var FolderDataSource = (function () {
     function FolderDataSource() {
     }
@@ -56279,12 +56328,12 @@ var FolderDataSource = (function () {
 })();
 exports.FolderDataSource = FolderDataSource;
 var SmartFileDataSource = (function () {
-    function SmartFileDataSource() {
+    function SmartFileDataSource(fileSequencer) {
         this.datasources = {
-            'csv': new CsvFileDataSource(),
-            'jsonl': new JsonlFileDataSource(),
+            'csv': new CsvFileDataSource(fileSequencer),
+            'jsonl': new JsonlFileDataSource(fileSequencer),
             //'json': new SimpleJsonFileDataSource(),
-            'json': new OboeJsonFileDataSource(),
+            'json': new OboeJsonFileDataSource(fileSequencer),
             '': new FolderDataSource()
         };
         this.extensionToDataSource = {
@@ -56318,7 +56367,26 @@ var SmartFileDataSource = (function () {
     };
     return SmartFileDataSource;
 })();
-exports.SmartFileDataSource = SmartFileDataSource;
+var DesktopSmartFileDataSource = (function () {
+    function DesktopSmartFileDataSource() {
+        this.source = new SmartFileDataSource(new FileSystemFileSequencer());
+    }
+    DesktopSmartFileDataSource.prototype.Get = function (value, parameters, context) {
+        return this.source.Get(value, parameters, context);
+    };
+    return DesktopSmartFileDataSource;
+})();
+exports.DesktopSmartFileDataSource = DesktopSmartFileDataSource;
+var OnlineSmartFileDataSource = (function () {
+    function OnlineSmartFileDataSource(getStoredFile) {
+        this.source = new SmartFileDataSource(new StoredFileSequencer(getStoredFile));
+    }
+    OnlineSmartFileDataSource.prototype.Get = function (value, parameters, context) {
+        return this.source.Get(value, parameters, context);
+    };
+    return OnlineSmartFileDataSource;
+})();
+exports.OnlineSmartFileDataSource = OnlineSmartFileDataSource;
 var VariableDataSource = (function () {
     function VariableDataSource() {
     }
@@ -56416,7 +56484,7 @@ var OnlineStreamingHttpDataSource = (function () {
 })();
 exports.OnlineStreamingHttpDataSource = OnlineStreamingHttpDataSource;
 
-},{"./Hacks/lazy.node":81,"./evaluate":84,"./lazy-files":85,"./lazy-json":86,"./utilities":89,"csv-string":93,"fs":25,"glob":98,"path":40,"replaceStream":113}],83:[function(require,module,exports){
+},{"./Hacks/lazy.node":81,"./evaluate":84,"./lazy-files":85,"./lazy-json":86,"./utilities":89,"csv-string":93,"fs":25,"glob":98,"path":40,"replaceStream":113,"stream":57}],83:[function(require,module,exports){
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -56460,7 +56528,7 @@ var DesktopJsoqlEngine = (function (_super) {
     function DesktopJsoqlEngine() {
         _super.call(this, {
             "var": new ds.VariableDataSource(),
-            "file": new ds.SmartFileDataSource(),
+            "file": new ds.DesktopSmartFileDataSource(),
             "http": new ds.StreamingHttpDataSource()
         });
     }
@@ -56469,10 +56537,10 @@ var DesktopJsoqlEngine = (function (_super) {
 exports.DesktopJsoqlEngine = DesktopJsoqlEngine;
 var OnlineJsoqlEngine = (function (_super) {
     __extends(OnlineJsoqlEngine, _super);
-    function OnlineJsoqlEngine(appBaseUrl) {
+    function OnlineJsoqlEngine(appBaseUrl, getFileStorageKey) {
         _super.call(this, {
             "var": new ds.VariableDataSource(),
-            "file": new ds.SmartFileDataSource(),
+            "file": new ds.OnlineSmartFileDataSource(getFileStorageKey),
             "http": new ds.OnlineStreamingHttpDataSource('http://query.yahooapis.com/v1/public/yql', appBaseUrl)
         });
     }
@@ -56748,7 +56816,6 @@ exports.lazyFiles = function (files) {
 },{"./Hacks/lazy.node":81,"fs":25}],86:[function(require,module,exports){
 var lazy = require('./Hacks/lazy.node');
 var oboe = require('oboe');
-var fs = require('fs');
 var http = require('http');
 var XhrStream = require('buffered-xhr-stream');
 //Basically a copy of StreamedSequence from lazy.node.js because I don't know how to extend that "class"
@@ -56831,35 +56898,6 @@ var OboeStream = (function () {
     };
     return OboeStream;
 })();
-function OboeHttpSequence(url, path) {
-    this.url = url;
-    this.path = path;
-}
-OboeHttpSequence.prototype = new lazy.StreamLikeSequence();
-OboeHttpSequence.prototype.each = function (fn) {
-    var cancelled = false;
-    var handle = new lazy.AsyncHandle(function cancel() {
-        cancelled = true;
-    });
-    var oboeStream = oboe(this.url);
-    var listener = function (e) {
-        try {
-            if (cancelled || fn(e) === false) {
-                oboeStream.removeListener("node", listener);
-                handle._resolve(false);
-            }
-        }
-        catch (e) {
-            handle._reject(e);
-        }
-    };
-    var pattern = this.path ? "" + this.path + ".*" : '!.*';
-    oboeStream.node(pattern, listener);
-    oboeStream.done(function () {
-        handle._resolve(true);
-    });
-    return handle;
-};
 function lazyOboeHttp(options) {
     var sequence = new LazyStreamedSequence(function (callback) {
         //Create an XHR manually if we need to omit credentials (i.e. to avoid issues with CORS)
@@ -56887,17 +56925,16 @@ function lazyOboeHttp(options) {
     return sequence;
 }
 exports.lazyOboeHttp = lazyOboeHttp;
-function lazyOboeFile(file, nodePath) {
+function lazyOboeFromStream(stream, nodePath) {
     var sequence = new LazyStreamedSequence(function (callback) {
-        var sourceStream = fs.createReadStream(file);
-        var oboeStream = new OboeStream(sourceStream, nodePath);
+        var oboeStream = new OboeStream(stream, nodePath);
         callback(oboeStream);
     });
     return sequence;
 }
-exports.lazyOboeFile = lazyOboeFile;
+exports.lazyOboeFromStream = lazyOboeFromStream;
 
-},{"./Hacks/lazy.node":81,"buffered-xhr-stream":91,"fs":25,"http":32,"oboe":110}],87:[function(require,module,exports){
+},{"./Hacks/lazy.node":81,"buffered-xhr-stream":91,"http":32,"oboe":110}],87:[function(require,module,exports){
 var parser = require('../jsoql-parser').parser;
 function Parse(source) {
     return parser.parse(source);
