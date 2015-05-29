@@ -18,7 +18,8 @@
     "replacestream": "^2.1.0"
   },
   "devDependencies": {
-    "jison": "0.4.13"
+    "jison": "0.4.13",
+    "jison2json": "0.0.2"
   },
   "files": [
     "app.js",

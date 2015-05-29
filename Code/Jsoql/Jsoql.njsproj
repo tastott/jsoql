@@ -38,6 +38,8 @@ FROM
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="Grammar\jsoql-grammar.jison" />
+    <Content Include="Grammar\jsoql-grammar.json" />
     <Content Include="Grammar\jsoql.jison" />
     <Content Include="package.json" />
     <Content Include="README.md" />
