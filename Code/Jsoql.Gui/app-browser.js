@@ -1,4 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function (process){
 ///<reference path="Scripts/typings/angularjs/angular.d.ts" />
 ///<reference path="Scripts/typings/angularjs/angular-route.d.ts" />
 var appCtrl = require('./Scripts/Controllers/appController');
@@ -13,7 +14,7 @@ var dshServ = require('./Scripts/Services/datasourceHistoryService');
 var d = require('./Scripts/models/dictionary');
 var m = require('./Scripts/models/models');
 var jsoql = require('../Jsoql/Scripts/engine'); //TODO: Replace with npm module eventually
-var config = new m.Configuration(true ? 1 /* Online */ : 0 /* Desktop */);
+var config = new m.Configuration(process['browser'] ? 1 /* Online */ : 0 /* Desktop */);
 angular.module('Jsoql', ['ngRoute', 'ui.bootstrap']).constant('querySettingsRepository', new d.LocalStorageDictionary('querySettings')).constant('datasourceHistoryService', new dshServ.DatasourceHistoryService('datasourceHistory', 10)).constant('configuration', config).factory('queryFileService', function () { return config.Environment == 0 /* Desktop */ ? new fServ.DesktopFileService('queryFileIds') : new fServ.OnlineFileService('queryFileIds'); }).factory('dataFileService', function () { return config.Environment == 0 /* Desktop */ ? new fServ.DesktopFileService('dataFileIds') : new fServ.OnlineFileService('dataFileIds'); }).factory('jsoqlEngine', function (dataFileService) { return config.Environment == 0 /* Desktop */ ? new jsoql.DesktopJsoqlEngine() : new jsoql.OnlineJsoqlEngine(location.hostname + (location.port ? ':' + location.port : '') + location.pathname, function (fileId) { return dataFileService.LoadSync(fileId); }); }).service('queryStorageService', qServ.QueryStorageService).service('queryExecutionService', qeServ.QueryExecutionService).controller('AppController', appCtrl.AppController).directive('queryResult', function () { return new qrDir.QueryResultDirective(); }).directive('queryEditor', function () { return new qeDir.QueryEditorDirective(); }).directive('queryEditorAce', qeDir.AceQueryEditorDirective.Factory()).directive('folderInput', function () { return new fiDir.FolderInputDirective(); }).directive('fileDrop', function () { return new fdDir.FileDropDirective(); }).config(['$routeProvider', function ($routeProvider) {
     $routeProvider.when('/home', {
         templateUrl: 'Views/home.html',
@@ -23,7 +24,8 @@ angular.module('Jsoql', ['ngRoute', 'ui.bootstrap']).constant('querySettingsRepo
     });
 }]);
 
-},{"../Jsoql/Scripts/engine":83,"./Scripts/Controllers/appController":2,"./Scripts/Directives/fileDrop":3,"./Scripts/Directives/folderInput":4,"./Scripts/Directives/queryEditor":5,"./Scripts/Directives/queryResult":6,"./Scripts/Services/datasourceHistoryService":8,"./Scripts/Services/fileService":9,"./Scripts/Services/queryExecutionService":10,"./Scripts/Services/queryStorageService":11,"./Scripts/models/dictionary":13,"./Scripts/models/models":14}],2:[function(require,module,exports){
+}).call(this,require('_process'))
+},{"../Jsoql/Scripts/engine":83,"./Scripts/Controllers/appController":2,"./Scripts/Directives/fileDrop":3,"./Scripts/Directives/folderInput":4,"./Scripts/Directives/queryEditor":5,"./Scripts/Directives/queryResult":6,"./Scripts/Services/datasourceHistoryService":8,"./Scripts/Services/fileService":9,"./Scripts/Services/queryExecutionService":10,"./Scripts/Services/queryStorageService":11,"./Scripts/models/dictionary":13,"./Scripts/models/models":14,"_process":41}],2:[function(require,module,exports){
 (function (process){
 var m = require('../models/models');
 var util = require('../utilities');
@@ -331,10 +333,11 @@ require('brace/mode/sql');
 require('brace/theme/ambiance');
 // See http://blog.aaronholmes.net/writing-angularjs-directives-as-typescript-classes/
 var AceQueryEditorDirective = (function () {
-    function AceQueryEditorDirective(configuration, datasourceHistoryService) {
+    function AceQueryEditorDirective(configuration, datasourceHistoryService, dataFileService) {
         var _this = this;
         this.configuration = configuration;
         this.datasourceHistoryService = datasourceHistoryService;
+        this.dataFileService = dataFileService;
         this.scope = {
             Query: '=query',
             BaseDirectory: '=baseDirectory',
@@ -369,10 +372,10 @@ var AceQueryEditorDirective = (function () {
         };
     }
     AceQueryEditorDirective.Factory = function () {
-        var directive = function (configuration, datasourceHistoryService) {
-            return new AceQueryEditorDirective(configuration, datasourceHistoryService);
+        var directive = function (configuration, datasourceHistoryService, dataFileService) {
+            return new AceQueryEditorDirective(configuration, datasourceHistoryService, dataFileService);
         };
-        directive['$inject'] = ['configuration', 'datasourceHistoryService'];
+        directive['$inject'] = ['configuration', 'datasourceHistoryService', 'dataFileService'];
         return directive;
     };
     AceQueryEditorDirective.prototype.ConfigureAutoComplete = function (editor, $scope) {
@@ -380,11 +383,10 @@ var AceQueryEditorDirective = (function () {
         var langTools = brace.acequire("ace/ext/language_tools");
         console.log(langTools);
         editor.setOptions({ enableBasicAutocompletion: true });
-        var completers = [];
-        if (this.configuration.Environment == 0 /* Desktop */) {
-            completers.push(new FileUriCompleter(function () { return $scope.BaseDirectory.Value(); }));
-        }
-        completers.push(new RecentHttpCompleter(this.datasourceHistoryService));
+        var completers = [
+            new RecentHttpCompleter(this.datasourceHistoryService),
+            this.configuration.Environment == 0 /* Desktop */ ? new FileSystemFileCompleter(function () { return $scope.BaseDirectory.Value(); }) : new StoredFileCompleter(this.dataFileService)
+        ];
         completers.forEach(function (c) { return langTools.addCompleter(c); });
     };
     return AceQueryEditorDirective;
@@ -455,24 +457,21 @@ var UriCompleter = (function () {
     return UriCompleter;
 })();
 //Desktop-only
-var FileUriCompleter = (function (_super) {
-    __extends(FileUriCompleter, _super);
-    function FileUriCompleter(getBaseDirectory) {
+var AbstractFileUriCompleter = (function (_super) {
+    __extends(AbstractFileUriCompleter, _super);
+    function AbstractFileUriCompleter() {
         _super.call(this, 'file');
-        this.getBaseDirectory = getBaseDirectory;
-        this.globPromised = Q.denodeify(require('glob'));
     }
-    FileUriCompleter.prototype.ExitUri = function (value) {
+    AbstractFileUriCompleter.prototype.GetMatchingFiles = function (prefix) {
+        throw new Error("Abstract method");
+    };
+    AbstractFileUriCompleter.prototype.ExitUri = function (value) {
         return !!path.extname(value);
     };
-    FileUriCompleter.prototype.GetUriSuggestions = function (prefix) {
-        var baseDirectory = this.getBaseDirectory();
-        var pattern = (path.isAbsolute(prefix) || !baseDirectory) ? prefix + '*' : baseDirectory + '\\' + prefix + '*';
-        return this.globPromised(pattern, null).then(function (matches) { return matches.map(function (file) {
+    AbstractFileUriCompleter.prototype.GetUriSuggestions = function (prefix) {
+        return this.GetMatchingFiles(prefix).then(function (matches) { return matches.map(function (file) {
             var ext = path.extname(file).toLowerCase();
-            var score = FileUriCompleter.ExtensionScores[ext] || 99;
-            if (baseDirectory)
-                file = path.relative(baseDirectory, file);
+            var score = AbstractFileUriCompleter.ExtensionScores[ext] || 99;
             if (!ext)
                 file += '\\'; //Directory
             return {
@@ -483,15 +482,42 @@ var FileUriCompleter = (function (_super) {
             };
         }); });
     };
-    FileUriCompleter.UnclosedFileUriRegex = new RegExp("'file://([^']*)$", "i");
-    FileUriCompleter.FileUriPattern = "'file://[^']*'?"; //Warning: this could over-match?
-    FileUriCompleter.ExtensionScores = {
+    AbstractFileUriCompleter.UnclosedFileUriRegex = new RegExp("'file://([^']*)$", "i");
+    AbstractFileUriCompleter.FileUriPattern = "'file://[^']*'?"; //Warning: this could over-match?
+    AbstractFileUriCompleter.ExtensionScores = {
         '.csv': 99,
         '.json': 100,
         '.jsonl': 101
     };
-    return FileUriCompleter;
+    return AbstractFileUriCompleter;
 })(UriCompleter);
+var FileSystemFileCompleter = (function (_super) {
+    __extends(FileSystemFileCompleter, _super);
+    function FileSystemFileCompleter(getBaseDirectory) {
+        _super.call(this);
+        this.getBaseDirectory = getBaseDirectory;
+        this.globPromised = Q.denodeify(require('glob'));
+    }
+    FileSystemFileCompleter.prototype.GetMatchingFiles = function (prefix) {
+        var baseDirectory = this.getBaseDirectory();
+        var pattern = (path.isAbsolute(prefix) || !baseDirectory) ? prefix + '*' : baseDirectory + '\\' + prefix + '*';
+        return this.globPromised(pattern, null).then(function (files) { return files.map(function (file) { return baseDirectory ? path.relative(baseDirectory, file) : file; }); });
+    };
+    return FileSystemFileCompleter;
+})(AbstractFileUriCompleter);
+var StoredFileCompleter = (function (_super) {
+    __extends(StoredFileCompleter, _super);
+    function StoredFileCompleter(dataFileService) {
+        _super.call(this);
+        this.dataFileService = dataFileService;
+    }
+    StoredFileCompleter.prototype.GetMatchingFiles = function (prefix) {
+        var regex = new RegExp('^' + prefix, 'i');
+        var matches = this.dataFileService.GetAll().map(function (storedFile) { return storedFile.Id; }).filter(function (id) { return !!id.match(regex); });
+        return Q(matches);
+    };
+    return StoredFileCompleter;
+})(AbstractFileUriCompleter);
 var RecentHttpCompleter = (function (_super) {
     __extends(RecentHttpCompleter, _super);
     function RecentHttpCompleter(datasourceHistoryService) {
