@@ -102,40 +102,6 @@ class OboeStream {
 }
 
 
-function OboeHttpSequence(url : string, path : string) {
-    this.url = url;
-    this.path = path;
-}
-OboeHttpSequence.prototype = new (<any>lazy).StreamLikeSequence();
-OboeHttpSequence.prototype.each = function (fn) {
-    var cancelled = false;
-
-    var handle = new (<any>lazy).AsyncHandle(function cancel() { cancelled = true; });
-    var oboeStream = oboe(this.url);
-
-    var listener = function (e) {
-        try {
-            if (cancelled || fn(e) === false) {
-                oboeStream.removeListener("node", listener);
-                handle._resolve(false);
-            }
-        } catch (e) {
-            handle._reject(e);
-        }
-    };
-
-    var pattern = this.path
-        ? `${this.path}.*`
-        : '!.*';
-
-    oboeStream.node(pattern, listener);
-    oboeStream.done(function () {
-        handle._resolve(true);
-    });
-
-    return handle;
-};
-
 
 export function lazyOboeHttp(options: {
     url: string;
@@ -179,11 +145,10 @@ export function lazyOboeHttp(options: {
     return <any>sequence;
 }
 
-export function lazyOboeFile(file: string, nodePath: string): LazyJS.AsyncSequence<any> {
+export function lazyOboeFromStream(stream : _stream.Readable, nodePath: string): LazyJS.AsyncSequence<any> {
    
     var sequence = new LazyStreamedSequence(callback => {
-        var sourceStream = fs.createReadStream(file);
-        var oboeStream = new OboeStream(sourceStream, nodePath);
+        var oboeStream = new OboeStream(stream, nodePath);
         callback(<any>oboeStream);
     });
 

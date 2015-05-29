@@ -259,7 +259,7 @@ declare module LazyJS {
     interface SplitStreamSequence extends Sequence<string> {
     }
 
-    interface FileStreamSequence {
+    interface FileStreamSequence extends Sequence<any> {
         lines(): SplitStreamSequence;
         split(delimiter: string): SplitStreamSequence;
         split(regex: RegExp): SplitStreamSequence;

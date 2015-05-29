@@ -7,6 +7,7 @@ import util = require('./utilities')
 import lazyJson = require('./lazy-json')
 import lf = require('./lazy-files')
 import evl = require('./evaluate')
+import _stream = require('stream')
 var glob = require('glob')
 var replaceStream = require('replaceStream')
 
@@ -32,33 +33,83 @@ interface LineHandler {
     Skip: number;
 }
 
-class AbstractFileDataSource implements DataSource {
-    Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+interface FileSequencer {
+    Validate(fileId: string, context: m.QueryContext): boolean;
+    Sequence(fileId: string, context: m.QueryContext, parameters: DataSourceParameters): LazyJS.FileStreamSequence|LazyJS.StringLikeSequence;
+    Stream(fileId: string, context: m.QueryContext, parameters: DataSourceParameters): _stream.Readable;
+    FirstLine(fileId: string, context: m.QueryContext): string;
+}
 
-        var fullPath = path.isAbsolute(value)
-            ? value
-            : path.join(context.BaseDirectory, value);
+class FileSystemFileSequencer implements FileSequencer {
 
-        if (!fs.existsSync(fullPath)) {
-            throw new Error('File not found: ' + fullPath);
-        }
-        else {
-
-            return this.GetFromFile(fullPath, parameters);
-        }
-
+    protected GetFullPath(fileId: string, context: m.QueryContext): string {
+        return path.isAbsolute(fileId)
+            ? fileId
+            : path.join(context.BaseDirectory, fileId);
     }
 
-    protected GetFromFile(fullPath: string, parameters: DataSourceParameters): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
-        throw new Error("Abstract method");
+    Validate(fileId: string, context: m.QueryContext): boolean {
+        return !fs.existsSync(this.GetFullPath(fileId, context));
+    }
+
+    Sequence(fileId: string, context: m.QueryContext, parameters: DataSourceParameters): LazyJS.FileStreamSequence|LazyJS.StringLikeSequence {
+        var fullPath = this.GetFullPath(fileId, context);
+        return lazy.readFile(fullPath, 'utf8');
+    }
+
+    Stream(fileId: string, context: m.QueryContext, parameters: DataSourceParameters): _stream.Readable {
+        var fullPath = this.GetFullPath(fileId, context);
+        return fs.createReadStream(fullPath);
+    }
+
+    FirstLine(fileId: string, context: m.QueryContext): string {
+        return util.ReadFirstLineSync(this.GetFullPath(fileId, context));
     }
 }
 
-class AbstractLinedFileDataSource extends AbstractFileDataSource {
-    protected GetFromFile(fullPath: string, parameters: DataSourceParameters): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
-        var lineHandler = this.GetLineHandler(fullPath, parameters);
+class LocalStorageFileSequencer implements FileSequencer {
+    constructor(private getStorageKey: (id: string)=> string) {
+    }
 
-        var seq = lazy.readFile(fullPath, 'utf8')
+    private GetContent(fileId: string) {
+        return window.localStorage.getItem(this.getStorageKey(fileId));
+    }
+
+    Validate(fileId: string, context: m.QueryContext): boolean {
+        return !!window.localStorage.getItem(this.getStorageKey(fileId));
+    }
+
+    Sequence(fileId: string, context: m.QueryContext, parameters: DataSourceParameters): LazyJS.FileStreamSequence|LazyJS.StringLikeSequence {
+        var content = this.GetContent(fileId);
+        return lazy(content);
+    }
+
+    FirstLine(fileId: string, context: m.QueryContext): string {
+        var content = window.localStorage.getItem(this.getStorageKey(fileId));
+        return lazy(content).split(/\r?\n/).first();
+    }
+
+    Stream(fileId: string, context: m.QueryContext, parameters: DataSourceParameters): _stream.Readable {
+        var content = this.GetContent(fileId);
+        var stream = new _stream.Readable();
+       
+        stream.push(content);
+        stream.push(null);
+
+        return stream;
+    }
+}
+
+class AbstractLinedFileDataSource implements DataSource {
+
+    constructor(private fileSequencer : FileSequencer) {
+        
+    }
+
+    Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
+        var lineHandler = this.GetLineHandler(this.fileSequencer.FirstLine(value, context), parameters);
+
+        var seq = this.fileSequencer.Sequence(value, context, parameters)
             .split(/\r?\n/)
             .map(lineHandler.Mapper);
 
@@ -67,13 +118,18 @@ class AbstractLinedFileDataSource extends AbstractFileDataSource {
         return seq;
     }
 
-    protected GetLineHandler(fullPath : string, parameters: DataSourceParameters): LineHandler {
+    protected GetLineHandler(firstLine : string, parameters: DataSourceParameters): LineHandler {
         throw new Error("Abstract method");
     }
 }
 
 class CsvFileDataSource extends AbstractLinedFileDataSource {
-    protected GetLineHandler(fullPath : string, parameters: DataSourceParameters): LineHandler {
+
+    constructor(baseFileSequencer: FileSequencer) {
+        super(baseFileSequencer);
+    }
+
+    protected GetLineHandler(firstLine : string, parameters: DataSourceParameters): LineHandler {
         var headers: string[];
         var skip: number;
 
@@ -84,7 +140,6 @@ class CsvFileDataSource extends AbstractLinedFileDataSource {
         }
         //Use first line as headers
         else {
-            var firstLine = util.ReadFirstLineSync(fullPath);
             headers = csv.parse(firstLine)[0];
             skip = 1;
         }
@@ -109,7 +164,11 @@ class CsvFileDataSource extends AbstractLinedFileDataSource {
 }
 
 class JsonlFileDataSource extends AbstractLinedFileDataSource {
-    protected GetLineHandler(fullPath: string, parameters: DataSourceParameters): LineHandler {
+    constructor(baseFileSequencer: FileSequencer) {
+        super(baseFileSequencer);
+    }
+
+    protected GetLineHandler(firstLine: string, parameters: DataSourceParameters): LineHandler {
         return {
             Mapper: line => {
                 try {
@@ -124,8 +183,30 @@ class JsonlFileDataSource extends AbstractLinedFileDataSource {
     }
 }
 
+class AbstractFileDataSource implements DataSource {
+    Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+
+        var fullPath = path.isAbsolute(value)
+            ? value
+            : path.join(context.BaseDirectory, value);
+
+        if (!fs.existsSync(fullPath)) {
+            throw new Error('File not found: ' + fullPath);
+        }
+        else {
+
+            return this.GetFromFile(fullPath, parameters);
+        }
+
+    }
+
+    protected GetFromFile(fullPath: string, parameters: DataSourceParameters): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+        throw new Error("Abstract method");
+    }
+}
+
 class SimpleJsonFileDataSource extends AbstractFileDataSource {
-    protected GetFromFile(fullPath: string, parameters: DataSourceParameters): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
+    protected GetFromFile(fullPath: string, parameters: DataSourceParameters): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
         var json = fs.readFileSync(fullPath, 'utf8');
         json = json.replace(/^\uFEFF/, '');
@@ -137,11 +218,15 @@ class SimpleJsonFileDataSource extends AbstractFileDataSource {
     }
 }
 
-class OboeJsonFileDataSource extends AbstractFileDataSource {
-    protected GetFromFile(fullPath: string, parameters: DataSourceParameters): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+class OboeJsonFileDataSource implements DataSource {
 
-        return lazyJson.lazyOboeFile(fullPath, parameters.root);
+    constructor(private fileSequencer: FileSequencer) { }
+
+    Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+        var stream = this.fileSequencer.Stream(value, context, parameters);
+        return lazyJson.lazyOboeFromStream(stream, parameters.root);
     }
+
 }
 
 export class FolderDataSource implements DataSource {
@@ -172,7 +257,7 @@ export class FolderDataSource implements DataSource {
     static FileInfoProperty = '@@File'
 }
 
-export class SmartFileDataSource implements DataSource {
+class SmartFileDataSource implements DataSource {
 
     private datasources: {
         [name: string]: DataSource;
@@ -182,12 +267,12 @@ export class SmartFileDataSource implements DataSource {
         [extension: string]: string;
     }
 
-    constructor() {
+    constructor(fileSequencer : FileSequencer) {
         this.datasources = {
-            'csv': new CsvFileDataSource(),
-            'jsonl': new JsonlFileDataSource(),
+            'csv': new CsvFileDataSource(fileSequencer),
+            'jsonl': new JsonlFileDataSource(fileSequencer),
             //'json': new SimpleJsonFileDataSource(),
-            'json': new OboeJsonFileDataSource(),
+            'json': new OboeJsonFileDataSource(fileSequencer),
             '': new FolderDataSource()
         };
 
@@ -226,6 +311,28 @@ export class SmartFileDataSource implements DataSource {
 
             throw new Error('Unable to infer format for file: ' + filepath);
         }
+    }
+}
+
+export class DesktopSmartFileDataSource implements DataSource{
+    private source: SmartFileDataSource;
+    constructor() {
+        this.source = new SmartFileDataSource(new FileSystemFileSequencer());
+    }
+
+    Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+        return this.source.Get(value, parameters, context);
+    }
+}
+
+export class OnlineSmartFileDataSource implements DataSource {
+    private source: SmartFileDataSource;
+    constructor(getStorageKey : (id : string) => string) {
+        this.source = new SmartFileDataSource(new LocalStorageFileSequencer(getStorageKey));
+    }
+
+    Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+        return this.source.Get(value, parameters, context);
     }
 }
 

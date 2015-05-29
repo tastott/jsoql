@@ -5,7 +5,10 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>Jsoql</Name>
     <RootNamespace>Jql</RootNamespace>
-    <ScriptArguments>-q "SELECT Order.Id FROM 'file://../Jsoql.Tests/Data/orders.jsonl'</ScriptArguments>
+    <ScriptArguments>-q "SELECT 
+    * 
+FROM 
+  { uri:  'file://../Data/customers.csv'}</ScriptArguments>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -58,7 +61,6 @@
   <ItemGroup>
     <Folder Include="Grammar\" />
     <Folder Include="Scripts\" />
-    <Folder Include="Scripts\Hacks\" />
     <Folder Include="Scripts\typings\" />
     <Folder Include="Scripts\typings\lazyjs\" />
     <Folder Include="Scripts\typings\node\" />
@@ -68,8 +70,6 @@
   <ItemGroup>
     <Compile Include="jsoql-parser.js" />
     <Compile Include="Grammar\parser-build.js" />
-    <Compile Include="Scripts\Hacks\lazy.js" />
-    <Compile Include="Scripts\Hacks\lazy.node.js" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">

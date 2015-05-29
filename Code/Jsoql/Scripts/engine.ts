@@ -40,17 +40,17 @@ export class DesktopJsoqlEngine extends JsoqlEngine {
     constructor() {
         super({
             "var": new ds.VariableDataSource(),
-            "file": new ds.SmartFileDataSource(),
+            "file": new ds.DesktopSmartFileDataSource(),
             "http": new ds.StreamingHttpDataSource()
         });
     }
 }
 
 export class OnlineJsoqlEngine extends JsoqlEngine {
-    constructor(appBaseUrl : string) {
+    constructor(appBaseUrl : string, getFileStorageKey : (id : string) => string) {
         super({
             "var": new ds.VariableDataSource(),
-            "file": new ds.SmartFileDataSource(),
+            "file": new ds.OnlineSmartFileDataSource(getFileStorageKey),
             "http": new ds.OnlineStreamingHttpDataSource('http://query.yahooapis.com/v1/public/yql', appBaseUrl)
         });
     }
