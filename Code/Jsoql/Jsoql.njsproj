@@ -38,12 +38,12 @@ FROM
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="Grammar\jsoql-grammar.jison" />
     <Content Include="Grammar\jsoql-grammar.json" />
-    <Content Include="Grammar\jsoql.jison" />
     <Content Include="package.json" />
     <Content Include="README.md" />
     <TypeScriptCompile Include="app.ts" />
+    <TypeScriptCompile Include="Grammar\expressions.ts" />
+    <TypeScriptCompile Include="Grammar\tokens.ts" />
     <TypeScriptCompile Include="Scripts\datasource.ts" />
     <TypeScriptCompile Include="Scripts\engine.ts" />
     <TypeScriptCompile Include="Scripts\evaluate.ts" />
@@ -63,6 +63,7 @@ FROM
   <ItemGroup>
     <Folder Include="Grammar\" />
     <Folder Include="Scripts\" />
+    <Folder Include="Scripts\Hacks\" />
     <Folder Include="Scripts\typings\" />
     <Folder Include="Scripts\typings\lazyjs\" />
     <Folder Include="Scripts\typings\node\" />
@@ -71,7 +72,9 @@ FROM
   </ItemGroup>
   <ItemGroup>
     <Compile Include="jsoql-parser.js" />
-    <Compile Include="Grammar\parser-build.js" />
+    <Compile Include="Scripts\Hacks\lazy.js" />
+    <Compile Include="Scripts\Hacks\lazy.node.js" />
+    <TypeScriptCompile Include="Grammar\parser-build.ts" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">

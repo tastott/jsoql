@@ -13,7 +13,7 @@ export class JsoqlEngine {
 
         try {
             var statement: p.Statement;
-            statement = p.Parse(jsoql);
+            statement = p.FullParse(jsoql);
 
             var query = new q.JsoqlQuery(statement, this.datasources, context);
             var datasources = query.GetDatasources();

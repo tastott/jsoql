@@ -1,7 +1,7 @@
-﻿var parser = require('../jsoql-parser').parser;
+﻿var fullParser = require('../jsoql-parser').parser;
 
-export function Parse(source: string): Statement {
-    return parser.parse(source);
+export function FullParse(source: string): Statement {
+    return fullParser.parse(source);
 }
 
 export interface Selectable {

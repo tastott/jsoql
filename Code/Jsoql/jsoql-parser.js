@@ -85,103 +85,103 @@ var $0 = $$.length - 1;
 switch (yystate) {
 case 1:return $$[$0-1];
 break;
-case 2: this.$ = { Quoted: $$[$0].replace(/'/g, "")}
+case 2:this.$ = { Quoted: $$[$0].replace(/'/g, "")}
 break;
-case 3: this.$ = true
+case 3:this.$ = true
 break;
-case 4: this.$ = false 
+case 4:this.$ = false
 break;
-case 6: this.$ = $$[$0-1].Quoted
+case 6:this.$ = $$[$0-1].Quoted
 break;
-case 7: this.$ = { Property: $$[$0]}
+case 7:this.$ = { Property: $$[$0]}
 break;
-case 8: this.$ = { Property: $$[$0-3], Index: $$[$0-1]}
+case 8:this.$ = { Property: $$[$0-3], Index: $$[$0-1]}
 break;
-case 9: this.$ = { Property: $$[$0-2], Child: $$[$0]}
+case 9:this.$ = { Property: $$[$0-2], Child: $$[$0]}
 break;
-case 10: this.$ = { Property: $$[$0-5], Index: $$[$0-3], Child: $$[$0]}
+case 10:this.$ = { Property: $$[$0-5], Index: $$[$0-3], Child: $$[$0]}
 break;
-case 11: this.$ = { Call: $$[$0-2], Args: []}
+case 11:this.$ = { Call: $$[$0-2], Args: []}
 break;
-case 12: this.$ = { Call: $$[$0-3], Args: $$[$0-1]}
+case 12:this.$ = { Call: $$[$0-3], Args: $$[$0-1]}
 break;
-case 17: this.$ = parseFloat($$[$0])
+case 17:this.$ = parseFloat($$[$0])
 break;
-case 18: this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
+case 18:this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
 break;
-case 19: this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
+case 19:this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
 break;
-case 20: this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
+case 20:this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
 break;
-case 21: this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
+case 21:this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
 break;
-case 22: this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
+case 22:this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
 break;
-case 23: this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
+case 23:this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
 break;
-case 24: this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
+case 24:this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
 break;
-case 25: this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
+case 25:this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
 break;
-case 26: this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
+case 26:this.$ = {Operator: $$[$0-1].trim(), Args: [$$[$0-2],$$[$0]]}
 break;
-case 27: this.$ = {SubQuery: $$[$0-1]}
+case 27:this.$ = {SubQuery: $$[$0-1]}
 break;
-case 28: this.$ = {Key: $$[$0-2], Value: $$[$0]}
+case 28:this.$ = {Key: $$[$0-2], Value: $$[$0]}
 break;
-case 29: this.$ = [$$[$0]]
+case 29:this.$ = [$$[$0]]
 break;
-case 30: this.$ = $$[$0-2].concat([$$[$0]])
+case 30:this.$ = $$[$0-2].concat([$$[$0]])
 break;
-case 31: this.$ = {KeyValues: $$[$0-1]}
+case 31:this.$ = {KeyValues: $$[$0-1]}
 break;
-case 32: this.$ = [$$[$0]]
+case 32:this.$ = [$$[$0]]
 break;
-case 33: this.$ = $$[$0-2].concat([$$[$0]])
+case 33:this.$ = $$[$0-2].concat([$$[$0]])
 break;
-case 34: this.$ = {Expression: $$[$0]}
+case 34:this.$ = {Expression: $$[$0]}
 break;
-case 35: this.$ = { Expression: $$[$0-2], Alias: $$[$0]}
+case 35:this.$ = { Expression: $$[$0-2], Alias: $$[$0]}
 break;
-case 36: this.$ = [$$[$0]]
+case 36:this.$ = [$$[$0]]
 break;
-case 37: this.$ = $$[$0-2].concat([$$[$0]])
+case 37:this.$ = $$[$0-2].concat([$$[$0]])
 break;
-case 41: this.$ = {Target: $$[$0-2], Alias: $$[$0]}
+case 41:this.$ = {Target: $$[$0-2], Alias: $$[$0]}
 break;
-case 44: this.$ = { Left: $$[$0-4], Right: $$[$0-2], Expression: $$[$0]}
+case 44:this.$ = { Left: $$[$0-4], Right: $$[$0-2], Expression: $$[$0]}
 break;
-case 45: this.$ = { Left: $$[$0-4], Over: $$[$0-2], Alias: $$[$0]}
+case 45:this.$ = { Left: $$[$0-4], Over: $$[$0-2], Alias: $$[$0]}
 break;
 case 46: this.$ = {Expression: $$[$0], Asc: true}
 break;
-case 47: this.$ = {Expression: $$[$0-1], Asc: true}
+case 47:this.$ = {Expression: $$[$0-1], Asc: true}
 break;
-case 48: this.$ = {Expression: $$[$0-1], Asc: false}
+case 48:this.$ = {Expression: $$[$0-1], Asc: false}
 break;
-case 49: this.$ = $$[$0-2].concat([$$[$0]])
+case 49:this.$ = $$[$0-2].concat([$$[$0]])
 break;
-case 50: this.$ = [$$[$0]]
+case 50:this.$ = [$$[$0]]
 break;
-case 51: this.$ = {From: $$[$0] }
+case 51:this.$ = {From: $$[$0] }
 break;
-case 52: this.$ = {From: $$[$0-2], Where: $$[$0]}
+case 52:this.$ = {From: $$[$0-2], Where: $$[$0]}
 break;
-case 53: this.$ = { SelectList: $$[$0], Limit: $$[$0-1]}
+case 53:this.$ = { SelectList: $$[$0], Limit: $$[$0-1]}
 break;
-case 54: this.$ = { SelectList: $$[$0]}
+case 54:this.$ = { SelectList: $$[$0]}
 break;
-case 55: this.$ = { Groupings: $$[$0]}
+case 55:this.$ = { Groupings: $$[$0]}
 break;
-case 56: this.$ = { Groupings: $$[$0-2], Having: $$[$0]}
+case 56:this.$ = { Groupings: $$[$0-2], Having: $$[$0]}
 break;
-case 57: this.$ = { Select: $$[$0-2], FromWhere: $$[$0]} 
+case 57:this.$ = { Select: $$[$0-2], FromWhere: $$[$0]} 
 break;
-case 58: this.$ = { Select: $$[$0-3], FromWhere: $$[$0-1], GroupBy: $$[$0]}
+case 58:this.$ = { Select: $$[$0-3], FromWhere: $$[$0-1], GroupBy: $$[$0]}
 break;
-case 59: this.$ = { Select: $$[$0-5], FromWhere: $$[$0-3], GroupBy: $$[$0-2], OrderBy: $$[$0]}
+case 59:this.$ = { Select: $$[$0-5], FromWhere: $$[$0-3], GroupBy: $$[$0-2], OrderBy: $$[$0]}
 break;
-case 60: this.$ = { Select: $$[$0-4], FromWhere: $$[$0-2], OrderBy: $$[$0]}
+case 60:this.$ = { Select: $$[$0-4], FromWhere: $$[$0-2], OrderBy: $$[$0]}
 break;
 }
 },
@@ -653,87 +653,87 @@ performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START
 
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0:/* skip whitespace */
+case 0:return 17
 break;
-case 1:return 17
+case 1:return 19
 break;
-case 2:return 19
+case 2:return 20
 break;
-case 3:return 20
+case 3:return 13
 break;
-case 4:return 13
+case 4:return 14
 break;
-case 5:return 14
+case 5:return 35
 break;
-case 6:return 35
+case 6:return 30
 break;
-case 7:return 30
+case 7:return 29
 break;
-case 8:return 29
+case 8:return 28
 break;
-case 9:return 28
+case 9:return 27
 break;
-case 10:return 27
+case 10:return 26
 break;
-case 11:return 26
+case 11:return 25
 break;
-case 12:return 25
+case 12:return 31
 break;
-case 13:return 31
+case 13:return 36
 break;
-case 14:return 5
+case 14:return 37
 break;
-case 15:return 54
+case 15:return 33
 break;
-case 16:return 55
+case 16:return 54
 break;
-case 17:return 59
+case 17:return 55
 break;
-case 18:return 52
+case 18:return 59
 break;
-case 19:return 57
+case 19:return 52
 break;
-case 20:return 58
+case 20:return 57
 break;
-case 21:return 60
+case 21:return 58
 break;
-case 22:return 48
+case 22:return 60
 break;
-case 23:return 49
+case 23:return 48
 break;
-case 24:return 39
+case 24:return 49
 break;
-case 25:return 44
+case 25:return 39
 break;
-case 26:return 45
+case 26:return 44
 break;
-case 27:return 46
+case 27:return 45
 break;
-case 28:return 9
+case 28:return 46
 break;
-case 29:return 10
+case 29:return 23
 break;
-case 30:return 23
+case 30:return 24
 break;
-case 31:return 24
+case 31:return 9
 break;
-case 32:return 16
+case 32:return 10
 break;
-case 33:return 12
+case 33:return 16
 break;
-case 34:return 7
+case 34:return 12
 break;
-case 35:return 36
+case 35:return 7
 break;
-case 36:return 37
+case 36:return 5
 break;
-case 37:return 33
+case 37:/* ignore whitespace */
 break;
-case 38:return 'INVALID'
+case 38:INVALID
 break;
 }
 },
-rules: [/^(?:\s+)/,/^(?:\.)/,/^(?:\()/,/^(?:\))/,/^(?:\[)/,/^(?:\])/,/^(?:,)/,/^(?:<=)/,/^(?:<)/,/^(?:>=)/,/^(?:>)/,/^(?:!=)/,/^(?:=)/,/^(?:\+)/,/^(?:$)/,/^(?:SELECT\sTOP\b)/,/^(?:SELECT\b)/,/^(?:FROM\b)/,/^(?:WHERE\b)/,/^(?:GROUP\sBY\b)/,/^(?:HAVING\b)/,/^(?:ORDER\sBY\b)/,/^(?:ASC\b)/,/^(?:DESC\b)/,/^(?:AS\b)/,/^(?:JOIN\b)/,/^(?:ON\b)/,/^(?:OVER\b)/,/^(?:true\b)/,/^(?:false\b)/,/^(?:AND\b)/,/^(?:OR\b)/,/^(?:[0-9\.-]+)/,/^(?:[@A-Za-z0-9_\*]+)/,/^(?:'[^\']+')/,/^(?:\{)/,/^(?:\})/,/^(?::)/,/^(?:.)/],
+rules: [/^(?:\.)/,/^(?:\()/,/^(?:\))/,/^(?:\[)/,/^(?:\])/,/^(?:,)/,/^(?:<=)/,/^(?:<)/,/^(?:>=)/,/^(?:>)/,/^(?:!=)/,/^(?:=)/,/^(?:\+)/,/^(?:\{)/,/^(?:\})/,/^(?::)/,/^(?:SELECT TOP)/,/^(?:SELECT)/,/^(?:FROM)/,/^(?:WHERE)/,/^(?:GROUP BY)/,/^(?:HAVING)/,/^(?:ORDER BY)/,/^(?:ASC)/,/^(?:DESC)/,/^(?:AS)/,/^(?:JOIN)/,/^(?:ON)/,/^(?:OVER)/,/^(?:AND)/,/^(?:OR)/,/^(?:true)/,/^(?:false)/,/^(?:[0-9.-]+)/,/^(?:[@A-Za-z0-9_*]+)/,/^(?:'[^']+')/,/^(?:$)/,/^(?:\s+)/,/^(?:.)/],
 conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38],"inclusive":true}}
 };
 return lexer;

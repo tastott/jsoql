@@ -330,3 +330,11 @@ FakesAssemblies/
 /Code/Jsoql.Tests/deepSelectTests.js.map
 /Code/Jsoql.Gui/Scripts/Services/datasourceHistoryService.js
 /Code/Jsoql.Gui/Scripts/Services/queryExecutionService.js
+/Code/Jsoql/Grammar/expressions.d.ts
+/Code/Jsoql/Grammar/expressions.js
+/Code/Jsoql/Grammar/expressions.js.map
+/Code/Jsoql/Grammar/parser-build.d.ts
+/Code/Jsoql/Grammar/parser-build.js.map
+/Code/Jsoql/Grammar/tokens.d.ts
+/Code/Jsoql/Grammar/tokens.js
+/Code/Jsoql/Grammar/tokens.js.map
