@@ -5,6 +5,7 @@ import m = require('./models')
 import ds = require('./datasource')
 import e = require('./engine')
 import utils = require('./utilities')
+import evl = require('./evaluate')
 var lazy : LazyJS.LazyStatic = require('./Hacks/lazy')
 
 enum Scope {
@@ -66,27 +67,32 @@ export class QueryHelper {
    
         //Determine clause at cursor
         var statementClauses = this.GetStatementClauses(statement);
-        var cursorClause = lazy(statementClauses)
-            .filter(sc => Compare(cursor, sc.Range.From) < 0)
-            .first() || statementClauses.slice(-1)[0];
-        
+        var cursorClause: Clause;
+
+        lazy(statementClauses).some(sc => {
+            if (Compare(cursor, sc.Range.From) < 0) return true;
+            else {
+                cursorClause = sc.Clause;
+                return false;
+            }
+        });
+   
         //Determine scope for this clause
         var scope: Scope;
         if (statementClauses.some(sc => sc.Clause == Clause.GroupBy)) {
-            scope = Scope.Unknown;
+
+            switch (cursorClause) {
+                case Clause.Where:
+                case Clause.GroupBy:
+                    scope = Scope.Base;
+                    break;
+                default:
+                    scope = Scope.Grouped;
+                    break;
+            }
         } else {
             scope = Scope.Base;
         }
-
- 
-    //    if (Before(cursor, statement.Positions.From)) clause = Clause.Select;
-    //else if(
-    //    {
-    //        scope = Scope.Base;
-    //    }
-    //    else {
-    //        scope = Scope.Unknown;
-    //    }
 
         return this.GetScopeHelp(statement, scope, context);
     }
@@ -133,12 +139,25 @@ export class QueryHelper {
                 //Get the items
                 return this.queryEngine.ExecuteQuery(helpStatement, context)
                     .then(result => {
-                        return {
-                            PropertiesInScope: this.GetPropertiesFromItems(result.Results)
-                        }
-                    });
+                    return {
+                        PropertiesInScope: this.GetPropertiesFromItems(result.Results)
+                    }
+                });
 
                 break;
+
+            case Scope.Grouped:
+                //Find "straight up" property chains (i.e. not part of an expression) in the GROUP BY clause
+                //Return the whole chain as a string because only the whole thing makes sense as a suggestion
+                var groupProperties = lazy(originalStatement.GroupBy.Groupings)
+                    .filter(g => g.Property)
+                    .map(topProp => [evl.Evaluator.Key(topProp), true])
+                    .toObject();
+                    
+
+                return Q({ PropertiesInScope: groupProperties});
+                break;
+
             default:
                 throw new Error("Scope not supported: " + Scope[scope]);
         }

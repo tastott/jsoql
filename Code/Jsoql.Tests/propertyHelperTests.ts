@@ -194,3 +194,139 @@ export function HelpWithPartialOrderByProperty() {
 
     return TestHelper(data, query, expected);
 }
+
+export function HelpWithGroupedSelect() {
+    var data = [
+        { Name: 'Dave', Pets: [{ Name: 'Fluffy', Species: 'Snake' }] },
+        { Name: 'Jim', Pets: [{ Name: 'Dave', Species: 'Human' }] }
+    ];
+    var query = "SELECT @ FROM 'var://Test' GROUP BY Name, Pets[0].Species";
+    var expected = {
+        PropertiesInScope: {
+            Name: true, //Only grouped properties are suggested
+            "Pets[0].Species": true
+        }
+    };
+
+    return TestHelper(data, query, expected);
+}
+
+export function HelpWithWhereGroup() {
+    var data = [
+        { Name: 'Dave', FavouriteFood: 'Chips' },
+        { Name: 'Jim', FavouriteFood: 'Baked beans' }
+    ];
+    var query = "SELECT Name FROM 'var://Test' WHERE @ GROUP BY Name";
+    var expected = {
+        PropertiesInScope: {
+            Name: true,
+            FavouriteFood: true
+        }
+    };
+
+    return TestHelper(data, query, expected);
+}
+
+export function HelpWithGroupedOrderBy() {
+    var data = [
+        { Name: 'Dave', FavouriteFood: 'Chips' },
+        { Name: 'Jim', FavouriteFood: 'Baked beans' }
+    ];
+    var query = "SELECT Name FROM 'var://Test' GROUP BY Name ORDER BY @";
+    var expected = {
+        PropertiesInScope: {
+            Name: true //Only grouped properties are suggested
+        }
+    };
+
+    return TestHelper(data, query, expected);
+}
+
+export function HelpWithJoinedSelect() {
+    var data = [
+        { Name: 'Dave', FavouriteFood: 'Chips' },
+        { Name: 'Jim', FavouriteFood: 'Baked beans' }
+    ];
+    var query = "SELECT @ FROM 'var://Test' AS a JOIN 'var://Test' AS b ON a.Name = b.Name";
+    var expected = {
+        PropertiesInScope: {
+            a: {
+                Name: true,
+                FavouriteFood: true
+            },
+            b: {
+                Name: true,
+                FavouriteFood: true
+            }
+        }
+    };
+
+    return TestHelper(data, query, expected);
+}
+
+
+export function HelpWithEmptyOn() {
+    var data = [
+        { Name: 'Dave', FavouriteFood: 'Chips' },
+        { Name: 'Jim', FavouriteFood: 'Baked beans' }
+    ];
+    var query = "SELECT @ FROM 'var://Test' AS a JOIN 'var://Test' AS b ON @";
+    var expected = {
+        PropertiesInScope: {
+            a: {
+                Name: true,
+                FavouriteFood: true
+            },
+            b: {
+                Name: true,
+                FavouriteFood: true
+            }
+        }
+    };
+
+    return TestHelper(data, query, expected);
+}
+
+export function HelpWithIncompleteOn() {
+    var data = [
+        { Name: 'Dave', FavouriteFood: 'Chips' },
+        { Name: 'Jim', FavouriteFood: 'Baked beans' }
+    ];
+    var query = "SELECT @ FROM 'var://Test' AS a JOIN 'var://Test' AS b ON a.Name = @";
+    var expected = {
+        PropertiesInScope: {
+            a: {
+                Name: true,
+                FavouriteFood: true
+            },
+            b: {
+                Name: true,
+                FavouriteFood: true
+            }
+        }
+    };
+
+    return TestHelper(data, query, expected);
+}
+
+export function HelpWithIncompleteOnProperty() {
+    var data = [
+        { Name: 'Dave', FavouriteFood: 'Chips' },
+        { Name: 'Jim', FavouriteFood: 'Baked beans' }
+    ];
+    var query = "SELECT @ FROM 'var://Test' AS a JOIN 'var://Test' AS b ON a.Name = b.@";
+    var expected = {
+        PropertiesInScope: {
+            a: {
+                Name: true,
+                FavouriteFood: true
+            },
+            b: {
+                Name: true,
+                FavouriteFood: true
+            }
+        }
+    };
+
+    return TestHelper(data, query, expected);
+}
