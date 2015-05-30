@@ -6,11 +6,13 @@ import ds = require('./datasource')
 import e = require('./engine')
 import utils = require('./utilities')
 import evl = require('./evaluate')
+var clone = require('clone')
 var lazy : LazyJS.LazyStatic = require('./Hacks/lazy')
 
 enum Scope {
     Base,
     Grouped,
+    BaseFrom,
     Unknown
 }
 
@@ -120,6 +122,20 @@ export class QueryHelper {
         } 
     }
 
+    private MakeJoinsTrue(fromClauseNode: p.FromClauseNode) {
+        var cloned = clone(fromClauseNode);
+        this.MakeJoinsTrueRecursive(cloned);
+        return cloned;
+    }
+
+    private MakeJoinsTrueRecursive(fromClauseNode: p.FromClauseNode) {
+        if (fromClauseNode.Expression !== undefined) {
+            fromClauseNode.Expression = true;
+        }
+
+        if (fromClauseNode.Left) this.MakeJoinsTrue(fromClauseNode.Left);
+        if (fromClauseNode.Right) this.MakeJoinsTrue(fromClauseNode.Right);
+    }
 
     private GetScopeHelp(originalStatement: p.Statement, scope: Scope, context?: m.QueryContext): Q.Promise<m.HelpResult> {
 
@@ -127,21 +143,27 @@ export class QueryHelper {
 
         switch (scope) {
             case Scope.Base:
-                //Build a new statement: SELECT TOP X * FROM [originalStatement datasources]
+                //Build a new statement: SELECT TOP X * FROM [originalStatement datasources with any joins fudged]
+                //We'll make all the join conditions true to make sure we get some data
+                var mungedFrom = this.MakeJoinsTrue(originalStatement.From);
+
                 var helpStatement: p.Statement = {
                     Select: {
                         SelectList: [{ Expression: { Property: '*' } }],
                         Limit: 8
                     },
-                    From: originalStatement.From
+                    From: mungedFrom
                 }
 
                 //Get the items
                 return this.queryEngine.ExecuteQuery(helpStatement, context)
                     .then(result => {
-                    return {
-                        PropertiesInScope: this.GetPropertiesFromItems(result.Results)
-                    }
+                        if (result.Results) {
+                            return {
+                                PropertiesInScope: this.GetPropertiesFromItems(result.Results)
+                            }
+                        }
+                        else return { PropertiesInScope: {}};
                 });
 
                 break;

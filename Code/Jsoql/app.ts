@@ -2,7 +2,7 @@
 import eng = require('./Scripts/engine')
 import http = require('http');
 import fs = require('fs')
-
+import m = require('./Scripts/models')
 var args = require('minimist')(process.argv.slice(2));
 
 var query = args['q'];
@@ -31,6 +31,15 @@ var engine = new eng.DesktopJsoqlEngine();
 //var engine = new eng.OnlineJsoqlEngine();
 
 console.log('\n' + query);
+var context: m.QueryContext = {
+    BaseDirectory: null,
+    Data: {
+        "Test": [
+            { Name: 'Dave', FavouriteFood: 'Chips' },
+            { Name: 'Jim', FavouriteFood: 'Baked beans' }
+        ]
+    }
+};
 
 //In "query help" mode, treat '@' as placeholder for cursor and get properties in scope at cursor
 if (args['h']) {
@@ -39,12 +48,13 @@ if (args['h']) {
     query = query.replace('@', '');
    
 
-    engine.GetQueryHelp(query, cursor)
+    engine.GetQueryHelp(query, cursor, context)
         .then(help => console.log(help))
         .fail(error => console.log(error));
 
 } else {
-    engine.ExecuteQuery(query)
+
+    engine.ExecuteQuery(query, context)
         .then(results => {
 
             if (results.Errors && results.Errors.length) {

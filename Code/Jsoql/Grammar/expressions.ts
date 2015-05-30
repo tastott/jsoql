@@ -98,42 +98,6 @@ var exp = {
         //    exp.Expression + " " + exp.Operator + " " + exp.Expression,
         //    { Operator: "$2", Args: ["$1, $3"] }
         //]
-        //[
-        //    exp.Expression + " " + keywords.AND + " " + exp.Expression,
-        //    "{Operator: $2.trim(), Args: [$1,$3]}"
-        //],
-        //[
-        //    exp.Expression + " " + keywords.OR + " " + exp.Expression,
-        //    "{Operator: $2.trim(), Args: [$1,$3]}"
-        //],
-        //[
-        //    exp.Expression + " = " + exp.Expression,
-        //    "{Operator: $2.trim(), Args: [$1,$3]}"
-        //],
-        //[
-        //    exp.Expression + " != " + exp.Expression,
-        //    "{Operator: $2.trim(), Args: [$1,$3]}"
-        //],
-        //[
-        //    exp.Expression + " > " + exp.Expression,
-        //    "{Operator: $2.trim(), Args: [$1,$3]}"
-        //],
-        //[
-        //    exp.Expression + " >= " + exp.Expression,
-        //    "{Operator: $2.trim(), Args: [$1,$3]}"
-        //],
-        //[
-        //    exp.Expression + " < " + exp.Expression,
-        //    "{Operator: $2.trim(), Args: [$1,$3]}"
-        //],
-        //[
-        //    exp.Expression + " <= " + exp.Expression,
-        //    "{Operator: $2.trim(), Args: [$1,$3]}"
-        //],
-        //[
-        //    exp.Expression + " + " + exp.Expression,
-        //    "{Operator: $2.trim(), Args: [$1,$3]}"
-        //]
     ]
     .concat(<any>operators.map(op =>
             [
@@ -392,10 +356,17 @@ export function GetJisonExpressionsHelpful() {
         <any>operators.map(op =>
             [
                 exp.Expression + " " + op,
-                { Operator: "$2", Args: ["$1"] }
+                "$$ = { Operator: $2, Args: [$1] }"
             ]
         )
         );
+
+    //expressions['Expression'].push(
+    //    [
+    //        exp.Expression + " FinalDot",
+    //        "$
+    //    ]
+    //);
 
     //Allow items in ORDER BY clause to have a trailing dot or comma
     expressions['OrderByList'].push(
@@ -424,6 +395,24 @@ export function GetJisonExpressionsHelpful() {
             "$$ = []"
         ]
         );
+
+    //Allow empty ON condition
+    //Allow trailing dot in ON condition
+    expressions['FromTargets'] = expressions['FromTargets'].concat([
+        [
+            exp.FromTargets + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON,
+            "$$ = { Left: $1, Right: $3, Expression: null}"
+        ],
+        [
+            exp.FromTargets + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression + " TrailingDot",
+            "$$ = { Left: $1, Right: $3, Expression: null}"
+        ],
+        [
+            exp.FromTargets + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression + " FinalDot",
+            "$$ = { Left: $1, Right: $3, Expression: null}"
+        ]
+    ]);
+
 
     return expressions;
 }

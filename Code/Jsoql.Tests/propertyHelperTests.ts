@@ -270,7 +270,7 @@ export function HelpWithEmptyOn() {
         { Name: 'Dave', FavouriteFood: 'Chips' },
         { Name: 'Jim', FavouriteFood: 'Baked beans' }
     ];
-    var query = "SELECT @ FROM 'var://Test' AS a JOIN 'var://Test' AS b ON @";
+    var query = "SELECT * FROM 'var://Test' AS a JOIN 'var://Test' AS b ON @";
     var expected = {
         PropertiesInScope: {
             a: {
@@ -292,7 +292,7 @@ export function HelpWithIncompleteOn() {
         { Name: 'Dave', FavouriteFood: 'Chips' },
         { Name: 'Jim', FavouriteFood: 'Baked beans' }
     ];
-    var query = "SELECT @ FROM 'var://Test' AS a JOIN 'var://Test' AS b ON a.Name = @";
+    var query = "SELECT * FROM 'var://Test' AS a JOIN 'var://Test' AS b ON a.Name = @";
     var expected = {
         PropertiesInScope: {
             a: {
@@ -314,7 +314,7 @@ export function HelpWithIncompleteOnProperty() {
         { Name: 'Dave', FavouriteFood: 'Chips' },
         { Name: 'Jim', FavouriteFood: 'Baked beans' }
     ];
-    var query = "SELECT @ FROM 'var://Test' AS a JOIN 'var://Test' AS b ON a.Name = b.@";
+    var query = "SELECT * FROM 'var://Test' AS a JOIN 'var://Test' AS b ON a.Name = b.@";
     var expected = {
         PropertiesInScope: {
             a: {
