@@ -338,3 +338,8 @@ FakesAssemblies/
 /Code/Jsoql/Grammar/tokens.d.ts
 /Code/Jsoql/Grammar/tokens.js
 /Code/Jsoql/Grammar/tokens.js.map
+/Code/Jsoql/Scripts/query-help.d.ts
+/Code/Jsoql/Scripts/query-help.js
+/Code/Jsoql/Scripts/query-help.js.map
+/Code/Jsoql.Tests/propertyHelperTests.js
+/Code/Jsoql.Tests/propertyHelperTests.js.map

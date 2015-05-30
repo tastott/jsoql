@@ -18,3 +18,7 @@ export interface QueryResult {
     Errors?: string[];
     Datasources?: Datasource[];
 }
+
+export interface HelpResult {
+    PropertiesInScope: any;
+}

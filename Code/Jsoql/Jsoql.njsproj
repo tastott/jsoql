@@ -5,10 +5,9 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>Jsoql</Name>
     <RootNamespace>Jql</RootNamespace>
-    <ScriptArguments>-q "SELECT 
-    * 
+    <ScriptArguments>-q "SELECT * 
 FROM 
-  { uri:  'file://../Data/customers.csv'}</ScriptArguments>
+  { uri:  'file://../Data/orders.jsonl'}"</ScriptArguments>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -47,6 +46,7 @@ FROM
     <TypeScriptCompile Include="Scripts\datasource.ts" />
     <TypeScriptCompile Include="Scripts\engine.ts" />
     <TypeScriptCompile Include="Scripts\evaluate.ts" />
+    <TypeScriptCompile Include="Scripts\query-help.ts" />
     <TypeScriptCompile Include="Scripts\lazy-files.ts" />
     <TypeScriptCompile Include="Scripts\lazy-json.ts" />
     <TypeScriptCompile Include="Scripts\models.ts" />
@@ -72,6 +72,7 @@ FROM
   </ItemGroup>
   <ItemGroup>
     <Compile Include="jsoql-full-parser.js" />
+    <Compile Include="jsoql-helpful-parser.js" />
     <Compile Include="Scripts\Hacks\lazy.js" />
     <Compile Include="Scripts\Hacks\lazy.node.js" />
     <TypeScriptCompile Include="Grammar\parser-build.ts" />

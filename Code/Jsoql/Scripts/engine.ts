@@ -4,27 +4,33 @@ import p = require('./parse')
 import q = require('./query')
 import m = require('./models')
 import ds = require('./datasource')
+import qh = require('./query-help')
 
 export class JsoqlEngine {
+    private queryHelper: qh.QueryHelper;
+
     constructor(private datasources: ds.DataSources) {
+        this.queryHelper = new qh.QueryHelper(this);
     }
 
-    public ExecuteQuery(jsoql: string, context?: m.QueryContext): Q.Promise<m.QueryResult> {
+    public ExecuteQuery(statement: p.Statement|string, context?: m.QueryContext): Q.Promise<m.QueryResult> {
+
+        var parsedStatement: p.Statement;
 
         try {
-            var statement: p.Statement;
-            statement = p.FullParse(jsoql);
+            if (typeof statement === 'string') parsedStatement = p.ParseFull(statement);
+            else parsedStatement = statement;
 
-            var query = new q.JsoqlQuery(statement, this.datasources, context);
+            var query = new q.JsoqlQuery(parsedStatement, this.datasources, context);
             var datasources = query.GetDatasources();
 
             return query.Execute()
                 .then(results => {
-                    return {
-                        Results: results,
-                        Datasources: datasources
-                    }
-                });
+                return {
+                    Results: results,
+                    Datasources: datasources
+                }
+            });
         }
         catch (ex) {
             var result: m.QueryResult = {
@@ -33,6 +39,16 @@ export class JsoqlEngine {
 
             return Q(result);
         }
+    }
+
+    public GetQueryHelp(jsoql: string, cursor: number, context?: m.QueryContext): Q.Promise<m.HelpResult> {
+        try {
+            return this.queryHelper.GetQueryHelp(jsoql, cursor, context);
+        }
+        catch (ex) {
+            return Q.reject<any>(ex);
+        }
+        
     }
 }
 

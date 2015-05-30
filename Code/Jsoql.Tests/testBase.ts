@@ -48,6 +48,29 @@ export function ExecuteAndAssertDeepEqual(jsoql: string,
         .fail(error => setTimeout(() => assert.fail(null, null, error)));
 }
 
+export function GetHelpAndAssertDeepEqual(jsoql: string,
+    cursor: number,
+    values: any[]| JsoqlQueryContext,
+    expected: JsoqlQueryHelpResult): Q.Promise<any> {
+
+    var context: JsoqlQueryContext = Object.prototype.toString.call(values) === '[object Array]'
+        ? {
+            Data: {
+                "Test": <any[]>values
+            }
+        }
+        : <JsoqlQueryContext>values;
+
+    try {
+        return Jsoql.GetQueryHelp(jsoql, cursor, context)
+            .then(results => setTimeout(() => assert.deepEqual(results, expected)))
+            .fail(error => setTimeout(() => assert.fail(null, null, error)));
+    }
+    catch (ex) {
+        return Q.reject<any[]>(ex);
+    }
+}
+
 export function ExecuteAndAssertFail(jsoql: string,
     values: any[]| JsoqlQueryContext): Q.Promise<any>  {
 

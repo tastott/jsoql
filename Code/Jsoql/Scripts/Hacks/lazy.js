@@ -5534,7 +5534,16 @@
     });
 
     handle.onComplete(function() {
-      if (buffer.length > 0) {
+        if (buffer.length > 0) {
+            var match;
+            while (match = delimiter.exec(buffer)) {
+                end = match.index;
+                if (fn(buffer.substring(start, end), index++) === false) {
+                    return false;
+                }
+                start = end + match[0].length;
+            }
+
         fn(buffer, index++);
       }
     });

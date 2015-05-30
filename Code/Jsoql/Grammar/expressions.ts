@@ -1,275 +1,323 @@
 ﻿import tokens = require('./tokens')
 import utils = require('../Scripts/utilities')
-
 var lazy: LazyJS.LazyStatic = require('../Scripts/Hacks/lazy.js')
 
-var values = tokens.values;
+var val = tokens.values;
 var keywords = tokens.keywords;
 
-var expressions = {
+//function Exp(name: string, ...args: any[]) {
+//}
+
+//var Quoted = Exp('Quoted',
+//    [val.Quotation, "{ Quoted: $1.replace(/'/g, \"\")}"]);
+
+//var Boolean = Exp('Boolean',
+//    [val.True, "true"],
+//    [val.False, "false"]);
+
+//var Identifier = Exp('Identifier',
+//    val.PlainIdentifier);
+
+//var Property = Exp('Property', (Property) => [
+//    [Identifier, "{ Property: $1}"]
+//    [[Identifier, '[', val.Number, ']'], "{ Property: $1, Index: $3}"]
+//    [[Identifier, '.', Property], "{ Property: $1, Child: $3}"],
+//    [[Identifier, '[', val.Number, ']', '.', Property], "{ Property: $1, Index: $3, Child: $6}"]
+//]);
+
+var exp = {
     Quoted: () => [
         [
-            values.Quotation,
+            val.Quotation,
             "{ Quoted: $1.replace(/'/g, \"\")}"
         ]
     ],
     Boolean: () => [
         [
-            values.True,
+            val.True,
             "true"
         ],
         [
-            values.False,
+            val.False,
             "false"
         ]
     ],
     Identifier: () => [
-        values.PlainIdentifier,
-        [
-            "[ " + expressions.Quoted + " ]",
-            "$2.Quoted"
-        ]
+        val.PlainIdentifier
     ],
     Property: () => [
         [
-            expressions.Identifier,
+            exp.Identifier,
             "{ Property: $1}"
         ],
         [
-            expressions.Identifier + " [ " + values.Number + " ]",
+            exp.Identifier + ' [ ' + val.Number + ' ]',
             "{ Property: $1, Index: $3}"
         ],
         [
-            expressions.Identifier + " . " + expressions.Property,
+            exp.Identifier + " . " + exp.Property,
             "{ Property: $1, Child: $3}"
         ],
         [
-            expressions.Identifier + " [ " + values.Number + " ] . " + expressions.Property,
+            exp.Identifier + " [ " + val.Number + " ] . " + exp.Property,
             "{ Property: $1, Index: $3, Child: $6}"
         ]
     ],
     Expression: () => [
         [
-            expressions.Identifier + " ( )",
+            exp.Identifier + " ( )",
             "{ Call: $1, Args: []}"
         ],
         [
-            expressions.Identifier + " ( " + expressions.ExpressionList + " )",
+            exp.Identifier + " ( " + exp.ExpressionList + " )",
             "{ Call: $1, Args: $3}"
         ],
-        expressions.Property,
-        expressions.Quoted,
-        expressions.Boolean,
-        expressions.Object,
+        exp.Property,
+        exp.Quoted,
+        exp.Boolean,
+        exp.Object,
         [
-            values.Number,
+            val.Number,
             "parseFloat($1)"
         ],
         [
-            expressions.Expression + " " + keywords.AND + " " + expressions.Expression,
+            exp.Expression + " " + keywords.AND + " " + exp.Expression,
             "{Operator: $2.trim(), Args: [$1,$3]}"
         ],
         [
-            expressions.Expression + " " + keywords.OR + " " + expressions.Expression,
+            exp.Expression + " " + keywords.OR + " " + exp.Expression,
             "{Operator: $2.trim(), Args: [$1,$3]}"
         ],
         [
-            expressions.Expression + " = " + expressions.Expression,
+            exp.Expression + " = " + exp.Expression,
             "{Operator: $2.trim(), Args: [$1,$3]}"
         ],
         [
-            expressions.Expression + " != " + expressions.Expression,
+            exp.Expression + " != " + exp.Expression,
             "{Operator: $2.trim(), Args: [$1,$3]}"
         ],
         [
-            expressions.Expression + " > " + expressions.Expression,
+            exp.Expression + " > " + exp.Expression,
             "{Operator: $2.trim(), Args: [$1,$3]}"
         ],
         [
-            expressions.Expression + " >= " + expressions.Expression,
+            exp.Expression + " >= " + exp.Expression,
             "{Operator: $2.trim(), Args: [$1,$3]}"
         ],
         [
-            expressions.Expression + " < " + expressions.Expression,
+            exp.Expression + " < " + exp.Expression,
             "{Operator: $2.trim(), Args: [$1,$3]}"
         ],
         [
-            expressions.Expression + " <= " + expressions.Expression,
+            exp.Expression + " <= " + exp.Expression,
             "{Operator: $2.trim(), Args: [$1,$3]}"
         ],
         [
-            expressions.Expression + " + " + expressions.Expression,
+            exp.Expression + " + " + exp.Expression,
             "{Operator: $2.trim(), Args: [$1,$3]}"
         ],
         [
-            "( " + expressions.Stmt  + " )",
+            "( " + exp.Stmt  + " )",
             "{SubQuery: $2}"
         ]
     ],
     KeyValue: () => [
         [
-            expressions.Identifier + " : " + expressions.Expression,
+            exp.Identifier + " : " + exp.Expression,
             "{Key: $1, Value: $3}"
         ]
     ],
     KeyValueList: () => [
         [
-            expressions.KeyValue,
+            exp.KeyValue,
             "[$1]"
         ],
         [
-           expressions.KeyValueList + " , " + expressions.KeyValue,
+           exp.KeyValueList + " , " + exp.KeyValue,
             "$1.concat([$3])"
         ]
     ],
     Object: () => [
         [
-            "{ " + expressions.KeyValueList + " }",
+            "{ " + exp.KeyValueList + " }",
             "{KeyValues: $2}"
         ]
     ],
     ExpressionList: () => [
         [
-            expressions.Expression,
+            exp.Expression,
             "[$1]"
         ],
         [
-            expressions.ExpressionList + " , " + expressions.Expression,
+            exp.ExpressionList + " , " + exp.Expression,
             "$1.concat([$3])"
         ]
     ],
     Selectable: () => [
         [
-            expressions.Expression,
+            exp.Expression,
             "{Expression: $1}"
         ],
         [
-            expressions.Expression + " " + keywords.AS + " " + expressions.Identifier,
+            exp.Expression + " " + keywords.AS + " " + exp.Identifier,
             "{ Expression: $1, Alias: $3}"
         ]
     ],
     SelectList:() => [
         [
-            expressions.Selectable,
+            exp.Selectable,
             "[$1]"
         ],
         [
-            expressions.SelectList + " , " + expressions.Selectable,
+            exp.SelectList + " , " + exp.Selectable,
             "$1.concat([$3])"
         ]
     ],
     FromTarget: () =>  [
-        expressions.Property,
-        expressions.Quoted,
-        expressions.Object
+        exp.Property,
+        exp.Quoted,
+        exp.Object
     ],
     AliasedFromTarget: () => [
         [
-            expressions.FromTarget + " " + keywords.AS + " " + expressions.Identifier,
+            exp.FromTarget + " " + keywords.AS + " " + exp.Identifier,
             "{Target: $1, Alias: $3}"
         ]
     ],
-    FromClause: () => [
-        expressions.FromTarget,
-        expressions.AliasedFromTarget,
+    FromTargets: () => [
+        exp.FromTarget,
+        exp.AliasedFromTarget,
         [
-            expressions.FromClause + " " + keywords.JOIN + " " + expressions.AliasedFromTarget + " " + keywords.ON + " " + expressions.Expression,
+            exp.FromTargets + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression,
             "{ Left: $1, Right: $3, Expression: $5}"
         ],
         [
-            expressions.FromClause + " " + keywords.OVER + " " + expressions.Property + " " + keywords.AS  + " " + values.PlainIdentifier,
+            exp.FromTargets + " " + keywords.OVER + " " + exp.Property + " " + keywords.AS  + " " + val.PlainIdentifier,
             "{ Left: $1, Over: $3, Alias: $5}"
         ]
     ],
     OrderByExpression: () => [
         [
-            expressions.Expression,
+            exp.Expression,
             " $$ = {Expression: $1, Asc: true}"
         ],
         [
-            expressions.Expression + " " + keywords.ASC,
+            exp.Expression + " " + keywords.ASC,
             "{Expression: $1, Asc: true}"
         ],
         [
-            expressions.Expression + " " + keywords.DESC,
+            exp.Expression + " " + keywords.DESC,
             "{Expression: $1, Asc: false}"
         ]
     ],
     OrderByList: () => [
         [
-            expressions.OrderByList + " , " + expressions.OrderByExpression,
+            exp.OrderByList + " , " + exp.OrderByExpression,
             "$1.concat([$3])"
         ],
         [
-            expressions.OrderByExpression,
+            exp.OrderByExpression,
             "[$1]"
         ]
     ],
-    FromWhere: () => [
+    OrderByClause: () => [
         [
-            expressions.FromClause,
-            "{From: $1 }"
+            keywords.ORDERBY + ' ' + exp.OrderByList,
+            "$2"
+        ]
+    ],
+    FromWhereClause: () => [
+        [
+            keywords.FROM + ' ' + exp.FromTargets,
+            "{From: $2 }"
         ],
         [
-            expressions.FromClause + " " + keywords.WHERE + " " + expressions.Expression,
-            "{From: $1, Where: $3}"
+            keywords.FROM + ' ' + exp.FromTargets + " " + keywords.WHERE + " " + exp.Expression,
+            "{From: $2, Where: $4}"
         ]
     ],
     SelectClause: () =>  [
         [
-            keywords.SELECTTOP + " " +  values.Number + " " + expressions.SelectList,
+            keywords.SELECTTOP + " " +  val.Number + " " + exp.SelectList,
             "{ SelectList: $3, Limit: $2}"
         ],
         [
-            keywords.SELECT + " " + expressions.SelectList,
+            keywords.SELECT + " " + exp.SelectList,
             "{ SelectList: $2}"
         ]
     ],
     GroupByClause: () => [
         [
-           keywords.GROUPBY + " " + expressions.ExpressionList,
+           keywords.GROUPBY + " " + exp.ExpressionList,
             "{ Groupings: $2}"
         ],
         [
-            keywords.GROUPBY + " " + expressions.ExpressionList + " " + keywords.HAVING + " " + expressions.Expression,
+            keywords.GROUPBY + " " + exp.ExpressionList + " " + keywords.HAVING + " " + exp.Expression,
             "{ Groupings: $2, Having: $4}"
         ]
     ],
     Stmt: () =>  [
         [
-            expressions.SelectClause + " " + keywords.FROM + " " + expressions.FromWhere,
-            "{ Select: $1, FromWhere: $3} "
+            exp.SelectClause + " " + exp.FromWhereClause,
+            { Select: "$1", FromWhere: "$2", Positions: { Select: "@1", FromWhere: "@2" } }
         ],
         [
-            expressions.SelectClause + " " + keywords.FROM + " " + expressions.FromWhere + " " + expressions.GroupByClause,
-            "{ Select: $1, FromWhere: $3, GroupBy: $4}"
+            exp.SelectClause + " " + exp.FromWhereClause + " " + exp.GroupByClause,
+            { Select: "$1", FromWhere: "$2", GroupBy: "$3", Positions: { Select: "@1", FromWhere: "@2", GroupBy: "@3"} }
         ],
         [
-            expressions.SelectClause + " " + keywords.FROM + " " + expressions.FromWhere + " "
-            + expressions.GroupByClause + " " + keywords.ORDERBY + " " + expressions.OrderByList,
-            "{ Select: $1, FromWhere: $3, GroupBy: $4, OrderBy: $6}"
+            exp.SelectClause + " " + exp.FromWhereClause + " " + exp.GroupByClause + " " + exp.OrderByClause,
+            { Select: "$1", FromWhere: "$2", GroupBy: "$3", OrderBy: "$4", Positions: { Select: "@1", FromWhere: "@2", GroupBy: "@3", OrderBy: "@4" } }
         ],
         [
-            expressions.SelectClause + " " + keywords.FROM + " " + expressions.FromWhere + " " + keywords.ORDERBY + " " + expressions.OrderByList,
-            "{ Select: $1, FromWhere: $3, OrderBy: $5}"
+            exp.SelectClause + " " + exp.FromWhereClause + " " + exp.OrderByClause,
+            { Select: "$1", FromWhere: "$2", OrderBy: "$3", Positions: { Select: "@1", FromWhere: "@2", OrderBy: "@3" } }
         ]
     ]
 }
 
+
 var expressionDefs = {};
-expressions = tokens.keyValueSwitcheroo(expressions, expressionDefs);
+exp = tokens.keyValueSwitcheroo(exp, expressionDefs);
 
-export function GetJisonExpressions() {
+export function GetJisonExpressionsFull() {
 
-    return lazy(expressions)
+    return lazy(exp)
         .pairs()
         .map(kv => [kv[0], expressionDefs[kv[0]]()
             .map(def => {
-                if (utils.IsArray(def) && !def[1].match(/\s*\$\$\s=/))
-                    return [def[0], '$$ = ' + def[1]];
+                if (utils.IsArray(def)) {
+                    var output = def[1];
+                    if (typeof output !== 'string') output = JSON.stringify(output).replace(/"/g, '');
+                    output = output.match(/\s*\$\$\s=/) ? output : '$$ = ' + output;
+                    return [def[0], output];
+                }
                 else return def;
             })
         ])
         .toObject();
 
+}
+
+export function GetJisonExpressionsHelpful() {
+
+    var expressions = GetJisonExpressionsFull();
+    
+    //Allow incomplete select list
+    expressions['SelectList'].push(
+        [
+            exp.SelectList + " , ",
+            "$$ = $1"
+        ]
+    );
+
+    //Allow empty select list
+    expressions['SelectClause'].push(
+        [
+            keywords.SELECT,
+            "$$ = { SelectList: []}"
+        ]
+    );
+
+    return expressions;
 }

@@ -30,19 +30,29 @@ if (args['w']){
 var engine = new eng.DesktopJsoqlEngine();
 //var engine = new eng.OnlineJsoqlEngine();
 
-
 console.log('\n' + query);
 
-engine.ExecuteQuery(query)
-    .then(results => {
+//In "query help" mode, treat '@' as placeholder for cursor and get properties in scope at cursor
+if (args['h']) {
+    var cursor = query.indexOf('@');
+    if (cursor < 0) throw new Error('Query must contain cursor placeholder @ in help mode');
+    query = query.replace('@', '');
 
-        if (results.Errors && results.Errors.length) {
-            console.log(results.Errors);
-        }
-        else {
-            console.log('\n\nNumber of results: ' + results.Results.length);
-            console.log('\n\nResults:\n');
-            console.log(results.Results);
-        }
-    })
-    .fail(error => console.log(error));
+    engine.GetQueryHelp(query, cursor)
+        .then(help => console.log(help));
+
+} else {
+    engine.ExecuteQuery(query)
+        .then(results => {
+
+            if (results.Errors && results.Errors.length) {
+                console.log(results.Errors);
+            }
+            else {
+                console.log('\n\nNumber of results: ' + results.Results.length);
+                console.log('\n\nResults:\n');
+                console.log(results.Results);
+            }
+        })
+        .fail(error => console.log(error));
+}
