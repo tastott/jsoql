@@ -34,12 +34,15 @@ console.log('\n' + query);
 
 //In "query help" mode, treat '@' as placeholder for cursor and get properties in scope at cursor
 if (args['h']) {
+    query = "SELECT Order.@\nFROM 'file://../Data/orders.jsonl'";
     var cursor = query.indexOf('@');
     if (cursor < 0) throw new Error('Query must contain cursor placeholder @ in help mode');
     query = query.replace('@', '');
+   
 
     engine.GetQueryHelp(query, cursor)
-        .then(help => console.log(help));
+        .then(help => console.log(help))
+        .fail(error => console.log(error));
 
 } else {
     engine.ExecuteQuery(query)

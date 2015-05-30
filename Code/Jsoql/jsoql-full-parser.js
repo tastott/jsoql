@@ -731,7 +731,7 @@ case 37:return 5
 break;
 case 38:/* ignore whitespace */
 break;
-case 39:INVALID
+case 39:return 'INVALID'
 break;
 }
 },

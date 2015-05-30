@@ -65,7 +65,7 @@ export function HelpWithSelectDeepItems() {
         { Name: 'Dave', Pet: { Name: 'Fluffy', Species: 'Snake' } },
         { Name: 'Jim', Pet: { Name: 'Dave', Species: 'Human' } }
     ];
-    var query = "SELECT Pet.@ FROM 'var://Test'"; //This won't be restricted to properties of Pet but it does test that this is parseable
+    var query = "SELECT Pet.@\nFROM 'var://Test'"; //This won't be restricted to properties of Pet but it does test that this is parseable
     var expected = {
         PropertiesInScope: {
             Name: true,

@@ -104,7 +104,7 @@ function GetPosition(cursor: number, text: string) : m.Position {
     while (true) {
         column = cursor - searchFrom;
         searchFrom = text.indexOf('\n', searchFrom);
-        if (searchFrom < 0 || searchFrom > cursor) break;
+        if (searchFrom < 0 || searchFrom >= cursor) break;
         ++line;
     }
 
@@ -114,17 +114,38 @@ function GetPosition(cursor: number, text: string) : m.Position {
     };
 }
 
-function In(position : m.Position, range: p.Range): boolean {
+function ToPositions(range: p.Range): m.Position[]{
+    return [
+        {
+            Column: range.first_column,
+            Line: range.first_line
+        },
+        {
+            Column: range.last_column,
+            Line: range.last_line
+        }
+    ];
+}
 
-    return position.Line >= range.first_line
-        && position.Line <= range.last_line
-        && position.Column >= range.first_column
-        && position.Column <= range.last_column;
+function Compare(a: m.Position, b: m.Position): number {
+    if (a.Line > b.Line) return 1;
+    else if (a.Line < b.Line) return -1;
+    else if (a.Column > b.Column) return 1;
+    else if (a.Column < b.Column) return -1;
+    else return 0;
+}
+
+function In(position : m.Position, range: p.Range): boolean {
+    var rangePositions = ToPositions(range);
+
+    return Compare(position, rangePositions[0]) >= 0
+        && Compare(position, rangePositions[1]) <= 0;
 }
 
 function Between(position: m.Position, rangeFrom: p.Range, rangeTo: p.Range) {
-    return !In(position, rangeFrom)
-        && !In(position, rangeTo)
-        && position.Line >= rangeFrom.last_line
-        && position.Line <= rangeTo.first_line;
+    var from = ToPositions(rangeFrom)[1];
+    var to = ToPositions(rangeTo)[0];
+
+    return Compare(position, from) > 0
+        && Compare(position, to) < 0;
 }

@@ -79,7 +79,7 @@ export function GetJisonTokens(): string[][]{
         [
             ['$', "return 'EOF'"],
             ['\\s+', '/* ignore whitespace */'],
-            ['.', 'INVALID']
+            ['.', "return 'INVALID'"]
         ]
     );
 }

@@ -4,6 +4,9 @@ import path = require('path')
 import _fs = require('../../Services/fileService')
 import dshs = require('../../Services/datasourceHistoryService')
 import lazy = require('lazy.js')
+import Q = require('q')
+
+document = window.document;
 var brace = require('brace')
 var Range = brace.acequire('ace/range').Range;
 
