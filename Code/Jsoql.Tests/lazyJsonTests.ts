@@ -7,12 +7,12 @@ export function ArrayRoot() {
         results => assert.equal(results.length, 20));
 }
 
-export function ObjectRoot() {
-    var jsoql = "SELECT Order.Id FROM 'file://Data/single-order.json'";
+export function ArrayPropertyOfObjectRoot() {
+    var jsoql = "SELECT OrderId FROM {uri: 'file://Data/single-order.json', root: 'OrderDetails'}";
     return testBase.ExecuteAndAssert(jsoql, null, 
         results => {
                 assert.equal(results.length, 1);
-                assert.equal(results[0]['Order.Id'], 11074);
+                assert.equal(results[0]['OrderId'], 11074);
             });
 }
 

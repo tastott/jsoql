@@ -10,7 +10,7 @@ export interface Group {
 
 export interface Datasource {
     Type: string;
-    Value: string;
+    Value: any;
 }
 
 export interface QueryResult {

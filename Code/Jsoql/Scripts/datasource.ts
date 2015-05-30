@@ -18,13 +18,13 @@ export interface DataSourceParameters {
     root?: string;
 }
 
-export interface DataSource {
+export interface DataSourceSequencer {
     Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>;
 }
 
 
-export interface DataSources {
-    [scheme: string]: DataSource;
+export interface DataSourceSequencers {
+    [scheme: string]: DataSourceSequencer;
 }
 
 
@@ -96,7 +96,7 @@ class StoredFileSequencer implements FileSequencer {
     }
 }
 
-class AbstractLinedFileDataSource implements DataSource {
+class AbstractLinedFileDataSourceSequencer implements DataSourceSequencer {
 
     constructor(private fileSequencer : FileSequencer) {
         
@@ -119,7 +119,7 @@ class AbstractLinedFileDataSource implements DataSource {
     }
 }
 
-class CsvFileDataSource extends AbstractLinedFileDataSource {
+class CsvFileDataSourceSequencer extends AbstractLinedFileDataSourceSequencer {
 
     constructor(baseFileSequencer: FileSequencer) {
         super(baseFileSequencer);
@@ -159,7 +159,7 @@ class CsvFileDataSource extends AbstractLinedFileDataSource {
     }
 }
 
-class JsonlFileDataSource extends AbstractLinedFileDataSource {
+class JsonlFileDataSourceSequencer extends AbstractLinedFileDataSourceSequencer {
     constructor(baseFileSequencer: FileSequencer) {
         super(baseFileSequencer);
     }
@@ -179,7 +179,7 @@ class JsonlFileDataSource extends AbstractLinedFileDataSource {
     }
 }
 
-class AbstractFileDataSource implements DataSource {
+class AbstractFileDataSourceSequencer implements DataSourceSequencer {
     Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
         var fullPath = path.isAbsolute(value)
@@ -201,7 +201,7 @@ class AbstractFileDataSource implements DataSource {
     }
 }
 
-class SimpleJsonFileDataSource extends AbstractFileDataSource {
+class SimpleJsonFileSequencer extends AbstractFileDataSourceSequencer {
     protected GetFromFile(fullPath: string, parameters: DataSourceParameters): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
         var json = fs.readFileSync(fullPath, 'utf8');
@@ -214,7 +214,7 @@ class SimpleJsonFileDataSource extends AbstractFileDataSource {
     }
 }
 
-class OboeJsonFileDataSource implements DataSource {
+class OboeJsonFileSequencer implements DataSourceSequencer {
 
     constructor(private fileSequencer: FileSequencer) { }
 
@@ -225,7 +225,7 @@ class OboeJsonFileDataSource implements DataSource {
 
 }
 
-export class FolderDataSource implements DataSource {
+export class FolderDataSourceSequencer implements DataSourceSequencer {
     Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
         
         var fullPath = path.isAbsolute(value)
@@ -241,7 +241,7 @@ export class FolderDataSource implements DataSource {
             .map((entry : string[]) => {
                 var obj = JSON.parse(entry[0]);
                 var fStats = fs.statSync(entry[1]);
-                obj[FolderDataSource.FileInfoProperty] = {
+                obj[FolderDataSourceSequencer.FileInfoProperty] = {
                     path: entry[1],
                     name: path.basename(entry[1]),
                     modifiedDate: fStats.mtime.toJSON(),
@@ -253,10 +253,10 @@ export class FolderDataSource implements DataSource {
     static FileInfoProperty = '@@File'
 }
 
-class SmartFileDataSource implements DataSource {
+class SmartFileSequencer implements DataSourceSequencer {
 
     private datasources: {
-        [name: string]: DataSource;
+        [name: string]: DataSourceSequencer;
     }
 
     private extensionToDataSource: {
@@ -265,11 +265,11 @@ class SmartFileDataSource implements DataSource {
 
     constructor(fileSequencer : FileSequencer) {
         this.datasources = {
-            'csv': new CsvFileDataSource(fileSequencer),
-            'jsonl': new JsonlFileDataSource(fileSequencer),
+            'csv': new CsvFileDataSourceSequencer(fileSequencer),
+            'jsonl': new JsonlFileDataSourceSequencer(fileSequencer),
             //'json': new SimpleJsonFileDataSource(),
-            'json': new OboeJsonFileDataSource(fileSequencer),
-            '': new FolderDataSource()
+            'json': new OboeJsonFileSequencer(fileSequencer),
+            '': new FolderDataSourceSequencer()
         };
 
         this.extensionToDataSource = {
@@ -285,7 +285,7 @@ class SmartFileDataSource implements DataSource {
         return ds.Get(value, parameters, context);
     }
 
-    protected GetSubSource(filepath: string, parameters: DataSourceParameters) : DataSource{
+    protected GetSubSource(filepath: string, parameters: DataSourceParameters) : DataSourceSequencer{
 
         //Folder
         if (!path.extname(filepath)) {
@@ -310,10 +310,10 @@ class SmartFileDataSource implements DataSource {
     }
 }
 
-export class DesktopSmartFileDataSource implements DataSource{
-    private source: SmartFileDataSource;
+export class DesktopSmartFileSequencer implements DataSourceSequencer{
+    private source: SmartFileSequencer;
     constructor() {
-        this.source = new SmartFileDataSource(new FileSystemFileSequencer());
+        this.source = new SmartFileSequencer(new FileSystemFileSequencer());
     }
 
     Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
@@ -321,10 +321,10 @@ export class DesktopSmartFileDataSource implements DataSource{
     }
 }
 
-export class OnlineSmartFileDataSource implements DataSource {
-    private source: SmartFileDataSource;
+export class OnlineSmartFileSequencer implements DataSourceSequencer {
+    private source: SmartFileSequencer;
     constructor(getStoredFile : (id : string) => string) {
-        this.source = new SmartFileDataSource(new StoredFileSequencer(getStoredFile));
+        this.source = new SmartFileSequencer(new StoredFileSequencer(getStoredFile));
     }
 
     Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
@@ -332,7 +332,7 @@ export class OnlineSmartFileDataSource implements DataSource {
     }
 }
 
-export class VariableDataSource implements DataSource {
+export class VariableDataSourceSequencer implements DataSourceSequencer {
     Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any> {
 
         var data: any[];
@@ -347,7 +347,7 @@ export class VariableDataSource implements DataSource {
             data = context.Data[value];
         }
         else {
-            data = evl.Evaluator.Evaluate(value, context.Data) || []; //TODO: Is this OK?
+            data = evl.Evaluator.Evaluate(value, context.Data);
             if (!util.IsArray(data)) data = [data];
         }
 
@@ -355,7 +355,7 @@ export class VariableDataSource implements DataSource {
     }
 }
 
-export class StreamingHttpDataSource implements DataSource {
+export class StreamingHttpSequencer implements DataSourceSequencer {
 
     Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
         var url = 'http://' + value;
@@ -367,7 +367,7 @@ export class StreamingHttpDataSource implements DataSource {
 }
 
 //This is a bit useless because it is still subject to cross-origin restrictions in a browser
-export class WhateverOriginStreamingHttpDataSource implements DataSource {
+export class WhateverOriginStreamingHttpDataSource implements DataSourceSequencer {
 
     constructor(private baseUrl: string) {
     }
@@ -386,7 +386,7 @@ export class WhateverOriginStreamingHttpDataSource implements DataSource {
     }
 }
 
-export class YqlStreamingHttpDataSource implements DataSource {
+export class YqlStreamingHttpSequencer implements DataSourceSequencer {
 
     constructor(private baseUrl: string) {
     }
@@ -402,14 +402,14 @@ export class YqlStreamingHttpDataSource implements DataSource {
     }
 }
 
-export class OnlineStreamingHttpDataSource implements DataSource {
+export class OnlineStreamingHttpSequencer implements DataSourceSequencer {
 
-    private restrictedOriginDatasource: DataSource;
-    private localOrAnyOriginDatasource: DataSource;
+    private restrictedOriginDatasource: DataSourceSequencer;
+    private localOrAnyOriginDatasource: DataSourceSequencer;
 
     constructor(yqlBaseUrl: string, private appBaseUrl: string) {
-        this.restrictedOriginDatasource = new YqlStreamingHttpDataSource(yqlBaseUrl);
-        this.localOrAnyOriginDatasource = new StreamingHttpDataSource();
+        this.restrictedOriginDatasource = new YqlStreamingHttpSequencer(yqlBaseUrl);
+        this.localOrAnyOriginDatasource = new StreamingHttpSequencer();
     }
 
     Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {

@@ -140,7 +140,7 @@ declare module LazyJS {
         find(predicateFn: TestCallback<T>): T;
         findWhere(properties: Object): Sequence<T>;
 
-        flatten(): Sequence<T>;
+        flatten(): Sequence<any>;
         groupBy(keyFn: GetKeyCallback<T>): ObjectLikeSequence<T>;
         initial(count?: number): Sequence<T>;
         intersection(var_args: T[]): Sequence<T>;

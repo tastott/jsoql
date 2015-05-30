@@ -56,7 +56,7 @@ var aggregateFunctions: FunctionMappings = {
 };
 
 export class Evaluator {
-    constructor(private datasources: ds.DataSources = null) { }
+    constructor(private datasources: ds.DataSourceSequencers = null) { }
 
     public Evaluate(expression: any, target: any) {
         if (expression.Operator) {
@@ -142,9 +142,18 @@ export class Evaluator {
                 Data: target
             };
             var subquery = new query.JsoqlQuery(expression.SubQuery, this.datasources, context);
-            var results = subquery.ExecuteSync();
 
-            return [{ Alias: alias, Value: util.MonoProp(results[0]) }];
+            //A variable datasource for the sub-query can legitimately not exist (i.e. this item doesn't have the referenced property)
+            //To cater for this, we have to check for such a datasource now and return a null value
+            var variableDatasources = subquery.GetDatasources().filter(ds => ds.Type === 'var');
+            if (variableDatasources.some(vds => {
+                return !this.Evaluate(vds.Value, target);
+            })) return [{ Alias: alias, Value: null }]
+            else {
+                var results = subquery.ExecuteSync();
+
+                return [{ Alias: alias, Value: util.MonoProp(results[0]) }];
+            }
         }
         else if (expression.Call) {
             var args = expression.Args.map(arg => this.Evaluate(arg, target));

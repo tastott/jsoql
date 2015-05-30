@@ -146,3 +146,51 @@ export function HelpWithIncompleteWhereProperty() {
 
     return TestHelper(data, query, expected);
 }
+
+export function HelpWithEmptyOrderBy() {
+    var data = [
+        { Name: 'Dave', FavouriteFood: 'Chips' },
+        { Name: 'Jim', FavouriteFood: 'Baked beans' }
+    ];
+    var query = "SELECT * FROM 'var://Test' ORDER BY @";
+    var expected = {
+        PropertiesInScope: {
+            Name: true,
+            FavouriteFood: true
+        }
+    };
+
+    return TestHelper(data, query, expected);
+}
+
+export function HelpWithPartialOrderBy() {
+    var data = [
+        { Name: 'Dave', FavouriteFood: 'Chips' },
+        { Name: 'Jim', FavouriteFood: 'Baked beans' }
+    ];
+    var query = "SELECT * FROM 'var://Test' ORDER BY Name,@";
+    var expected = {
+        PropertiesInScope: {
+            Name: true,
+            FavouriteFood: true
+        }
+    };
+
+    return TestHelper(data, query, expected);
+}
+
+export function HelpWithPartialOrderByProperty() {
+    var data = [
+        { Name: 'Dave', FavouriteFood: 'Chips' },
+        { Name: 'Jim', FavouriteFood: 'Baked beans' }
+    ];
+    var query = "SELECT * FROM 'var://Test' ORDER BY Name.@";
+    var expected = {
+        PropertiesInScope: {
+            Name: true,
+            FavouriteFood: true
+        }
+    };
+
+    return TestHelper(data, query, expected);
+}

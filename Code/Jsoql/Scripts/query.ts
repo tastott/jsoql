@@ -6,6 +6,7 @@ import m = require('./models')
 import qstring = require('./query-string')
 import util = require('./utilities')
 import evl = require('./evaluate')
+import val = require('./validate')
 var clone = require('clone')
 
 interface DatasourceConfig {
@@ -23,7 +24,7 @@ export class JsoqlQuery {
     private evaluator: evl.Evaluator;
 
     constructor(private stmt: parse.Statement,
-        private dataSources : ds.DataSources,
+        private dataSourceSequencers : ds.DataSourceSequencers,
         queryContext?: m.QueryContext) {
 
         queryContext = queryContext || {};
@@ -33,29 +34,48 @@ export class JsoqlQuery {
             Data: queryContext.Data || {}
         };
 
-        this.evaluator = new evl.Evaluator(dataSources); 
+        this.evaluator = new evl.Evaluator(this.dataSourceSequencers); 
     }
 
-    private GetSequence(target: any, parameters: any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
-
+    private ToDatasource(target: any) : m.Datasource {
         //Property
         if (typeof target != 'string') {
-            return this.dataSources['var'].Get(target, {}, this.queryContext);
+            return {
+                Type: 'var',
+                Value: target
+            };
         }
         else {
             var match = target.match(JsoqlQuery.UriRegex);
 
             if (!match) {
-                return this.dataSources['var'].Get(target, {}, this.queryContext);
+                return {
+                    Type: 'var',
+                    Value: target
+                }
             }
             else {
-                var scheme = match[1].toLowerCase();
-                parameters = parameters || {};
-                var dataSource = this.dataSources[scheme];
-                if (!dataSource) throw new Error("Invalid scheme for from clause target: '" + scheme + "'");
+                return {
+                    Type: match[1].toLowerCase(),
+                    Value: match[2]
+                };
+            }
+        }
+    }
 
-                return dataSource.Get(match[2], parameters, this.queryContext);
-            } 
+    private GetSequence(target: any, parameters: any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+
+        var ds = this.ToDatasource(target);
+
+        if (ds.Type === 'var') {
+            return this.dataSourceSequencers['var'].Get(ds.Value, {}, this.queryContext);
+        }
+        else {
+            parameters = parameters || {};
+            var dataSource = this.dataSourceSequencers[ds.Type];
+            if (!dataSource) throw new Error("Invalid scheme for data source: '" + ds.Type + "'");
+
+            return dataSource.Get(ds.Value, parameters, this.queryContext);
         }
         
     }
@@ -328,15 +348,13 @@ export class JsoqlQuery {
 
     GetDatasources(): m.Datasource[]{
         return this.CollectDatasources(this.stmt.From)
-            .filter(t => typeof t.Target === 'string')
-            .map(t => {
-                var match = t.Target.match(JsoqlQuery.UriRegex);
-                return {
-                    Type: match[1],
-                    Value: match[2]
-                };
-            });
+            .map(dsc => this.ToDatasource(dsc.Target));
     }
+
+    Validate(): any[]{
+        return val.Validate(this.stmt);
+    }
+
 
     private GroupBySync(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, expressions : any[]): LazyJS.Sequence<m.Group> {
         var groupKey = (item: any) => {

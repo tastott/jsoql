@@ -75,27 +75,27 @@ export function SelectSubQueryWithNonUniversalProperty() {
         results => assert.deepEqual(results, expected));
 }
 
-export function SelectSubQueryWithQuotedFromCausesException() {
-    var data = [
-        {
-            Name: 'Bob',
-            Pets: ['Dog', 'Gerbil']
-        },
-        {
-            Name: 'Jim',
-            Pets: ['Giraffe', 'Ocelot', 'Goldfish']
-        },
-        {
-            Name: 'Dave',
-            Pets: []
-        }
-    ];
-    var query = "SELECT Name, (SELECT COUNT() FROM 'var://Test') AS NumberOfSomethingElse FROM 'var://Test'";
+//export function SelectSubQueryWithQuotedFromCausesException() {
+//    var data = [
+//        {
+//            Name: 'Bob',
+//            Pets: ['Dog', 'Gerbil']
+//        },
+//        {
+//            Name: 'Jim',
+//            Pets: ['Giraffe', 'Ocelot', 'Goldfish']
+//        },
+//        {
+//            Name: 'Dave',
+//            Pets: []
+//        }
+//    ];
+//    var query = "SELECT Name, (SELECT COUNT() FROM 'var://Test') AS NumberOfSomethingElse FROM 'var://Test'";
 
-    assert.throws(() => testBase.ExecuteArrayQuery(query, data));
-}
+//    assert.throws(() => testBase.ExecuteArrayQuery(query, data));
+//}
 
-export function SelectSubQueryWithMoreThanOneFieldCausesException() {
+export function SelectSubQueryWithMoreThanOneColumnFails() {
     var data = [
         {
             Name: 'Bob',
@@ -112,7 +112,7 @@ export function SelectSubQueryWithMoreThanOneFieldCausesException() {
     ];
     var query = "SELECT Name, (SELECT COUNT(), SomethingElse FROM Pets) AS NumberOfPets FROM 'var://Test'";
 
-    assert.throws(() => testBase.ExecuteArrayQuery(query, data));
+    return testBase.ExecuteAndAssertFail(query, data);
 }
 
 export function SelectSubQueryWithCountOfObjects() {
