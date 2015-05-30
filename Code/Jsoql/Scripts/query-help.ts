@@ -5,6 +5,7 @@ import m = require('./models')
 import ds = require('./datasource')
 import e = require('./engine')
 import utils = require('./utilities')
+var lazy : LazyJS.LazyStatic = require('./Hacks/lazy')
 
 enum Scope {
     Base,
@@ -12,8 +13,45 @@ enum Scope {
     Unknown
 }
 
+enum Clause {
+    Select,
+    From,
+    Where,
+    GroupBy,
+    OrderBy,
+    Having
+}
+
+
 export class QueryHelper {
     constructor(private queryEngine: e.JsoqlEngine) {
+    }
+
+    private GetStatementClauses(statement: p.Statement): {
+        Clause: Clause;
+        Range: m.Range
+    }[]{
+
+        return [
+            Clause.Select,
+            Clause.From,
+            Clause.Where,
+            Clause.GroupBy,
+            Clause.Having,
+            Clause.OrderBy
+        ].map(c => {
+            return {
+                Clause: c,
+                JisonRange: statement.Positions[Clause[c]]
+            };
+        })
+        .filter(sc => !!sc.JisonRange)
+            .map(sc => {
+            return {
+                Clause: sc.Clause,
+                Range: ConvertJisonRange(sc.JisonRange)
+            };
+        });
     }
 
     GetQueryHelp(jsoql: string, cursorPositionOrIndex: m.Position|number, context?: m.QueryContext): Q.Promise<m.HelpResult> {
@@ -26,16 +64,29 @@ export class QueryHelper {
 
         var statement = p.ParseHelpful(jsoql);
    
-        //Determine scope at cursor
+        //Determine clause at cursor
+        var statementClauses = this.GetStatementClauses(statement);
+        var cursorClause = lazy(statementClauses)
+            .filter(sc => Compare(cursor, sc.Range.From) < 0)
+            .first() || statementClauses.slice(-1)[0];
+        
+        //Determine scope for this clause
         var scope: Scope;
-        if (In(cursor, statement.Positions.Select)
-            || Between(cursor, statement.Positions.Select, statement.Positions.From)
-            || In(cursor, statement.Positions.Where)) {
+        if (statementClauses.some(sc => sc.Clause == Clause.GroupBy)) {
+            scope = Scope.Unknown;
+        } else {
             scope = Scope.Base;
         }
-        else {
-            scope = Scope.Unknown;
-        }
+
+ 
+    //    if (Before(cursor, statement.Positions.From)) clause = Clause.Select;
+    //else if(
+    //    {
+    //        scope = Scope.Base;
+    //    }
+    //    else {
+    //        scope = Scope.Unknown;
+    //    }
 
         return this.GetScopeHelp(statement, scope, context);
     }
@@ -106,20 +157,20 @@ function GetPosition(cursor: number, text: string) : m.Position {
         else cursor -= lines[i].length;
     }
    
-    return { Line: cursor === 0 ? i - 1 : i, Column: cursor };
+    return { Line: cursor === 0 ? i - 1: i, Column: lines[i-1].length };
 }
 
-function ToPositions(range: p.Range): m.Position[]{
-    return [
-        {
+function ConvertJisonRange(range: p.Range): m.Range{
+    return {
+        From: {
             Column: range.first_column,
             Line: range.first_line
         },
-        {
+        To: {
             Column: range.last_column,
             Line: range.last_line
         }
-    ];
+    };
 }
 
 function Compare(a: m.Position, b: m.Position): number {
@@ -130,17 +181,27 @@ function Compare(a: m.Position, b: m.Position): number {
     else return 0;
 }
 
-function In(position : m.Position, range: p.Range): boolean {
-    var rangePositions = ToPositions(range);
+//function In(position : m.Position, range: p.Range): boolean {
+//    var rangePositions = ToPositions(range);
 
-    return Compare(position, rangePositions[0]) >= 0
-        && Compare(position, rangePositions[1]) <= 0;
-}
+//    return Compare(position, rangePositions[0]) >= 0
+//        && Compare(position, rangePositions[1]) <= 0;
+//}
 
-function Between(position: m.Position, rangeFrom: p.Range, rangeTo: p.Range) {
-    var from = ToPositions(rangeFrom)[1];
-    var to = ToPositions(rangeTo)[0];
+//function Between(position: m.Position, rangeFrom: p.Range, rangeTo: p.Range) {
+//    var from = ToPositions(rangeFrom)[1];
+//    var to = ToPositions(rangeTo)[0];
 
-    return Compare(position, from) > 0
-        && Compare(position, to) < 0;
-}
+//    return Compare(position, from) > 0
+//        && Compare(position, to) < 0;
+//}
+
+//function After(position: m.Position, range: p.Range): boolean {
+//    var rangePositions = ToPositions(range);
+//    return Compare(position, rangePositions[1]) > 0;
+//}
+
+
+//function Before(position: m.Position, range: m.Range): boolean {
+//    return Compare(position, range.From) < 0;
+//}

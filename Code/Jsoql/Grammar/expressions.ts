@@ -397,5 +397,33 @@ export function GetJisonExpressionsHelpful() {
         )
         );
 
+    //Allow items in ORDER BY clause to have a trailing dot or comma
+    expressions['OrderByList'].push(
+        [
+            exp.OrderByList + ' TrailingDot',
+            "$$ = $1"
+        ]
+        );
+    expressions['OrderByList'].push(
+        [
+            exp.OrderByList + ' FinalDot',
+            "$$ = $1"
+        ]
+        );
+    expressions['OrderByList'].push(
+        [
+            exp.OrderByList + ' ,',
+            "$$ = $1"
+        ]
+        );
+  
+    //Allow empty ORDER BY clause
+    expressions['OrderByClause'].push(
+        [
+            keywords.ORDERBY,
+            "$$ = []"
+        ]
+        );
+
     return expressions;
 }

@@ -28,3 +28,8 @@ export interface Position {
     Column: number;
     Line: number;
 }
+
+export interface Range {
+    From: Position;
+    To: Position;
+}
