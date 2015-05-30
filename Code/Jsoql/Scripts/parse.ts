@@ -1,4 +1,4 @@
-﻿var fullParser = require('../jsoql-parser').parser;
+﻿var fullParser = require('../jsoql-full-parser').parser;
 
 export function FullParse(source: string): Statement {
     return fullParser.parse(source);

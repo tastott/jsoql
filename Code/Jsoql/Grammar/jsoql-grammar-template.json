@@ -1,0 +1,48 @@
+{
+  "lex": {
+    "rules": []
+  },
+  "operators": [
+    [
+      "left",
+      "AND",
+      "OR"
+    ],
+    [
+      "left",
+      "=",
+      "!=",
+      "<",
+      ">",
+      "<=",
+      ">="
+    ],
+    [
+      "left",
+      "+",
+      "-"
+    ],
+    [
+      "left",
+      "*",
+      "/"
+    ],
+    [
+      "left",
+      "^"
+    ],
+    [
+      "left",
+      "UMINUS"
+    ]
+  ],
+  "start": "expressions",
+  "bnf": {
+    "expressions": [
+      [
+        "Stmt EOF",
+        "return $1;"
+      ]
+    ]
+  }
+}
