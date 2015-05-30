@@ -5,6 +5,7 @@ import m = require('../models/models')
 import Q = require('q')
 import dshs = require('../Services/datasourceHistoryService')
 import _fs = require('../Services/fileService')
+import qes = require('../Services/queryExecutionService')
 import d = require('../models/dictionary')
 import path = require('path') //OK in browser?
 import lazy = require('lazy.js')
@@ -88,18 +89,20 @@ export class AceQueryEditorDirective  {
     public static Factory() {
         var directive = (configuration: m.Configuration,
             datasourceHistoryService: dshs.DatasourceHistoryService,
-            dataFileService: _fs.FileService) => {
-            return new AceQueryEditorDirective(configuration, datasourceHistoryService, dataFileService);
+            dataFileService: _fs.FileService,
+            queryExecutionService: qes.QueryExecutionService) => {
+            return new AceQueryEditorDirective(configuration, datasourceHistoryService, dataFileService, queryExecutionService);
         };
 
-        directive['$inject'] = ['configuration', 'datasourceHistoryService' ,'dataFileService'];
+        directive['$inject'] = ['configuration', 'datasourceHistoryService' ,'dataFileService', 'queryExecutionService'];
 
         return directive;
     }
 
     constructor(private configuration: m.Configuration,
         private datasourceHistoryService: dshs.DatasourceHistoryService,
-        private dataFileService : _fs.FileService) {
+        private dataFileService: _fs.FileService,
+        private queryExecutionService : qes.QueryExecutionService) {
 
         this.link = ($scope: QueryEditorScope, element: JQuery, attributes: ng.IAttributes) => {
             console.log('inside link')
@@ -139,6 +142,7 @@ export class AceQueryEditorDirective  {
         editor.setOptions({ enableBasicAutocompletion: true });
 
         var completers: AceCompleter[] = [
+            new PropertyCompleter(this.queryExecutionService, () => $scope.BaseDirectory.Value()),
             new RecentHttpCompleter(this.datasourceHistoryService),
             this.configuration.Environment == m.Environment.Desktop
                 ? new FileSystemFileCompleter(() => $scope.BaseDirectory.Value())
@@ -173,6 +177,71 @@ export interface FudgedAceEditor extends AceAjax.Editor {
             filterText: string;
         }
     }
+}
+
+class PropertyCompleter implements AceCompleter{
+
+    constructor(private queryExecutionService: qes.QueryExecutionService,
+        private getBaseDirectory: () => string) {
+    }
+
+    getCompletions(editor: AceAjax.Editor, session: AceAjax.IEditSession, pos: AceAjax.Position, prefix, callback) {
+        var query = session.getValue();
+        if (!query) callback(null, []);
+        else {
+            var cursor = {
+                Line: pos.row,
+                Column: pos.column
+            };
+
+            this.queryExecutionService.GetQueryHelp(query, cursor, this.getBaseDirectory())
+                .then(helpResult => {
+                    if (!helpResult || !helpResult.PropertiesInScope) callback(null, []);
+                    else {
+                        var completions: AceCompletion[] =
+                            Object.keys(helpResult.PropertiesInScope)
+                                .map(prop => {
+                                    return {
+                                        name: prop,
+                                        value: prop,
+                                        score: 100,
+                                        meta: 'property'
+                                    };
+                                });
+
+                        callback(null, completions);
+                    }
+                });
+
+        }
+
+    }
+
+    //public insertMatch = (editor: FudgedAceEditor, completion: AceCompletion) => {
+
+    //    var position = editor.selection.getRange().start;
+
+    //    //Find this partial URI with a search (probably a better way to do this?)
+    //    var search: AceAjax.Range = editor.find(this.uriPattern, {
+    //        caseSensitive: false,
+    //        range: new Range(position.row, 0, position.row + 1, 0), //Search whole row
+    //        regExp: true,
+    //        start: new Range(position.row, 0, position.row, 0)
+    //    });
+    //    editor.replace("'" + this.scheme + "://" + completion.value + "'");
+
+    //    if (!search) throw new Error('Unable to find URI to replace');
+
+    //    var selectionEnd = editor.selection.getRange().end;
+    //    var newCursorPos: AceAjax.Position;
+    //    //Move cursor outside quotes if appropriate
+    //    if (this.ExitUri(completion.value)) newCursorPos = { row: selectionEnd.row, column: selectionEnd.column };
+    //    //Otherwise keep cursor inside quotes
+    //    else newCursorPos = { row: selectionEnd.row, column: selectionEnd.column - 1 };
+
+    //    editor.selection.setRange(new Range(newCursorPos.row, newCursorPos.column, newCursorPos.row, newCursorPos.column), false);
+
+    //}
 }
 
 class UriCompleter {

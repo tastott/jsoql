@@ -41,9 +41,9 @@ export class JsoqlEngine {
         }
     }
 
-    public GetQueryHelp(jsoql: string, cursor: number, context?: m.QueryContext): Q.Promise<m.HelpResult> {
+    public GetQueryHelp(jsoql: string, cursorPositionOrIndex: m.Position|number, context?: m.QueryContext): Q.Promise<m.HelpResult> {
         try {
-            return this.queryHelper.GetQueryHelp(jsoql, cursor, context);
+            return this.queryHelper.GetQueryHelp(jsoql, cursorPositionOrIndex, context);
         }
         catch (ex) {
             return Q.reject<any>(ex);

@@ -10,6 +10,14 @@ export class QueryExecutionService {
         private datasourceHistoryService: dshs.DatasourceHistoryService) {
     }
 
+    GetQueryHelp(query: string, cursor: JsoqlPosition, baseDirectory: string): Q.Promise<JsoqlQueryHelpResult> {
+        var context: JsoqlQueryContext = {
+            BaseDirectory: baseDirectory
+        };
+
+        return this.jsoqlEngine.GetQueryHelp(query, cursor, context);
+    }
+
     ExecuteQuery(query: string, baseDirectory: string): Q.Promise<m.QueryResult> {
         var context: JsoqlQueryContext = {
             BaseDirectory: baseDirectory

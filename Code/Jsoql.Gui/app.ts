@@ -13,7 +13,6 @@ import dshServ = require('./Scripts/Services/datasourceHistoryService')
 import repo = require('./Scripts/Services/typedRepository')
 import d = require('./Scripts/models/dictionary')
 import m = require('./Scripts/models/models')
-import cors = require('./Scripts/cors')
 var jsoql = require('../Jsoql/Scripts/engine') //TODO: Replace with npm module eventually
 
 var config = new m.Configuration( process['browser'] ? m.Environment.Online : m.Environment.Desktop);

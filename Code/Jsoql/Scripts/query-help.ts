@@ -16,16 +16,17 @@ export class QueryHelper {
     constructor(private queryEngine: e.JsoqlEngine) {
     }
 
-    GetQueryHelp(jsoql: string, cursorIndex: number, context?: m.QueryContext): Q.Promise<m.HelpResult> {
-        if (!jsoql || cursorIndex >= jsoql.length) return Q({ PropertiesInScope: null });
+    GetQueryHelp(jsoql: string, cursorPositionOrIndex: m.Position|number, context?: m.QueryContext): Q.Promise<m.HelpResult> {
+
+        if (!jsoql) return Q({ PropertiesInScope: null });
+
+        var cursor: m.Position;
+        if (typeof cursorPositionOrIndex === 'number') cursor = GetPosition(cursorPositionOrIndex, jsoql);
+        else cursor = cursorPositionOrIndex;
 
         var statement = p.ParseHelpful(jsoql);
-        console.log('\n');
-        console.log('Cursor index: ' + cursorIndex);
-  
-
+   
         //Determine scope at cursor
-        var cursor = GetPosition(cursorIndex, jsoql);
         var scope: Scope;
         if (In(cursor, statement.Positions.Select)
             || Between(cursor, statement.Positions.Select, statement.Positions.FromWhere)) {
@@ -34,14 +35,6 @@ export class QueryHelper {
         else {
             scope = Scope.Unknown;
         }
-
-        console.log('\nCursor position: ');
-        console.log(cursor);
-
-        console.log('\nCursor scope: ' + Scope[scope]);
-
-        console.log('\n');
-        console.log(statement);
 
         return this.GetScopeHelp(statement, scope, context);
     }
@@ -100,12 +93,7 @@ export class QueryHelper {
     }
 }
 
-interface Position {
-    Column: number;
-    Line: number;
-}
-
-function GetPosition(cursor: number, text: string) : Position {
+function GetPosition(cursor: number, text: string) : m.Position {
 
     if (!text || cursor < 0 || cursor >= text.length) throw new Error("Cursor is outside text");
 
@@ -126,7 +114,7 @@ function GetPosition(cursor: number, text: string) : Position {
     };
 }
 
-function In(position : Position, range: p.Range): boolean {
+function In(position : m.Position, range: p.Range): boolean {
 
     return position.Line >= range.first_line
         && position.Line <= range.last_line
@@ -134,7 +122,7 @@ function In(position : Position, range: p.Range): boolean {
         && position.Column <= range.last_column;
 }
 
-function Between(position: Position, rangeFrom: p.Range, rangeTo: p.Range) {
+function Between(position: m.Position, rangeFrom: p.Range, rangeTo: p.Range) {
     return !In(position, rangeFrom)
         && !In(position, rangeTo)
         && position.Line >= rangeFrom.last_line

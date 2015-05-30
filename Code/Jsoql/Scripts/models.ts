@@ -22,3 +22,9 @@ export interface QueryResult {
 export interface HelpResult {
     PropertiesInScope: any;
 }
+
+
+export interface Position {
+    Column: number;
+    Line: number;
+}
