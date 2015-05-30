@@ -70,7 +70,9 @@ export function keyValueSwitcheroo(target: Object, valuesDict : any):any {
 
 export function GetJisonTokens(): string[][]{
 
-    return [].concat(
+    return [
+        ['\\.\\s', "return 'TrailingDot'"]
+    ].concat(
         selfNamedTokens.map(t => [RegexEscape(t), "return '" + t + "'"]),
         Object.keys(keywords).map(kw => [keywordPatterns[kw], "return '" + kw + "'"]),
         Object.keys(values).map(v => [valuePatterns[v], "return '" + v + "'"]),

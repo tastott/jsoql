@@ -303,14 +303,22 @@ export function GetJisonExpressionsHelpful() {
 
     var expressions = GetJisonExpressionsFull();
     
-    //Allow incomplete select list
+    //Try to allow a load of stuff in select list
+
     expressions['SelectList'].push(
         [
-            exp.SelectList + " , ",
+            exp.Property + ' TrailingDot',
             "$$ = $1"
         ]
     );
 
+    expressions['SelectList'].push(
+        [
+            exp.SelectList + ' ,',
+            "$$ = $1"
+        ]
+    );
+  
     //Allow empty select list
     expressions['SelectClause'].push(
         [

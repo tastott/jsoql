@@ -3,7 +3,7 @@
 
 import appCtrl = require('./Scripts/Controllers/appController')
 import qrDir = require('./Scripts/Directives/queryResult')
-import qeDir = require('./Scripts/Directives/queryEditor')
+import qeDir = require('./Scripts/Directives/queryEditor/queryEditor')
 import fiDir = require('./Scripts/Directives/folderInput')
 import fdDir = require('./Scripts/Directives/fileDrop')
 import fServ = require('./Scripts/Services/fileService')

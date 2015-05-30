@@ -48,7 +48,11 @@
     <TypeScriptCompile Include="Scripts\Controllers\appController.ts" />
     <TypeScriptCompile Include="Scripts\Directives\fileDrop.ts" />
     <TypeScriptCompile Include="Scripts\Directives\folderInput.ts" />
-    <TypeScriptCompile Include="Scripts\Directives\queryEditor.ts" />
+    <TypeScriptCompile Include="Scripts\Directives\queryEditor\models.ts" />
+    <TypeScriptCompile Include="Scripts\Directives\queryEditor\propertyCompleter.ts" />
+    <TypeScriptCompile Include="Scripts\Directives\queryEditor\queryEditor.ts" />
+    <TypeScriptCompile Include="Scripts\Directives\queryEditor\uriCompleter.ts" />
+    <TypeScriptCompile Include="Scripts\Directives\queryEditor\utilities.ts" />
     <TypeScriptCompile Include="Scripts\Directives\queryResult.ts" />
     <TypeScriptCompile Include="Scripts\Models\dictionary.ts" />
     <TypeScriptCompile Include="Scripts\Models\models.ts" />
@@ -74,6 +78,7 @@
     <Folder Include="Scripts\" />
     <Folder Include="Scripts\Controllers\" />
     <Folder Include="Scripts\Directives\" />
+    <Folder Include="Scripts\Directives\queryEditor\" />
     <Folder Include="Scripts\Models\" />
     <Folder Include="Scripts\Services\" />
     <Folder Include="Scripts\typings\" />

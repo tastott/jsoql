@@ -653,88 +653,90 @@ performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START
 
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0:return 17
+case 0:return 'TrailingDot'
 break;
-case 1:return 19
+case 1:return 17
 break;
-case 2:return 20
+case 2:return 19
 break;
-case 3:return 14
+case 3:return 20
 break;
-case 4:return 16
+case 4:return 14
 break;
-case 5:return 35
+case 5:return 16
 break;
-case 6:return 30
+case 6:return 35
 break;
-case 7:return 29
+case 7:return 30
 break;
-case 8:return 28
+case 8:return 29
 break;
-case 9:return 27
+case 9:return 28
 break;
-case 10:return 26
+case 10:return 27
 break;
-case 11:return 25
+case 11:return 26
 break;
-case 12:return 31
+case 12:return 25
 break;
-case 13:return 36
+case 13:return 31
 break;
-case 14:return 37
+case 14:return 36
 break;
-case 15:return 33
+case 15:return 37
 break;
-case 16:return 57
+case 16:return 33
 break;
-case 17:return 58
+case 17:return 57
 break;
-case 18:return 54
+case 18:return 58
 break;
-case 19:return 55
+case 19:return 54
 break;
-case 20:return 60
+case 20:return 55
 break;
-case 21:return 61
+case 21:return 60
 break;
-case 22:return 52
+case 22:return 61
 break;
-case 23:return 48
+case 23:return 52
 break;
-case 24:return 49
+case 24:return 48
 break;
-case 25:return 39
+case 25:return 49
 break;
-case 26:return 44
+case 26:return 39
 break;
-case 27:return 45
+case 27:return 44
 break;
-case 28:return 46
+case 28:return 45
 break;
-case 29:return 23
+case 29:return 46
 break;
-case 30:return 24
+case 30:return 23
 break;
-case 31:return 9
+case 31:return 24
 break;
-case 32:return 10
+case 32:return 9
 break;
-case 33:return 15
+case 33:return 10
 break;
-case 34:return 12
+case 34:return 15
 break;
-case 35:return 7
+case 35:return 12
 break;
-case 36:return 5
+case 36:return 7
 break;
-case 37:/* ignore whitespace */
+case 37:return 5
 break;
-case 38:INVALID
+case 38:/* ignore whitespace */
+break;
+case 39:INVALID
 break;
 }
 },
-rules: [/^(?:\.)/,/^(?:\()/,/^(?:\))/,/^(?:\[)/,/^(?:\])/,/^(?:,)/,/^(?:<=)/,/^(?:<)/,/^(?:>=)/,/^(?:>)/,/^(?:!=)/,/^(?:=)/,/^(?:\+)/,/^(?:\{)/,/^(?:\})/,/^(?::)/,/^(?:SELECT TOP)/,/^(?:SELECT)/,/^(?:FROM)/,/^(?:WHERE)/,/^(?:GROUP BY)/,/^(?:HAVING)/,/^(?:ORDER BY)/,/^(?:ASC)/,/^(?:DESC)/,/^(?:AS)/,/^(?:JOIN)/,/^(?:ON)/,/^(?:OVER)/,/^(?:AND)/,/^(?:OR)/,/^(?:true)/,/^(?:false)/,/^(?:[0-9.-]+)/,/^(?:[@A-Za-z0-9_*]+)/,/^(?:'[^']+')/,/^(?:$)/,/^(?:\s+)/,/^(?:.)/],
-conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38],"inclusive":true}}
+rules: [/^(?:\.\s)/,/^(?:\.)/,/^(?:\()/,/^(?:\))/,/^(?:\[)/,/^(?:\])/,/^(?:,)/,/^(?:<=)/,/^(?:<)/,/^(?:>=)/,/^(?:>)/,/^(?:!=)/,/^(?:=)/,/^(?:\+)/,/^(?:\{)/,/^(?:\})/,/^(?::)/,/^(?:SELECT TOP)/,/^(?:SELECT)/,/^(?:FROM)/,/^(?:WHERE)/,/^(?:GROUP BY)/,/^(?:HAVING)/,/^(?:ORDER BY)/,/^(?:ASC)/,/^(?:DESC)/,/^(?:AS)/,/^(?:JOIN)/,/^(?:ON)/,/^(?:OVER)/,/^(?:AND)/,/^(?:OR)/,/^(?:true)/,/^(?:false)/,/^(?:[0-9.-]+)/,/^(?:[@A-Za-z0-9_*]+)/,/^(?:'[^']+')/,/^(?:$)/,/^(?:\s+)/,/^(?:.)/],
+conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39],"inclusive":true}}
 };
 return lexer;
 })();
