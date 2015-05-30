@@ -200,3 +200,14 @@ export function SelectWithNumericConstant() {
 
     return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
 }
+
+export function SelectWithSingleAliasedDatasource() {
+    var data = [
+        { Value: 1 },
+        { Value: 2 }
+    ];
+    var query = "SELECT a.Value AS Value FROM 'var://Test' AS a";
+
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, data);
+}

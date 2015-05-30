@@ -86,11 +86,11 @@ export class JsoqlQuery {
 
         var seq = this.GetSequence(targets[0].Target, targets[0].Parameters);
 
-        if (targets.length > 1) {
+        if (targets.length > 1 || targets[0].Alias) {
             var aliases = lazy(targets).map(t => t.Alias);
 
             //Aliases are mandatory if multiple targets are used
-            if (lazy(aliases).some(a => !a)) {
+            if (targets.length > 1 && lazy(aliases).some(a => !a)) {
                 throw 'Each table must have an alias if more than one table is specified';
             }
             if (aliases.uniq().size() < targets.length) {
@@ -112,9 +112,6 @@ export class JsoqlQuery {
                 else throw new Error("Unsupported FROM clause");
                
             });
-        }
-        else {
-            //No need to do any mapping
         }
 
         return seq;

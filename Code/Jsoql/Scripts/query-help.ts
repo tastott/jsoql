@@ -122,19 +122,19 @@ export class QueryHelper {
         } 
     }
 
-    private MakeJoinsTrue(fromClauseNode: p.FromClauseNode) {
+    private MungeFromClause(fromClauseNode: p.FromClauseNode) {
         var cloned = clone(fromClauseNode);
-        this.MakeJoinsTrueRecursive(cloned);
+        this.MungeFromClauseRecursive(cloned);
         return cloned;
     }
 
-    private MakeJoinsTrueRecursive(fromClauseNode: p.FromClauseNode) {
+    private MungeFromClauseRecursive(fromClauseNode: p.FromClauseNode) {
         if (fromClauseNode.Expression !== undefined) {
             fromClauseNode.Expression = true;
         }
 
-        if (fromClauseNode.Left) this.MakeJoinsTrue(fromClauseNode.Left);
-        if (fromClauseNode.Right) this.MakeJoinsTrue(fromClauseNode.Right);
+        if (fromClauseNode.Left) this.MungeFromClause(fromClauseNode.Left);
+        if (fromClauseNode.Right) this.MungeFromClause(fromClauseNode.Right);
     }
 
     private GetScopeHelp(originalStatement: p.Statement, scope: Scope, context?: m.QueryContext): Q.Promise<m.HelpResult> {
@@ -144,8 +144,10 @@ export class QueryHelper {
         switch (scope) {
             case Scope.Base:
                 //Build a new statement: SELECT TOP X * FROM [originalStatement datasources with any joins fudged]
-                //We'll make all the join conditions true to make sure we get some data
-                var mungedFrom = this.MakeJoinsTrue(originalStatement.From);
+                //We'll munge the from clause a bit to try and get some data:
+                //  - make all the JOIN conditions true
+                //  - back out of any incomplete OVERs
+                var mungedFrom = this.MungeFromClause(originalStatement.From);
 
                 var helpStatement: p.Statement = {
                     Select: {

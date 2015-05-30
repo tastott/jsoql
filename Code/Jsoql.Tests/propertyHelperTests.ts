@@ -379,3 +379,47 @@ export function HelpWithIncompleteGroupByProperty() {
 
     return TestHelper(data, query, expected);
 }
+
+export function HelpWithEmptyOver() {
+    var data = [
+        { Name: 'Dave', Pets: [{ Name: 'Fluffy', Species: 'Snake' }] },
+        { Name: 'Jim', Pets: [{ Name: 'Dave', Species: 'Human' }] }
+    ];
+
+    var query = "SELECT Name FROM 'var://Test' AS person OVER @";
+    var expected = {
+        PropertiesInScope: {
+            person: {
+                Name: true,
+                Pets: [{
+                    Name: true,
+                    Species: true
+                }]
+            }
+        }
+    };
+
+    return TestHelper(data, query, expected);
+}
+
+export function HelpWithIncompleteOver() {
+    var data = [
+        { Name: 'Dave', Pets: [{ Name: 'Fluffy', Species: 'Snake' }] },
+        { Name: 'Jim', Pets: [{ Name: 'Dave', Species: 'Human' }] }
+    ];
+
+    var query = "SELECT Name FROM 'var://Test' AS person OVER person.@";
+    var expected = {
+        PropertiesInScope: {
+            person: {
+                Name: true,
+                Pets: [{
+                    Name: true,
+                    Species: true
+                }]
+            }
+        }
+    };
+
+    return TestHelper(data, query, expected);
+}

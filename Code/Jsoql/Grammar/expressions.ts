@@ -437,9 +437,26 @@ export function GetJisonExpressionsHelpful() {
     expressions['GroupByClause'].push(
         [
             keywords.GROUPBY + " ",
-            "{ Groupings: []}"
+            "$$ = { Groupings: []}"
         ]
-    );
+        );
+
+    //Allow empty or incomplete OVER clause
+    //Basically pretend the OVER isn't there at all
+    expressions['FromTargets'] = expressions['FromTargets'].concat([
+        [
+            exp.FromTargets + " " + keywords.OVER + " " + exp.Property + " FinalDot",
+            "$$ = $1"
+        ],
+        [
+            exp.FromTargets + " " + keywords.OVER + " " + exp.Property + " TrailingDot",
+            "$$ = $1"
+        ],
+        [
+            exp.FromTargets + " " + keywords.OVER,
+            "$$ = $1"
+        ]
+    ]);
 
     return expressions;
 }
