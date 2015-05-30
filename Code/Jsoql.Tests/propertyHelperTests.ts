@@ -330,3 +330,52 @@ export function HelpWithIncompleteOnProperty() {
 
     return TestHelper(data, query, expected);
 }
+
+export function HelpWithEmptyGroupBy() {
+    var data = [
+        { Name: 'Dave', FavouriteFood: 'Chips' },
+        { Name: 'Jim', FavouriteFood: 'Baked beans' }
+    ];
+    var query = "SELECT Name FROM 'var://Test' GROUP BY @";
+    var expected = {
+        PropertiesInScope: {
+            Name: true,
+            FavouriteFood: true
+        }
+    };
+
+    return TestHelper(data, query, expected);
+}
+
+
+export function HelpWithIncompleteGroupBy() {
+    var data = [
+        { Name: 'Dave', FavouriteFood: 'Chips' },
+        { Name: 'Jim', FavouriteFood: 'Baked beans' }
+    ];
+    var query = "SELECT Name FROM 'var://Test' GROUP BY Name,@";
+    var expected = {
+        PropertiesInScope: {
+            Name: true,
+            FavouriteFood: true
+        }
+    };
+
+    return TestHelper(data, query, expected);
+}
+
+export function HelpWithIncompleteGroupByProperty() {
+    var data = [
+        { Name: 'Dave', FavouriteFood: 'Chips' },
+        { Name: 'Jim', FavouriteFood: 'Baked beans' }
+    ];
+    var query = "SELECT Name FROM 'var://Test' GROUP BY Name,x.@";
+    var expected = {
+        PropertiesInScope: {
+            Name: true,
+            FavouriteFood: true
+        }
+    };
+
+    return TestHelper(data, query, expected);
+}

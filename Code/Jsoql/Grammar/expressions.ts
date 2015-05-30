@@ -413,6 +413,33 @@ export function GetJisonExpressionsHelpful() {
         ]
     ]);
 
+    //Allow items in GROUP BY clause to have a trailing dot or comma
+    expressions['ExpressionList'].push(
+        [
+            exp.ExpressionList + ' TrailingDot',
+            "$$ = $1"
+        ]
+        );
+    expressions['ExpressionList'].push(
+        [
+            exp.ExpressionList + ' FinalDot',
+            "$$ = $1"
+        ]
+        );
+    expressions['ExpressionList'].push(
+        [
+            exp.ExpressionList + ' ,',
+            "$$ = $1"
+        ]
+        );
+
+    //Allow empty GROUP BY clause
+    expressions['GroupByClause'].push(
+        [
+            keywords.GROUPBY + " ",
+            "{ Groupings: []}"
+        ]
+    );
 
     return expressions;
 }
