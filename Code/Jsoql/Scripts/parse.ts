@@ -55,7 +55,8 @@ export interface Range {
 
 export interface Positions {
     Select: Range;
-    FromWhere: Range;
+    From: Range;
+    Where: Range;
     GroupBy: Range;
     OrderBy: Range;
 }
@@ -65,10 +66,8 @@ export interface Statement {
         SelectList: Selectable[];
         Limit: number;
     }
-    FromWhere: {
-        From: FromClauseNode;
-        Where: any;
-    }
+    From: FromClauseNode;
+    Where?: any;
     GroupBy?: GroupByClause;
     OrderBy?: {
         Expression: any;

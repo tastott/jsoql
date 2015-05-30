@@ -29,7 +29,8 @@ export class QueryHelper {
         //Determine scope at cursor
         var scope: Scope;
         if (In(cursor, statement.Positions.Select)
-            || Between(cursor, statement.Positions.Select, statement.Positions.FromWhere)) {
+            || Between(cursor, statement.Positions.Select, statement.Positions.From)
+            || In(cursor, statement.Positions.Where)) {
             scope = Scope.Base;
         }
         else {
@@ -75,7 +76,7 @@ export class QueryHelper {
                         SelectList: [{ Expression: { Property: '*' } }],
                         Limit: 8
                     },
-                    FromWhere: originalStatement.FromWhere
+                    From: originalStatement.From
                 }
 
                 //Get the items
@@ -95,23 +96,17 @@ export class QueryHelper {
 
 function GetPosition(cursor: number, text: string) : m.Position {
 
-    if (!text || cursor < 0 || cursor >= text.length) throw new Error("Cursor is outside text");
+    if (!text || cursor < 0 || cursor > text.length + 1) throw new Error("Cursor is outside text");
 
-    var line = 0;
-    var searchFrom = 0;
-    var column = 0;
+    var result: m.Position;
+    var lines = text.split('\r?\n');
 
-    while (true) {
-        column = cursor - searchFrom;
-        searchFrom = text.indexOf('\n', searchFrom);
-        if (searchFrom < 0 || searchFrom >= cursor) break;
-        ++line;
+    for (var i = 0; i < lines.length; i++) {
+        if (cursor < lines[i].length) return { Line: i, Column: cursor };
+        else cursor -= lines[i].length;
     }
-
-    return {
-        Column: column,
-        Line: line
-    };
+   
+    return { Line: cursor === 0 ? i - 1 : i, Column: cursor };
 }
 
 function ToPositions(range: p.Range): m.Position[]{

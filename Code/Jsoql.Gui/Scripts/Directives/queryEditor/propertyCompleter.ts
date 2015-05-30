@@ -27,6 +27,7 @@ export class PropertyCompleter implements qem.AceCompleter {
                     //Stop at whitespace instead
                     var lineToHere = qeUtil.GetLineToHere(session, pos);
                     prefix = util.RegexMatchOrDefault(lineToHere, /\S+$/);
+                    var propsInScope = helpResult.PropertiesInScope;
 
                     if (prefix) {
                         var currentProp = util.RegexMatchOrDefault(prefix, /[^\.]+$/);
@@ -44,21 +45,22 @@ export class PropertyCompleter implements qem.AceCompleter {
                             }
                             else propsInScope = propsInScope[prop];
                         }
-
-                        var completions: qem.AceCompletion[] =
-                            Object.keys(propsInScope)
-                                .map(prop => {
-                                return {
-                                    name: prop,
-                                    value: prop,
-                                    score: currentProp && prop.match(currentProp) ? 101 : 100,
-                                    meta: 'property'
-                                };
-                            });
-
-                        callback(null, completions);
                     }
+
+                    var completions: qem.AceCompletion[] =
+                        Object.keys(propsInScope)
+                            .map(prop => {
+                            return {
+                                name: prop,
+                                value: prop,
+                                score: currentProp && prop.match(currentProp) ? 101 : 100,
+                                meta: 'property'
+                            };
+                        });
+
+                    callback(null, completions);
                 }
+                
             });
 
         }

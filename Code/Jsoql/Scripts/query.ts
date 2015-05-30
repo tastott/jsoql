@@ -204,7 +204,7 @@ export class JsoqlQuery {
 
     private Where(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, whereClause : any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
         return seq.filter(item => {
-            return this.evaluator.Evaluate(this.stmt.FromWhere.Where, item);
+            return this.evaluator.Evaluate(this.stmt.Where, item);
         })
     }
 
@@ -275,10 +275,10 @@ export class JsoqlQuery {
 
     ExecuteSync(): any[]{
         //From
-        var seq = this.From(this.stmt.FromWhere.From);
+        var seq = this.From(this.stmt.From);
 
         //Where
-        if (this.stmt.FromWhere.Where) seq = this.Where(seq, this.stmt.FromWhere.Where);
+        if (this.stmt.Where) seq = this.Where(seq, this.stmt.Where);
 
         //Grouping
         //Explicitly
@@ -302,10 +302,10 @@ export class JsoqlQuery {
     Execute(): Q.Promise<any[]> {
         
         //From
-        var seq = this.From(this.stmt.FromWhere.From);
+        var seq = this.From(this.stmt.From);
 
         //Where
-        if (this.stmt.FromWhere.Where) seq = this.Where(seq, this.stmt.FromWhere.Where);
+        if (this.stmt.Where) seq = this.Where(seq, this.stmt.Where);
 
         //Grouping
         //Explicitly
@@ -327,7 +327,7 @@ export class JsoqlQuery {
     }
 
     GetDatasources(): m.Datasource[]{
-        return this.CollectDatasources(this.stmt.FromWhere.From)
+        return this.CollectDatasources(this.stmt.From)
             .filter(t => typeof t.Target === 'string')
             .map(t => {
                 var match = t.Target.match(JsoqlQuery.UriRegex);

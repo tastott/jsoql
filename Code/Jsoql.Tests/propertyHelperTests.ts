@@ -33,7 +33,7 @@ export function HelpWithSelectFlatItemsAndPartialSelectClause() {
         { Name: 'Dave', FavouriteFood: 'Chips' },
         { Name: 'Jim', FavouriteFood: 'Baked beans' }
     ];
-    var query = "SELECT Blah,@ FROM 'var://Test'";
+    var query = "SELECT Blah,@\nFROM 'var://Test'";
     var expected = {
         PropertiesInScope: {
             Name: true,
@@ -59,6 +59,7 @@ export function HelpWithSelectFlatItemsAndPartialSelectable() {
 
     return TestHelper(data, query, expected);
 }
+
 
 export function HelpWithSelectDeepItems() {
     var data = [
@@ -98,7 +99,7 @@ export function HelpWithSelectArrayProperty() {
     return TestHelper(data, query, expected);
 }
 
-export function HelpWithWhere() {
+export function HelpWithEmptyWhere() {
     var data = [
         { Name: 'Dave', FavouriteFood: 'Chips' },
         { Name: 'Jim', FavouriteFood: 'Baked beans' }
@@ -114,12 +115,28 @@ export function HelpWithWhere() {
     return TestHelper(data, query, expected);
 }
 
-export function HelpWithIncompleteWhere() {
+export function HelpWithIncompleteWhereExpression() {
     var data = [
         { Name: 'Dave', FavouriteFood: 'Chips' },
         { Name: 'Jim', FavouriteFood: 'Baked beans' }
     ];
     var query = "SELECT * FROM 'var://Test' WHERE Name =@";
+    var expected = {
+        PropertiesInScope: {
+            Name: true,
+            FavouriteFood: true
+        }
+    };
+
+    return TestHelper(data, query, expected);
+}
+
+export function HelpWithIncompleteWhereProperty() {
+    var data = [
+        { Name: 'Dave', FavouriteFood: 'Chips' },
+        { Name: 'Jim', FavouriteFood: 'Baked beans' }
+    ];
+    var query = "SELECT * FROM 'var://Test' WHERE Name = Blah.@";
     var expected = {
         PropertiesInScope: {
             Name: true,

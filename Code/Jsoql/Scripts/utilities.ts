@@ -22,3 +22,19 @@ export function MonoProp(value: any) {
     if (keys.length == 1) return value[keys[0]];
     else throw new Error("Expected exactly one property");
 }
+
+export function FindAllMatches(str: string, pattern: string, flags = ''): RegExpExecArray[]{
+
+    if (flags.indexOf('g') < 0) flags += 'g';
+
+    var results: RegExpExecArray[] = [];
+
+    var regex = new RegExp(pattern, flags);
+    var match = regex.exec(str);
+    while (match) {
+        results.push(match);
+        match = regex.exec(str);
+    }
+
+    return results;
+}

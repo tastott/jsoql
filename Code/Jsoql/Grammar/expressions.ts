@@ -5,25 +5,21 @@ var lazy: LazyJS.LazyStatic = require('../Scripts/Hacks/lazy.js')
 var val = tokens.values;
 var keywords = tokens.keywords;
 
-//function Exp(name: string, ...args: any[]) {
-//}
-
-//var Quoted = Exp('Quoted',
-//    [val.Quotation, "{ Quoted: $1.replace(/'/g, \"\")}"]);
-
-//var Boolean = Exp('Boolean',
-//    [val.True, "true"],
-//    [val.False, "false"]);
-
-//var Identifier = Exp('Identifier',
-//    val.PlainIdentifier);
-
-//var Property = Exp('Property', (Property) => [
-//    [Identifier, "{ Property: $1}"]
-//    [[Identifier, '[', val.Number, ']'], "{ Property: $1, Index: $3}"]
-//    [[Identifier, '.', Property], "{ Property: $1, Child: $3}"],
-//    [[Identifier, '[', val.Number, ']', '.', Property], "{ Property: $1, Index: $3, Child: $6}"]
-//]);
+var operators = [
+    keywords.AND,
+    keywords.OR,
+    '=',
+    '!=',
+    '<',
+    '>',
+    '<=',
+    '>=',
+    '+',
+    '-',
+    '/',
+    '*',
+    //'**'
+];
 
 var exp = {
     Quoted: () => [
@@ -63,6 +59,20 @@ var exp = {
             "{ Property: $1, Index: $3, Child: $6}"
         ]
     ],
+    Operator: () => [
+        keywords.AND,
+        keywords.OR,
+        '=',
+        '!=',
+        '<',
+        '>',
+        '<=',
+        '>=',
+        '+',
+        '-',
+        '/',
+        '*',
+    ],
     Expression: () => [
         [
             exp.Identifier + " ( )",
@@ -81,46 +91,59 @@ var exp = {
             "parseFloat($1)"
         ],
         [
-            exp.Expression + " " + keywords.AND + " " + exp.Expression,
-            "{Operator: $2.trim(), Args: [$1,$3]}"
-        ],
-        [
-            exp.Expression + " " + keywords.OR + " " + exp.Expression,
-            "{Operator: $2.trim(), Args: [$1,$3]}"
-        ],
-        [
-            exp.Expression + " = " + exp.Expression,
-            "{Operator: $2.trim(), Args: [$1,$3]}"
-        ],
-        [
-            exp.Expression + " != " + exp.Expression,
-            "{Operator: $2.trim(), Args: [$1,$3]}"
-        ],
-        [
-            exp.Expression + " > " + exp.Expression,
-            "{Operator: $2.trim(), Args: [$1,$3]}"
-        ],
-        [
-            exp.Expression + " >= " + exp.Expression,
-            "{Operator: $2.trim(), Args: [$1,$3]}"
-        ],
-        [
-            exp.Expression + " < " + exp.Expression,
-            "{Operator: $2.trim(), Args: [$1,$3]}"
-        ],
-        [
-            exp.Expression + " <= " + exp.Expression,
-            "{Operator: $2.trim(), Args: [$1,$3]}"
-        ],
-        [
-            exp.Expression + " + " + exp.Expression,
-            "{Operator: $2.trim(), Args: [$1,$3]}"
-        ],
-        [
-            "( " + exp.Stmt  + " )",
+            "( " + exp.Stmt + " )",
             "{SubQuery: $2}"
-        ]
-    ],
+        ],
+        //[
+        //    exp.Expression + " " + exp.Operator + " " + exp.Expression,
+        //    { Operator: "$2", Args: ["$1, $3"] }
+        //]
+        //[
+        //    exp.Expression + " " + keywords.AND + " " + exp.Expression,
+        //    "{Operator: $2.trim(), Args: [$1,$3]}"
+        //],
+        //[
+        //    exp.Expression + " " + keywords.OR + " " + exp.Expression,
+        //    "{Operator: $2.trim(), Args: [$1,$3]}"
+        //],
+        //[
+        //    exp.Expression + " = " + exp.Expression,
+        //    "{Operator: $2.trim(), Args: [$1,$3]}"
+        //],
+        //[
+        //    exp.Expression + " != " + exp.Expression,
+        //    "{Operator: $2.trim(), Args: [$1,$3]}"
+        //],
+        //[
+        //    exp.Expression + " > " + exp.Expression,
+        //    "{Operator: $2.trim(), Args: [$1,$3]}"
+        //],
+        //[
+        //    exp.Expression + " >= " + exp.Expression,
+        //    "{Operator: $2.trim(), Args: [$1,$3]}"
+        //],
+        //[
+        //    exp.Expression + " < " + exp.Expression,
+        //    "{Operator: $2.trim(), Args: [$1,$3]}"
+        //],
+        //[
+        //    exp.Expression + " <= " + exp.Expression,
+        //    "{Operator: $2.trim(), Args: [$1,$3]}"
+        //],
+        //[
+        //    exp.Expression + " + " + exp.Expression,
+        //    "{Operator: $2.trim(), Args: [$1,$3]}"
+        //]
+    ]
+    .concat(<any>operators.map(op =>
+            [
+                exp.Expression + " " + op + " " + exp.Expression,
+                { Operator: "$2", Args: ["$1", "$3"] }
+            ]
+        )
+    )
+    ,
+       
     KeyValue: () => [
         [
             exp.Identifier + " : " + exp.Expression,
@@ -226,14 +249,16 @@ var exp = {
             "$2"
         ]
     ],
-    FromWhereClause: () => [
+    WhereClause: () => [
         [
-            keywords.FROM + ' ' + exp.FromTargets,
-            "{From: $2 }"
-        ],
+            keywords.WHERE + " " + exp.Expression,
+            "$2"
+        ]
+    ],
+    FromClause: () => [
         [
-            keywords.FROM + ' ' + exp.FromTargets + " " + keywords.WHERE + " " + exp.Expression,
-            "{From: $2, Where: $4}"
+            keywords.FROM + " " + exp.FromTargets,
+            "$2"
         ]
     ],
     SelectClause: () =>  [
@@ -258,21 +283,37 @@ var exp = {
     ],
     Stmt: () =>  [
         [
-            exp.SelectClause + " " + exp.FromWhereClause,
-            { Select: "$1", FromWhere: "$2", Positions: { Select: "@1", FromWhere: "@2" } }
+            exp.SelectClause + " " + exp.FromClause,
+            { Select: "$1", From: "$2", Positions: { Select: "@1", From: "@2" } }
         ],
         [
-            exp.SelectClause + " " + exp.FromWhereClause + " " + exp.GroupByClause,
-            { Select: "$1", FromWhere: "$2", GroupBy: "$3", Positions: { Select: "@1", FromWhere: "@2", GroupBy: "@3"} }
+            exp.SelectClause + " " + exp.FromClause + " " + exp.WhereClause,
+            { Select: "$1", From: "$2", Where: "$3", Positions: { Select: "@1", From: "@2", Where: "@3" } }
         ],
         [
-            exp.SelectClause + " " + exp.FromWhereClause + " " + exp.GroupByClause + " " + exp.OrderByClause,
-            { Select: "$1", FromWhere: "$2", GroupBy: "$3", OrderBy: "$4", Positions: { Select: "@1", FromWhere: "@2", GroupBy: "@3", OrderBy: "@4" } }
+            exp.SelectClause + " " + exp.FromClause + " " + exp.OrderByClause,
+            { Select: "$1", From: "$2", OrderBy: "$3", Positions: { Select: "@1", From: "@2", OrderBy: "@3" } }
         ],
         [
-            exp.SelectClause + " " + exp.FromWhereClause + " " + exp.OrderByClause,
-            { Select: "$1", FromWhere: "$2", OrderBy: "$3", Positions: { Select: "@1", FromWhere: "@2", OrderBy: "@3" } }
-        ]
+            exp.SelectClause + " " + exp.FromClause + " " + exp.WhereClause + " " + exp.OrderByClause,
+            { Select: "$1", From: "$2", Where: "$3", OrderBy: "$4", Positions: { Select: "@1", From: "@2", Where: "@3", OrderBy: "@4" } }
+        ],
+        [
+            exp.SelectClause + " " + exp.FromClause + " " + exp.GroupByClause,
+            { Select: "$1", From: "$2", GroupBy: "$3", Positions: { Select: "@1", From: "@2", GroupBy: "@3"} }
+        ],
+        [
+            exp.SelectClause + " " + exp.FromClause + " " + exp.WhereClause + " " + exp.GroupByClause,
+            { Select: "$1", From: "$2", Where: "$3", GroupBy: "$4", Positions: { Select: "@1", From: "@2", Where: "@3", GroupBy: "@4" } }
+        ],
+        [
+            exp.SelectClause + " " + exp.FromClause + " " + exp.GroupByClause + " " + exp.OrderByClause,
+            { Select: "$1", From: "$2", GroupBy: "$3", OrderBy: "$4", Positions: { Select: "@1", FromWhere: "@2", GroupBy: "@3", OrderBy: "@4" } }
+        ],
+        [
+            exp.SelectClause + " " + exp.FromClause + " " + exp.WhereClause + " " + exp.GroupByClause + " " + exp.OrderByClause,
+            { Select: "$1", From: "$2", Where: "$3", GroupBy: "$4", OrderBy: "$5", Positions: { Select: "@1", From: "@2", Where: "@3", GroupBy: "@4", OrderBy: "@5" } }
+        ],
     ]
 }
 
@@ -303,21 +344,19 @@ export function GetJisonExpressionsHelpful() {
 
     var expressions = GetJisonExpressionsFull();
     
-    //Try to allow a load of stuff in select list
-
+    //Allow items in select clause to have a trailing dot or comma
     expressions['SelectList'].push(
         [
             exp.Property + ' TrailingDot',
             "$$ = $1"
         ]
-    );
-
+        );
     expressions['SelectList'].push(
         [
             exp.SelectList + ' ,',
             "$$ = $1"
         ]
-    );
+        );
   
     //Allow empty select list
     expressions['SelectClause'].push(
@@ -325,7 +364,38 @@ export function GetJisonExpressionsHelpful() {
             keywords.SELECT,
             "$$ = { SelectList: []}"
         ]
+        );
+
+    //Allow empty where clause
+    expressions['WhereClause'].push(
+        [
+            keywords.WHERE,
+            "$$ = null"
+        ]
     );
+
+    //Allow trailing dot in where clause
+    expressions['WhereClause'].push(
+        [
+            keywords.WHERE + " " + exp.Expression + " TrailingDot",
+            "$$ = $2"
+        ],
+        [
+            keywords.WHERE + " " + exp.Expression + " FinalDot",
+            "$$ = $2"
+        ]
+    );
+
+
+    //Allow incomplete binary operations
+    expressions['Expression'] = expressions['Expression'].concat(
+        <any>operators.map(op =>
+            [
+                exp.Expression + " " + op,
+                { Operator: "$2", Args: ["$1"] }
+            ]
+        )
+        );
 
     return expressions;
 }
