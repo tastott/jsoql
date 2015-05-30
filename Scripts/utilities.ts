@@ -47,3 +47,12 @@ export function ReadTextFile(file: File): Q.Promise<string> {
 
     return deferred.promise;
 }
+
+export function RegexMatchOrDefault(str: string, regex: RegExp, _default : string = ''): string {
+
+    if (!str) return _default;
+    var match = str.match(regex);
+
+    return match ? match[0] : _default;
+
+}

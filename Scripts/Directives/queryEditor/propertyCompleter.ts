@@ -1,6 +1,8 @@
 ﻿import qem = require('./models')
 import qes = require('../../Services/queryExecutionService')
 import qeUtil = require('./utilities')
+import lazy = require('lazy.js')
+import util = require('../../utilities')
 
 export class PropertyCompleter implements qem.AceCompleter {
 
@@ -24,26 +26,38 @@ export class PropertyCompleter implements qem.AceCompleter {
                     //Prefix stops at word boundaries so not much use for nested properties?
                     //Stop at whitespace instead
                     var lineToHere = qeUtil.GetLineToHere(session, pos);
-                    prefix = lineToHere.match(/\S+$/) ? lineToHere.match(/\S+$/)[0] : '';
+                    prefix = util.RegexMatchOrDefault(lineToHere, /\S+$/);
 
-                    //Get propertry chain in prefix 
-                    var prefixProps = prefix.split('.');
+                    if (prefix) {
+                        var currentProp = util.RegexMatchOrDefault(prefix, /[^\.]+$/);
 
-                    //If there are prefix properties
-                    var propsInScope = helpResult.PropertiesInScope;
+                        var parentProps = prefix.split('.').slice(0, -1);
 
-                    var completions: qem.AceCompletion[] =
-                        Object.keys(helpResult.PropertiesInScope)
-                            .map(prop => {
-                            return {
-                                name: prop,
-                                value: prop,
-                                score: 100,
-                                meta: 'property'
-                            };
-                        });
+                        //Attempt to navigate to position indicated by prefix in the scope properties object
+                        var propsInScope = helpResult.PropertiesInScope;
+                        for (var i = 0; i < parentProps.length; i++) {
+                            var prop = parentProps[i];
+                            if (propsInScope[prop] === undefined) {
+                                //Parent doesn't exist, abort
+                                callback(null, []);
+                                return;
+                            }
+                            else propsInScope = propsInScope[prop];
+                        }
 
-                    callback(null, completions);
+                        var completions: qem.AceCompletion[] =
+                            Object.keys(propsInScope)
+                                .map(prop => {
+                                return {
+                                    name: prop,
+                                    value: prop,
+                                    score: currentProp && prop.match(currentProp) ? 101 : 100,
+                                    meta: 'property'
+                                };
+                            });
+
+                        callback(null, completions);
+                    }
                 }
             });
 

@@ -1,4 +1,5 @@
-﻿var brace = require('brace')
+﻿document = window.document;
+var brace = require('brace')
 var Range = brace.acequire('ace/range').Range;
 
 export function GetLineToHere(session: AceAjax.IEditSession, pos: AceAjax.Position): string {
