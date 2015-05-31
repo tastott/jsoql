@@ -20,7 +20,7 @@ export function FromFolderDefaultWithFileInfo() {
     var query = "SELECT @@File.name AS Filename, @@File.path AS Filepath, @@File.modifiedDate AS ModifiedDate, @@File.createdDate AS CreatedDate FROM 'file://Data/Folder'";
     
     var datePattern = /2[0-9]{3}-[01][0-9]-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z/; 
-    return testBase.ExecuteAndAssert(query, {}, results => {
+    return testBase.ExecuteAndAssertItems(query, {}, results => {
         assert.equal(results.length, 3);
         results.forEach(item => {
             assert.ok(fs.existsSync(item.Filepath), `Filepath not valid: ${item.Filepath}`);

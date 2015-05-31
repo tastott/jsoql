@@ -63,28 +63,28 @@ export class JsoqlQuery {
         }
     }
 
-    private GetSequence(target: any, parameters: any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+    private GetSequence(target: any, parameters: any, onError : m.ErrorHandler): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
         var ds = this.ToDatasource(target);
 
         if (ds.Type === 'var') {
-            return this.dataSourceSequencers['var'].Get(ds.Value, {}, this.queryContext);
+            return this.dataSourceSequencers['var'].Get(ds.Value, {}, this.queryContext, onError);
         }
         else {
             parameters = parameters || {};
             var dataSource = this.dataSourceSequencers[ds.Type];
             if (!dataSource) throw new Error("Invalid scheme for data source: '" + ds.Type + "'");
 
-            return dataSource.Get(ds.Value, parameters, this.queryContext);
+            return dataSource.Get(ds.Value, parameters, this.queryContext, onError);
         }
         
     }
 
-    private From(fromClause: any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+    private From(fromClause: any, onError: m.ErrorHandler): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
         var targets = this.CollectDatasources(fromClause);
 
-        var seq = this.GetSequence(targets[0].Target, targets[0].Parameters);
+        var seq = this.GetSequence(targets[0].Target, targets[0].Parameters, onError);
 
         if (targets.length > 1 || targets[0].Alias) {
             var aliases = lazy(targets).map(t => t.Alias);
@@ -107,7 +107,7 @@ export class JsoqlQuery {
             //Join/over each subsequent table
             lazy(targets).slice(1).each(target => {
 
-                if (target.Condition) seq = this.Join(seq, this.GetSequence(target.Target, target.Parameters), target.Alias, target.Condition);
+                if (target.Condition) seq = this.Join(seq, this.GetSequence(target.Target, target.Parameters, onError), target.Alias, target.Condition);
                 else if (target.Over) seq = this.Over(seq, target.Target, target.Alias);
                 else throw new Error("Unsupported FROM clause");
                
@@ -292,7 +292,7 @@ export class JsoqlQuery {
 
     ExecuteSync(): any[]{
         //From
-        var seq = this.From(this.stmt.From);
+        var seq = this.From(this.stmt.From,() => { });
 
         //Where
         if (this.stmt.Where) seq = this.Where(seq, this.stmt.Where);
@@ -318,8 +318,10 @@ export class JsoqlQuery {
 
     Execute(): Q.Promise<any[]> {
         
+        var deferred = Q.defer<any[]>();
+
         //From
-        var seq = this.From(this.stmt.From);
+        var seq = this.From(this.stmt.From, err => deferred.reject(err));
 
         //Where
         if (this.stmt.Where) seq = this.Where(seq, this.stmt.Where);
@@ -327,20 +329,23 @@ export class JsoqlQuery {
         //Grouping
         //Explicitly
         if (this.stmt.GroupBy) {
-            return this.GroupBy(seq, this.stmt.GroupBy.Groupings)
+            this.GroupBy(seq, this.stmt.GroupBy.Groupings)
                 .then(groups => this.SelectGrouped(groups, this.stmt.GroupBy.Having))
-                .then(resultSeq => resultSeq.toArray());
+                .then(resultSeq => deferred.resolve(resultSeq.toArray()));
         }
         //Implicitly
         else if (lazy(this.stmt.Select.SelectList).some(selectable => evl.Evaluator.IsAggregate(selectable.Expression))) {
 
-            return JsoqlQuery.SequenceToArray(seq)
-                .then(items => this.SelectMonoGroup(items));
+            JsoqlQuery.SequenceToArray(seq)
+                .then(items => deferred.resolve(this.SelectMonoGroup(items)));
         }
         //No grouping
         else {
-            return JsoqlQuery.SequenceToArray(this.SelectUngrouped(seq));
+            JsoqlQuery.SequenceToArray(this.SelectUngrouped(seq))
+                .then(items => deferred.resolve(items));
         }
+
+        return deferred.promise;
     }
 
     GetDatasources(): m.Datasource[]{
@@ -419,7 +424,11 @@ export class JsoqlQuery {
             arrayPromise.then(
                 result => deferred.resolve(result),
                 error => deferred.reject(error)
-            );
+                );
+
+            arrayPromise.onError(error => {
+                deferred.reject(error);
+            });
 
             return deferred.promise;
         }

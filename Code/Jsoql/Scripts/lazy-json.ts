@@ -3,6 +3,7 @@ import oboe = require('oboe')
 import fs = require('fs')
 import http = require('http')
 import _url = require('url')
+import m = require('./models')
 import _stream = require('stream')
 var XhrStream = require('buffered-xhr-stream')
 
@@ -106,9 +107,12 @@ class OboeStream {
 export function lazyOboeHttp(options: {
     url: string;
     nodePath: string;
+    onError: m.ErrorHandler;
     noCredentials?: boolean;
     streamTransform?: (stream: _stream.Readable) => _stream.Readable
 }): LazyJS.AsyncSequence<any>  {
+
+    var errorHandler: m.ErrorHandler = err => options.onError(`Request to '${options.url}' failed. ${err.message}`);
 
     var sequence = new LazyStreamedSequence(callback => {
 
@@ -116,6 +120,11 @@ export function lazyOboeHttp(options: {
         if (options.noCredentials) {
 
             var xhr = new XMLHttpRequest();
+
+            if (options.onError) {
+                xhr.onerror = errorHandler;
+            }
+
             xhr.withCredentials = false;
             xhr.open('GET', options.url, true);
 
@@ -129,7 +138,7 @@ export function lazyOboeHttp(options: {
             callback(<any>oboeStream);
 
         } else {
-            http.get(options.url, (sourceStream : _stream.Readable) => {
+            var req = http.get(options.url,(sourceStream: _stream.Readable) => {
 
                 if (options.streamTransform) {
                     sourceStream = options.streamTransform(sourceStream);
@@ -139,6 +148,8 @@ export function lazyOboeHttp(options: {
 
                 callback(<any>oboeStream);
             });
+
+            if (options.onError) req.on('error', errorHandler);
         }
     });
 

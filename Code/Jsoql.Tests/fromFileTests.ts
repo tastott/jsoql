@@ -9,7 +9,7 @@ import testBase = require('./testBase')
 
 export function FromRelativeFileWithNoSpecifiedBaseDirectory() {
     var jsoql = "SELECT Order.Id FROM 'file://Data/orders.jsonl'";
-    return testBase.ExecuteAndAssert(jsoql, null,
+    return testBase.ExecuteAndAssertItems(jsoql, null,
         results => assert.equal(results.length, 20));
 }
 
@@ -17,7 +17,7 @@ export function FromRelativeFileWithSpecifiedBaseDirectory() {
     var baseDirectory = path.join(process.cwd(), 'Data');
 
     var jsoql = "SELECT Order.Id FROM 'file://orders.jsonl'";
-    return testBase.ExecuteAndAssert(jsoql, { BaseDirectory: baseDirectory },
+    return testBase.ExecuteAndAssertItems(jsoql, { BaseDirectory: baseDirectory },
         results => assert.equal(results.length, 20));
 
 }
@@ -26,6 +26,12 @@ export function FromAbsoluteFile() {
     var absolutePath = path.join(process.cwd() ,'Data/orders.jsonl');
    
     var jsoql = "SELECT Order.Id FROM 'file://" + absolutePath + "'";
-    return testBase.ExecuteAndAssert(jsoql, null,
+    return testBase.ExecuteAndAssertItems(jsoql, null,
         results => assert.equal(results.length, 20));
+}
+
+export function ErrorReturnedForQueryOnNonExistentFile() {
+    var query = "SELECT * FROM 'file://doesnotexist.json'";
+    return testBase.ExecuteAndAssertResult(query, null,
+        result => assert.equal(result.Errors.length, 1));
 }

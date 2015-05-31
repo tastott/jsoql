@@ -9,7 +9,7 @@ import testBase = require('./testBase')
 
 export function FromCsvFileWithDefaults() {
     var jsoql = "SELECT * FROM 'file://Data/customers.csv'";
-    return testBase.ExecuteAndAssert(jsoql, null,
+    return testBase.ExecuteAndAssertItems(jsoql, null,
         results => {
                 assert.equal(results.length, 91);
                 assert.equal(results[0].Fax, '030-0076545');
@@ -18,7 +18,7 @@ export function FromCsvFileWithDefaults() {
 
 export function FromCsvFileWithExplicitHeaders() {
     var jsoql = "SELECT * FROM {uri: 'file://Data/customers.csv', headers:'MyHeader1,MyHeader2,MyHeader3'}";
-    return testBase.ExecuteAndAssert(jsoql, null,
+    return testBase.ExecuteAndAssertItems(jsoql, null,
         results => {
             assert.equal(results.length, 92);
             assert.deepEqual(results[1], {
@@ -31,7 +31,7 @@ export function FromCsvFileWithExplicitHeaders() {
 
 export function FromCsvFileWithExplicitHeadersAndSkip() {
     var jsoql = "SELECT * FROM {uri: 'file://Data/customers.csv', headers: 'MyHeader1,MyHeader2,MyHeader3', skip:1}";
-    return testBase.ExecuteAndAssert(jsoql, null,
+    return testBase.ExecuteAndAssertItems(jsoql, null,
         results => {
             assert.equal(results.length, 91);
             assert.deepEqual(results[0], {
@@ -45,7 +45,7 @@ export function FromCsvFileWithExplicitHeadersAndSkip() {
 
 export function FromCsvFileWithDifferentExtension() {
     var jsoql = "SELECT * FROM {uri: 'file://Data/customers.csv2', format:'csv'}";
-    return testBase.ExecuteAndAssert(jsoql, null,
+    return testBase.ExecuteAndAssertItems(jsoql, null,
         results => {
             assert.equal(results.length, 91);
             assert.equal(results[0].Fax, '030-0076545');

@@ -30,7 +30,30 @@ export function ExecuteArrayQuery(jsoql: string, values: any[]| JsoqlQueryContex
     }
 }
 
-export function ExecuteAndAssert(jsoql: string,
+export function ExecuteAndAssertResult(jsoql: string,
+    values: any[]| JsoqlQueryContext,
+    assertCallback : (result : JsoqlQueryResult) => void): Q.Promise<any> {
+
+    var context: JsoqlQueryContext = Object.prototype.toString.call(values) === '[object Array]'
+        ? {
+            Data: {
+                "Test": <any[]>values
+            }
+        }
+        : <JsoqlQueryContext>values;
+
+    try {
+        return Jsoql.ExecuteQuery(jsoql, context)
+            .then(result => setTimeout(() => assertCallback(result)))
+            .fail(error => setTimeout(() => assert.fail(null, null, error)));
+    }
+    catch (ex) {
+        setTimeout(() => assert.fail(null, null, ex));
+        return Q.reject<any[]>(ex);
+    }
+}
+
+export function ExecuteAndAssertItems(jsoql: string,
     values: any[]| JsoqlQueryContext,
     assertCallback: (results : any[]) => void) : Q.Promise<any> {
 

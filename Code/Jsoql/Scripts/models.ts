@@ -33,3 +33,7 @@ export interface Range {
     From: Position;
     To: Position;
 }
+
+export interface ErrorHandler {
+    (error: any): void;
+}

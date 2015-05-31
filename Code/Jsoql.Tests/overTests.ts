@@ -45,6 +45,6 @@ export function Over() {
         }
     ];
 
-    return testBase.ExecuteAndAssert(query, data,
+    return testBase.ExecuteAndAssertItems(query, data,
         results => assert.deepEqual(results, expected));
 }

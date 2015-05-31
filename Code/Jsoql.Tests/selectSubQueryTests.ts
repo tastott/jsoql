@@ -37,7 +37,7 @@ export function SelectSubQueryWithCountOfPrimitives() {
         }
     ];
 
-    return testBase.ExecuteAndAssert(query, data,
+    return testBase.ExecuteAndAssertItems(query, data,
         results => assert.deepEqual(results, expected));
 }
 
@@ -71,7 +71,7 @@ export function SelectSubQueryWithNonUniversalProperty() {
         }
     ];
 
-    return testBase.ExecuteAndAssert(query, data,
+    return testBase.ExecuteAndAssertItems(query, data,
         results => assert.deepEqual(results, expected));
 }
 
@@ -146,7 +146,7 @@ export function SelectSubQueryWithCountOfObjects() {
         }
     ];
 
-    return testBase.ExecuteAndAssert(query, data,
+    return testBase.ExecuteAndAssertItems(query, data,
         results => assert.deepEqual(results, expected));
 }
 
@@ -181,7 +181,7 @@ export function SelectSubQueryWithSumOfObjectProperty() {
         }
     ];
 
-    return testBase.ExecuteAndAssert(query, data,
+    return testBase.ExecuteAndAssertItems(query, data,
         results => assert.deepEqual(results, expected));
 }
 
@@ -215,6 +215,6 @@ export function SelectSubQueryWithNestedPropertyAsFrom() {
         }
     ];
 
-    return testBase.ExecuteAndAssert(query, data,
+    return testBase.ExecuteAndAssertItems(query, data,
         results => assert.deepEqual(results, expected));
 }

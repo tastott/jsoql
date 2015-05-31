@@ -172,7 +172,7 @@ export function SelectNumericExpression() {
     var query = "SELECT A + B AS C FROM 'var://Test'";
     var expected = [{ C: 3 }, { C: -1 }];
 
-    return testBase.ExecuteAndAssert(query, data,
+    return testBase.ExecuteAndAssertItems(query, data,
         results => assert.deepEqual(results, expected));
 }
 

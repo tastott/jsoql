@@ -36,6 +36,8 @@ var argv = yargs
     .help('help')
     .argv;
 
+console.log(argv);
+
 function DoQueryCommand(argv: yargs.Argv) {
 
     var query = argv['query'];

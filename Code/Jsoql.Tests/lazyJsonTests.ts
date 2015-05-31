@@ -3,13 +3,13 @@ import testBase = require('./testBase')
 
 export function ArrayRoot() {
     var jsoql = "SELECT Order.Id FROM 'file://Data/orders.json'";
-    return testBase.ExecuteAndAssert(jsoql, null, 
+    return testBase.ExecuteAndAssertItems(jsoql, null, 
         results => assert.equal(results.length, 20));
 }
 
 export function ArrayPropertyOfObjectRoot() {
     var jsoql = "SELECT OrderId FROM {uri: 'file://Data/single-order.json', root: 'OrderDetails'}";
-    return testBase.ExecuteAndAssert(jsoql, null, 
+    return testBase.ExecuteAndAssertItems(jsoql, null, 
         results => {
                 assert.equal(results.length, 1);
                 assert.equal(results[0]['OrderId'], 11074);

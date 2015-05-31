@@ -33,11 +33,18 @@ export class JsoqlEngine {
 
             return query.Execute()
                 .then(results => {
-                return {
-                    Results: results,
-                    Datasources: datasources
-                }
-            });
+                    return {
+                        Results: results,
+                        Datasources: datasources
+                    }
+                })
+                .fail(error => {
+                    return {
+                        Results: null,
+                        Datasources: datasources,
+                        Errors: [error]
+                    }
+                });
         }
         catch (ex) {
             var result: m.QueryResult = {

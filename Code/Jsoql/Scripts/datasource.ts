@@ -11,6 +11,7 @@ import _stream = require('stream')
 var glob = require('glob')
 var replaceStream = require('replaceStream')
 
+
 export interface DataSourceParameters {
     format?: string;
     headers?: string;
@@ -19,7 +20,7 @@ export interface DataSourceParameters {
 }
 
 export interface DataSourceSequencer {
-    Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>;
+    Get(value: string, parameters: any, context: m.QueryContext, onError: m.ErrorHandler): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>;
 }
 
 
@@ -49,7 +50,7 @@ class FileSystemFileSequencer implements FileSequencer {
     }
 
     Validate(fileId: string, context: m.QueryContext): boolean {
-        return !fs.existsSync(this.GetFullPath(fileId, context));
+        return fs.existsSync(this.GetFullPath(fileId, context));
     }
 
     Sequence(fileId: string, context: m.QueryContext, parameters: DataSourceParameters): LazyJS.FileStreamSequence|LazyJS.StringLikeSequence {
@@ -103,6 +104,9 @@ class AbstractLinedFileDataSourceSequencer implements DataSourceSequencer {
     }
 
     Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
+
+        if (!this.fileSequencer.Validate(value, context)) throw new Error('File not found: ' + value);
+
         var lineHandler = this.GetLineHandler(this.fileSequencer.FirstLine(value, context), parameters);
 
         var seq = this.fileSequencer.Sequence(value, context, parameters)
@@ -179,46 +183,49 @@ class JsonlFileDataSourceSequencer extends AbstractLinedFileDataSourceSequencer 
     }
 }
 
-class AbstractFileDataSourceSequencer implements DataSourceSequencer {
-    Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+//class AbstractFileDataSourceSequencer implements DataSourceSequencer {
+//    Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
-        var fullPath = path.isAbsolute(value)
-            ? value
-            : path.join(context.BaseDirectory, value);
+//        var fullPath = path.isAbsolute(value)
+//            ? value
+//            : path.join(context.BaseDirectory, value);
 
-        if (!fs.existsSync(fullPath)) {
-            throw new Error('File not found: ' + fullPath);
-        }
-        else {
+//        if (!fs.existsSync(fullPath)) {
+//            throw new Error('File not found: ' + fullPath);
+//        }
+//        else {
 
-            return this.GetFromFile(fullPath, parameters);
-        }
+//            return this.GetFromFile(fullPath, parameters);
+//        }
 
-    }
+//    }
 
-    protected GetFromFile(fullPath: string, parameters: DataSourceParameters): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
-        throw new Error("Abstract method");
-    }
-}
+//    protected GetFromFile(fullPath: string, parameters: DataSourceParameters): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+//        throw new Error("Abstract method");
+//    }
+//}
 
-class SimpleJsonFileSequencer extends AbstractFileDataSourceSequencer {
-    protected GetFromFile(fullPath: string, parameters: DataSourceParameters): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+//class SimpleJsonFileSequencer extends AbstractFileDataSourceSequencer {
+//    protected GetFromFile(fullPath: string, parameters: DataSourceParameters): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
-        var json = fs.readFileSync(fullPath, 'utf8');
-        json = json.replace(/^\uFEFF/, '');
+//        var json = fs.readFileSync(fullPath, 'utf8');
+//        json = json.replace(/^\uFEFF/, '');
 
-        var results = JSON.parse(json);
+//        var results = JSON.parse(json);
 
-        if (util.IsArray(results)) return lazy(<any[]>results);
-        else return lazy([results]);
-    }
-}
+//        if (util.IsArray(results)) return lazy(<any[]>results);
+//        else return lazy([results]);
+//    }
+//}
 
 class OboeJsonFileSequencer implements DataSourceSequencer {
 
     constructor(private fileSequencer: FileSequencer) { }
 
     Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+
+        if (!this.fileSequencer.Validate(value, context)) throw new Error('File not found: ' + value);
+
         var stream = this.fileSequencer.Stream(value, context, parameters);
         return lazyJson.lazyOboeFromStream(stream, parameters.root);
     }
@@ -263,7 +270,7 @@ class SmartFileSequencer implements DataSourceSequencer {
         [extension: string]: string;
     }
 
-    constructor(fileSequencer : FileSequencer) {
+    constructor(private fileSequencer : FileSequencer) {
         this.datasources = {
             'csv': new CsvFileDataSourceSequencer(fileSequencer),
             'jsonl': new JsonlFileDataSourceSequencer(fileSequencer),
@@ -280,9 +287,9 @@ class SmartFileSequencer implements DataSourceSequencer {
     }
 
 
-    Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+    Get(value: string, parameters: DataSourceParameters, context: m.QueryContext, onError: m.ErrorHandler): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
         var ds = this.GetSubSource(value, parameters);
-        return ds.Get(value, parameters, context);
+        return ds.Get(value, parameters, context, onError);
     }
 
     protected GetSubSource(filepath: string, parameters: DataSourceParameters) : DataSourceSequencer{
@@ -316,8 +323,8 @@ export class DesktopSmartFileSequencer implements DataSourceSequencer{
         this.source = new SmartFileSequencer(new FileSystemFileSequencer());
     }
 
-    Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
-        return this.source.Get(value, parameters, context);
+    Get(value: string, parameters: DataSourceParameters, context: m.QueryContext, onError: m.ErrorHandler): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+        return this.source.Get(value, parameters, context, onError);
     }
 }
 
@@ -327,8 +334,8 @@ export class OnlineSmartFileSequencer implements DataSourceSequencer {
         this.source = new SmartFileSequencer(new StoredFileSequencer(getStoredFile));
     }
 
-    Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
-        return this.source.Get(value, parameters, context);
+    Get(value: string, parameters: DataSourceParameters, context: m.QueryContext, onError: m.ErrorHandler): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+        return this.source.Get(value, parameters, context, onError);
     }
 }
 
@@ -357,11 +364,12 @@ export class VariableDataSourceSequencer implements DataSourceSequencer {
 
 export class StreamingHttpSequencer implements DataSourceSequencer {
 
-    Get(value: string, parameters: DataSourceParameters, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+    Get(value: string, parameters: DataSourceParameters, context: m.QueryContext, onError : m.ErrorHandler): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
         var url = 'http://' + value;
         return lazyJson.lazyOboeHttp({
             url: url,
-            nodePath: parameters.root
+            nodePath: parameters.root,
+            onError: onError
         });
     }
 }
@@ -372,12 +380,13 @@ export class WhateverOriginStreamingHttpDataSource implements DataSourceSequence
     constructor(private baseUrl: string) {
     }
 
-    Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+    Get(value: string, parameters: any, context: m.QueryContext, onError: m.ErrorHandler): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
         var url = `${this.baseUrl}/get?url=${encodeURIComponent('http://'+ value)}&callback=callback`;
        
         return lazyJson.lazyOboeHttp({
             url: url,
             nodePath: parameters['path'],
+            onError: onError,
             streamTransform: stream => stream
                     .pipe(replaceStream(/^callback\({"contents":"/, ''))
                     .pipe(replaceStream(/","status":.+$/, ''))
@@ -391,13 +400,14 @@ export class YqlStreamingHttpSequencer implements DataSourceSequencer {
     constructor(private baseUrl: string) {
     }
 
-    Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+    Get(value: string, parameters: any, context: m.QueryContext, onError : m.ErrorHandler): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
         var url = `${this.baseUrl}?q=${encodeURIComponent('select * from json where url="http://' + value + '"') }&format=json`;
 
         return lazyJson.lazyOboeHttp({
             url: url,
             nodePath: parameters['root'] ? `query.results.json.${parameters['root']}` : 'query.results.json',
-            noCredentials: true
+            noCredentials: true,
+            onError: onError
         });
     }
 }
@@ -412,11 +422,11 @@ export class OnlineStreamingHttpSequencer implements DataSourceSequencer {
         this.localOrAnyOriginDatasource = new StreamingHttpSequencer();
     }
 
-    Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+    Get(value: string, parameters: any, context: m.QueryContext, onError: m.ErrorHandler): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
         //Use any origin datasource if parameters indicate this explicitly
         if (parameters.anyOrigin) {
-            return this.localOrAnyOriginDatasource.Get(value, parameters, context);
+            return this.localOrAnyOriginDatasource.Get(value, parameters, context, onError);
         }
         else {
             //Identify relative URLs using ~
@@ -426,9 +436,9 @@ export class OnlineStreamingHttpSequencer implements DataSourceSequencer {
                 var baseUrl = this.appBaseUrl.replace(/^.+:\/\//, '').replace(/\/$/, '');
 
                 var url = baseUrl + '/' + relativeUrlMatch[1];
-                return this.localOrAnyOriginDatasource.Get(url, parameters, context);
+                return this.localOrAnyOriginDatasource.Get(url, parameters, context, onError);
             } else {
-                return this.restrictedOriginDatasource.Get(value, parameters, context);
+                return this.restrictedOriginDatasource.Get(value, parameters, context, onError);
             }
         }
     }
