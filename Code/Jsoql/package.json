@@ -1,10 +1,10 @@
 {
   "name": "jsoql",
   "version": "0.0.6",
-  "description": "jsoql",
+  "description": "Library and command line tool for querying JSON data using a SQL-like language (JSOQL)",
   "main": "app.js",
   "author": {
-    "name": "Tim",
+    "name": "Tim Stott",
     "email": ""
   },
   "dependencies": {
@@ -18,12 +18,13 @@
     "yargs": "^3.10.0"
   },
   "devDependencies": {
-    "jison": "0.4.13",
-    "jison2json": "0.0.2"
+    "jison": "0.4.13"
   },
-  "files": [
-    "app.js",
-    "jsoql.js",
-    "jsoql-parser.js"
-  ]
+  "repository": {
+	"type": "git",
+	"url": "https://github.com/tastott/jsoql"
+  },
+  "bugs": {
+	"url": "https://github.com/tastott/jsoql/issues"
+  }
 }
