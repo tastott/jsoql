@@ -105,6 +105,10 @@ interface AppScope extends angular.IScope {
     AddTab: () => void;
     Reload: () => void;
     OnQueryFileDrop: (file: File) => void;
+    Settings: {
+        EditorThemes: string[];
+        SelectedEditorTheme: string
+    }
 }
 
 export class AppController {
@@ -123,6 +127,10 @@ export class AppController {
         $scope.AddTab = this.AddTab;
         $scope.Reload = this.Reload;
         $scope.OnQueryFileDrop = this.OnQueryFileDrop;
+        $scope.Settings = {
+            EditorThemes: ['twilight', 'ambiance'],
+            SelectedEditorTheme: 'twilight'
+        };
 
         //For demo purposes, the URL can contain some initial query text
         //If so, don't bother loading any other tabs

@@ -24,6 +24,7 @@ export interface QueryEditorScope extends ng.IScope {
     Query: m.EditableText;
     BaseDirectory: m.EditableText;
     Execute: () => void;
+    Theme: string;
 }
 
 export class QueryEditorDirective implements ng.IDirective {
@@ -69,7 +70,10 @@ document = window.document;
 var brace = require('brace')
 var Range = brace.acequire('ace/range').Range;
 require('brace/mode/sql')
-require('brace/theme/ambiance')
+
+//Preload some themes
+require('brace/theme/twilight');
+require('brace/theme/ambiance');
 
 interface FileUriSuggestion {
     Value: string;
@@ -85,7 +89,8 @@ export class AceQueryEditorDirective  {
     public scope = {
         Query: '=query',
         BaseDirectory: '=baseDirectory',
-        Execute: '=execute'
+        Execute: '=execute',
+        Theme: '=theme'
     }
 
     public static Factory() {
@@ -107,8 +112,7 @@ export class AceQueryEditorDirective  {
         private queryExecutionService : qes.QueryExecutionService) {
 
         this.link = ($scope: QueryEditorScope, element: JQuery, attributes: ng.IAttributes) => {
-            console.log('inside link')
-
+   
             var div = $('<div class="query-editor-ace"></div>')
                 .appendTo(element)
 
@@ -119,7 +123,21 @@ export class AceQueryEditorDirective  {
                 }
             });
             var editor: AceAjax.Editor = brace.edit(div[0]);
-            editor.setTheme('ace/theme/ambiance');
+            editor.setShowPrintMargin(false);
+
+            $scope.$watch('Theme', newTheme => {
+                if (newTheme) {
+                    try {
+                        editor.setTheme('ace/theme/' + newTheme);
+                    }
+                    catch (ex) {
+                        console.log('Failed to set theme: ' + newTheme);
+                        console.log(ex);
+                    }
+                }
+            });
+
+         
             editor.getSession().setMode('ace/mode/sql');
 
             if ($scope.Query) editor.setValue($scope.Query.GetValue());
