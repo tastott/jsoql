@@ -1,5 +1,5 @@
-﻿var fullParser = require('../jsoql-full-parser').parser;
-var helpfulParser = require('../jsoql-helpful-parser').parser;
+﻿var fullParser = require('../Grammar/jsoql-full-parser').parser;
+var helpfulParser = require('../Grammar/jsoql-helpful-parser').parser;
 
 export function ParseFull(source: string): Statement {
     var stmt : Statement = fullParser.parse(source);

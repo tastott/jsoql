@@ -12,10 +12,10 @@
     "clone": "^1.0.2",
     "csv-string": "^2.2.5",
     "glob": "^5.0.5",
-    "minimist": "^1.1.1",
     "oboe": "^2.1.1",
     "q": "^1.2.0",
-    "replacestream": "^2.1.0"
+    "replacestream": "^2.1.0",
+    "yargs": "^3.10.0"
   },
   "devDependencies": {
     "jison": "0.4.13",

@@ -5,7 +5,7 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>Jsoql</Name>
     <RootNamespace>Jql</RootNamespace>
-    <ScriptArguments>-q "SELECT * FROM 'file://../Data/orders.json' AS o OVER @" -h</ScriptArguments>
+    <ScriptArguments>-q "SELECT * FROM 'file://../Data/orders.json'"</ScriptArguments>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -55,6 +55,7 @@
     <TypeScriptCompile Include="Scripts\typings\node\node.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\oboe\oboe.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\q\Q.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\yargs\yargs.d.ts" />
     <TypeScriptCompile Include="Scripts\utilities.ts" />
     <TypeScriptCompile Include="Scripts\validate.ts" />
   </ItemGroup>
@@ -67,10 +68,11 @@
     <Folder Include="Scripts\typings\node\" />
     <Folder Include="Scripts\typings\oboe\" />
     <Folder Include="Scripts\typings\q\" />
+    <Folder Include="Scripts\typings\yargs\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="jsoql-full-parser.js" />
-    <Compile Include="jsoql-helpful-parser.js" />
+    <Compile Include="Grammar\jsoql-full-parser.js" />
+    <Compile Include="Grammar\jsoql-helpful-parser.js" />
     <Compile Include="Scripts\Hacks\lazy.js" />
     <Compile Include="Scripts\Hacks\lazy.node.js" />
     <TypeScriptCompile Include="Grammar\parser-build.ts" />
