@@ -348,3 +348,5 @@ FakesAssemblies/
 /Code/Jsoql.Gui/Scripts/Directives/queryEditor/queryEditor.js
 /Code/Jsoql.Gui/Scripts/Directives/queryEditor/uriCompleter.js
 /Code/Jsoql.Gui/Scripts/Directives/queryEditor/utilities.js
+/Code/Jsoql.Tests/expressionTests.js
+/Code/Jsoql.Tests/expressionTests.js.map

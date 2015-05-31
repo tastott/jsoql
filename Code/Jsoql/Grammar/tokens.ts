@@ -47,7 +47,7 @@ export var values = {
     False: 'false',
     Number: '[0-9\.-]+',
     PlainIdentifier: '[@A-Za-z0-9_\*]+',
-    Quotation: "\'[^\']+\'"
+    Quotation: "'[^']*'"
 };
 
 var valuePatterns = {};

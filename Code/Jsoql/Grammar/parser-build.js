@@ -20,7 +20,7 @@ function MakeParser(tokens, expressions, parserPath, log) {
 }
 var jisonTokens = tokens.GetJisonTokens();
 //Full parser
-MakeParser(jisonTokens, exp.GetJisonExpressionsFull(), path.join(__dirname, "../jsoql-full-parser.js"));
+MakeParser(jisonTokens, exp.GetJisonExpressionsFull(), path.join(__dirname, "./jsoql-full-parser.js"));
 //Helpful parser
-MakeParser(jisonTokens, exp.GetJisonExpressionsHelpful(), path.join(__dirname, "../jsoql-helpful-parser.js"), true);
+MakeParser(jisonTokens, exp.GetJisonExpressionsHelpful(), path.join(__dirname, "./jsoql-helpful-parser.js"), true);
 //# sourceMappingURL=parser-build.js.map

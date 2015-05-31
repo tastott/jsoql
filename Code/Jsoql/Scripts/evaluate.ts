@@ -76,7 +76,7 @@ export class Evaluator {
             if (expression.Child) return this.Evaluate(expression.Child, propTarget);
             else return propTarget;
         }
-        else if (expression.Quoted) return expression.Quoted;
+        else if (expression.Quoted !== undefined) return expression.Quoted;
         else if (expression.Call) {
             var args = expression.Args.map(arg => this.Evaluate(arg, target));
             return this.DoScalarFunction(expression.Call, args);
@@ -136,7 +136,7 @@ export class Evaluator {
             if (expression.Child) return this.EvaluateAliased(expression.Child, propTarget, propAlias);
             else return [{ Alias: propAlias, Value: propTarget }];
         }
-        else if (expression.Quoted) return [{ Alias: expression.Quoted, Value: expression.Quoted }];
+        else if (expression.Quoted !== undefined) return [{ Alias: expression.Quoted, Value: expression.Quoted }];
         else if (expression.SubQuery) {
             var context: m.QueryContext = {
                 Data: target
