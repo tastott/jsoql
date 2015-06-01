@@ -43,7 +43,8 @@ var scalarFunctions: FunctionMappings = {
     },
     'isnull': args => args[0] === null,
     'isundefined': args => args[0] === undefined,
-    'coalesce': args => lazy(args).filter(arg => arg != null).first() || null
+    'coalesce': args => lazy(args).filter(arg => arg != null).first() || null,
+    'not': args => !args[0]
 }
 
 var aggregateFunctions: FunctionMappings = {

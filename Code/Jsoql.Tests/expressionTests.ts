@@ -11,6 +11,16 @@ export function ExpressionCanIncludeEmptyStringLiteral() {
     return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
 }
 
+export function NotOperator() {
+    var data = [
+        { Name: 'Bob' },
+        { Name: 'Jim' }
+    ];
+    var query = "SELECT Name FROM 'var://Test' WHERE NOT Name = 'Bob'";
+    var expected = data.slice(-1);
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
+
 export function IsNullOperation() {
     var data = [
         { Name: 'Bob' },

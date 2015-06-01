@@ -1,42 +1,46 @@
 {
-  "lex": {
-    "rules": []
-  },
-  "operators": [
-    [
-      "left",
-      "AND",
-      "OR",
-      "IS"
+    "lex": {
+        "rules": [ ]
+    },
+    "operators": [
+        [
+            "right",
+            "NOT"
+        ],
+        [
+            "left",
+            "AND",
+            "OR",
+            "IS"
+        ],
+        [
+            "left",
+            "=",
+            "!=",
+            "<",
+            ">",
+            "<=",
+            ">="
+        ],
+        [
+            "left",
+            "+",
+            "-"
+        ],
+        [
+            "left",
+            "*",
+            "/"
+        ],
+        [
+            "left",
+            "^"
+        ],
+        [
+            "left",
+            "UMINUS"
+        ]
     ],
-    [
-      "left",
-      "=",
-      "!=",
-      "<",
-      ">",
-      "<=",
-      ">="
-    ],
-    [
-      "left",
-      "+",
-      "-"
-    ],
-    [
-      "left",
-      "*",
-      "/"
-    ],
-    [
-      "left",
-      "^"
-    ],
-    [
-      "left",
-      "UMINUS"
-    ]
-  ],
   "start": "expressions",
   "bnf": {
     "expressions": [

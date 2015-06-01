@@ -101,6 +101,10 @@ var exp = {
         [
             exp.Expression + " " + keywords.IS + " " + val.Undefined,
             "{ Call: \"IsUndefined\", Args: [$1] }"
+        ],
+        [
+            keywords.NOT + " "  + exp.Expression,
+            "{ Call: \"Not\", Args: [$2] }"
         ]
         //[
         //    exp.Expression + " " + exp.Operator + " " + exp.Expression,

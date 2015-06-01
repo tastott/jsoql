@@ -37,7 +37,8 @@ export var keywords = {
     OVER: 'OVER',
     AND: 'AND',
     OR: 'OR',
-    IS: 'IS'
+    IS: 'IS',
+    NOT: 'NOT'
 };
 
 var keywordPatterns = {};
