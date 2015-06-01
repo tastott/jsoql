@@ -50,7 +50,7 @@ function DoQueryCommand(argv: yargs.Argv) {
         Data: {
             "Test": [
                 { Name: 'Dave', FavouriteFood: 'Chips' },
-                { Name: 'Jim', FavouriteFood: 'Baked beans' }
+                { Name: null, FavouriteFood: 'Baked beans' }
             ]
         }
     };

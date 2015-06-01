@@ -6,7 +6,8 @@
     [
       "left",
       "AND",
-      "OR"
+      "OR",
+      "IS"
     ],
     [
       "left",

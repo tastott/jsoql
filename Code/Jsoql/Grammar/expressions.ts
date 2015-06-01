@@ -94,9 +94,17 @@ var exp = {
             "( " + exp.Stmt + " )",
             "{SubQuery: $2}"
         ],
+        [
+            exp.Expression + " " + keywords.IS + " " + val.Null,
+            "{ Call: \"IsNull\", Args: [$1] }"
+        ],
+        [
+            exp.Expression + " " + keywords.IS + " " + val.Undefined,
+            "{ Call: \"IsUndefined\", Args: [$1] }"
+        ]
         //[
         //    exp.Expression + " " + exp.Operator + " " + exp.Expression,
-        //    { Operator: "$2", Args: ["$1, $3"] }
+        //    { Operator: "$2", Args: ["$1", "$3"] }
         //]
     ]
     .concat(<any>operators.map(op =>

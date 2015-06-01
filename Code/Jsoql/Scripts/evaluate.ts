@@ -40,7 +40,10 @@ var scalarFunctions: FunctionMappings = {
             return (<string>args[0]).length;
         }
         else return null;
-    }
+    },
+    'isnull': args => args[0] === null,
+    'isundefined': args => args[0] === undefined,
+    'coalesce': args => lazy(args).filter(arg => arg != null).first() || null
 }
 
 var aggregateFunctions: FunctionMappings = {
@@ -66,7 +69,8 @@ export class Evaluator {
         else if (expression.Property) {
             var propTarget;
 
-            if (target[expression.Property] == undefined) return undefined;
+            if (target[expression.Property] === undefined) return undefined;
+            if (target[expression.Property] === null) return null;
 
             if (expression.Index != undefined) {
                 //TODO: Check index is integer and target property is array

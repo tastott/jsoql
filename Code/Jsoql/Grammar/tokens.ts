@@ -36,7 +36,8 @@ export var keywords = {
     ON: 'ON',
     OVER: 'OVER',
     AND: 'AND',
-    OR: 'OR'
+    OR: 'OR',
+    IS: 'IS'
 };
 
 var keywordPatterns = {};
@@ -45,6 +46,8 @@ keywords = keyValueSwitcheroo(keywords, keywordPatterns);
 export var values = {
     True: 'true',
     False: 'false',
+    Null: "NULL",
+    Undefined: "UNDEFINED",
     Number: '[0-9\.-]+',
     PlainIdentifier: '[@A-Za-z0-9_\*]+',
     Quotation: "'[^']*'"
