@@ -23,7 +23,7 @@
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
     <ProjectView>ProjectFiles</ProjectView>
-    <TypeScriptSourceMap>True</TypeScriptSourceMap>
+    <TypeScriptSourceMap>False</TypeScriptSourceMap>
     <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>
     <EnableTypeScript>true</EnableTypeScript>
     <StartWebBrowser>False</StartWebBrowser>
@@ -38,11 +38,11 @@
     <Content Include="Grammar\jsoql-grammar-template.json" />
     <Content Include="package.json" />
     <Content Include="README.md" />
-    <TypeScriptCompile Include="app.ts" />
+    <TypeScriptCompile Include="cmd.ts" />
     <TypeScriptCompile Include="Grammar\expressions.ts" />
     <TypeScriptCompile Include="Grammar\tokens.ts" />
     <TypeScriptCompile Include="Scripts\datasource.ts" />
-    <TypeScriptCompile Include="Scripts\engine.ts" />
+    <TypeScriptCompile Include="jsoql.ts" />
     <TypeScriptCompile Include="Scripts\evaluate.ts" />
     <TypeScriptCompile Include="Scripts\query-help.ts" />
     <TypeScriptCompile Include="Scripts\lazy-files.ts" />
@@ -79,7 +79,7 @@
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <TypeScriptGeneratesDeclarations>True</TypeScriptGeneratesDeclarations>
+    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsTools.targets" />

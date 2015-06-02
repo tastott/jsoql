@@ -1,5 +1,5 @@
 ﻿
-import eng = require('./Scripts/engine')
+import jsoql = require('./jsoql')
 import http = require('http');
 import fs = require('fs')
 import m = require('./Scripts/models')
@@ -42,7 +42,7 @@ function DoQueryCommand(argv: yargs.Argv) {
 
     var query = argv['query'];
 
-    var engine = new eng.DesktopJsoqlEngine();
+    var engine = new jsoql.DesktopJsoqlEngine();
     //var engine = new eng.OnlineJsoqlEngine();
 
     var context: m.QueryContext = {

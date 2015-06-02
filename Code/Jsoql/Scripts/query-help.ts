@@ -3,7 +3,6 @@ import p = require('./parse')
 import q = require('./query')
 import m = require('./models')
 import ds = require('./datasource')
-import e = require('./engine')
 import utils = require('./utilities')
 import evl = require('./evaluate')
 var clone = require('clone')
@@ -27,10 +26,10 @@ enum Clause {
 
 
 export class QueryHelper {
-    constructor(private queryEngine: e.JsoqlEngine) {
+    constructor(private queryEngine: m.JsoqlEngine) {
     }
 
-    private GetStatementClauses(statement: p.Statement): {
+    private GetStatementClauses(statement: m.Statement): {
         Clause: Clause;
         Range: m.Range
     }[]{
@@ -122,13 +121,13 @@ export class QueryHelper {
         } 
     }
 
-    private MungeFromClause(fromClauseNode: p.FromClauseNode) {
+    private MungeFromClause(fromClauseNode: m.FromClauseNode) {
         var cloned = clone(fromClauseNode);
         this.MungeFromClauseRecursive(cloned);
         return cloned;
     }
 
-    private MungeFromClauseRecursive(fromClauseNode: p.FromClauseNode) {
+    private MungeFromClauseRecursive(fromClauseNode: m.FromClauseNode) {
         if (fromClauseNode.Expression !== undefined) {
             fromClauseNode.Expression = true;
         }
@@ -137,7 +136,7 @@ export class QueryHelper {
         if (fromClauseNode.Right) this.MungeFromClause(fromClauseNode.Right);
     }
 
-    private GetScopeHelp(originalStatement: p.Statement, scope: Scope, context?: m.QueryContext): Q.Promise<m.HelpResult> {
+    private GetScopeHelp(originalStatement: m.Statement, scope: Scope, context?: m.QueryContext): Q.Promise<m.HelpResult> {
 
         var helpItems = 8;
 
@@ -149,7 +148,7 @@ export class QueryHelper {
                 //  - back out of any incomplete OVERs
                 var mungedFrom = this.MungeFromClause(originalStatement.From);
 
-                var helpStatement: p.Statement = {
+                var helpStatement: m.Statement = {
                     Select: {
                         SelectList: [{ Expression: { Property: '*' } }],
                         Limit: 8
@@ -203,7 +202,7 @@ function GetPosition(cursor: number, text: string) : m.Position {
     return { Line: cursor === 0 ? i - 1: i, Column: lines[i-1].length };
 }
 
-function ConvertJisonRange(range: p.Range): m.Range{
+function ConvertJisonRange(range: m.JisonRange): m.Range{
     return {
         From: {
             Column: range.first_column,

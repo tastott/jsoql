@@ -1,21 +1,21 @@
-﻿///<reference path="typings/q/Q.d.ts"/>
+﻿///<reference path="Scripts/typings/q/Q.d.ts"/>
 import Q = require('q')
-import p = require('./parse')
-import q = require('./query')
-import m = require('./models')
-import ds = require('./datasource')
-import qh = require('./query-help')
+import p = require('./Scripts/parse')
+import q = require('./Scripts/query')
+import m = require('./Scripts/models')
+import ds = require('./Scripts/datasource')
+import qh = require('./Scripts/query-help')
 
-export class JsoqlEngine {
+export class JsoqlEngineBase implements m.JsoqlEngine {
     private queryHelper: qh.QueryHelper;
 
     constructor(private datasources: ds.DataSourceSequencers) {
         this.queryHelper = new qh.QueryHelper(this);
     }
 
-    public ExecuteQuery(statement: p.Statement|string, context?: m.QueryContext): Q.Promise<m.QueryResult> {
+    public ExecuteQuery(statement: m.Statement|string, context?: m.QueryContext): Q.Promise<m.QueryResult> {
 
-        var parsedStatement: p.Statement;
+        var parsedStatement: m.Statement;
 
         try {
             if (typeof statement === 'string') parsedStatement = p.ParseFull(statement);
@@ -66,7 +66,7 @@ export class JsoqlEngine {
     }
 }
 
-export class DesktopJsoqlEngine extends JsoqlEngine {
+export class DesktopJsoqlEngine extends JsoqlEngineBase {
     constructor() {
         super({
             "var": new ds.VariableDataSourceSequencer(),
@@ -76,7 +76,7 @@ export class DesktopJsoqlEngine extends JsoqlEngine {
     }
 }
 
-export class OnlineJsoqlEngine extends JsoqlEngine {
+export class OnlineJsoqlEngine extends JsoqlEngineBase {
     constructor(appBaseUrl : string, getFileStorageKey : (id : string) => string) {
         super({
             "var": new ds.VariableDataSourceSequencer(),

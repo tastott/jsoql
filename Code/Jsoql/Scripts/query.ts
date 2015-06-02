@@ -23,7 +23,7 @@ export class JsoqlQuery {
     private queryContext: m.QueryContext;
     private evaluator: evl.Evaluator;
 
-    constructor(private stmt: parse.Statement,
+    constructor(private stmt: m.Statement,
         private dataSourceSequencers : ds.DataSourceSequencers,
         queryContext?: m.QueryContext) {
 
@@ -155,7 +155,7 @@ export class JsoqlQuery {
 
     }
 
-    private CollectDatasources(fromClauseNode: parse.FromClauseNode): DatasourceConfig[] {
+    private CollectDatasources(fromClauseNode: m.FromClauseNode): DatasourceConfig[] {
 
         //Join
         if (fromClauseNode.Expression) {
