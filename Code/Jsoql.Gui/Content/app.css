@@ -78,3 +78,15 @@
 {
     color:red;
 }
+
+.app-title h1{
+    display: inline;
+    font-family: consolas;
+    line-height: 64px;
+    vertical-align: middle;
+}
+
+a.app-title:hover {
+    text-decoration: none;
+    color: #8f9d6a 
+}
