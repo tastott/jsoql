@@ -1,5 +1,4 @@
-﻿
-import jsoql = require('./jsoql')
+﻿import jsoql = require('./jsoql')
 import http = require('http');
 import fs = require('fs')
 import m = require('./Scripts/models')
@@ -7,7 +6,7 @@ import yargs = require('yargs')
 
 
 var argv = yargs
-    .usage('jsoql [command] [options]')
+    .usage('Usage: jsoql [command] [options]')
     .command('query', 'execute a query and output the results as JSON', cmdArgs => {
         argv = cmdArgs
             .option('q', {
@@ -16,27 +15,39 @@ var argv = yargs
                 description: 'JSOQL query to be executed',
                 type: 'string'
             })
-            .option('o', {
+                .option('o', {
                 alias: 'output',
                 required: false,
                 description: 'Output file (optional)',
                 type: 'string'
             })
-            .option('i', {
+                .option('i', {
                 alias: 'indent',
                 required: false,
                 description: 'Indent the JSON output',
                 type: 'boolean'
             })
-            .help('help')
+            .help('h')
+            .alias('h', 'help')
             .argv;
 
         DoQueryCommand(argv);
     })
-    .help('help')
-    .argv;
+    .help('h')
+    .alias('h', 'help')
+    .example('jsoql query -q "SELECT * FROM \'file://path/to/file\'"', 'Query some data in a file and write the results to standard output')
+    ;
 
-console.log(argv);
+WriteHelp(argv);
+
+function WriteHelp(argv: yargs.Argv) {
+
+    var file = fs.createReadStream('./sock.txt');
+    file.on('end',() => process.stdout.write("\n\n" + argv.help()));
+
+    file.pipe(process.stdout, { end: true });
+
+}
 
 function DoQueryCommand(argv: yargs.Argv) {
 

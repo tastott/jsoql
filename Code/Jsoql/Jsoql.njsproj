@@ -14,7 +14,7 @@
     <ProjectGuid>66d5ffe0-e198-4c64-b126-d78be42a9192</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>app.js</StartupFile>
+    <StartupFile>cmd.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -35,9 +35,11 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include=".npmignore" />
     <Content Include="Grammar\jsoql-grammar-template.json" />
     <Content Include="package.json" />
     <Content Include="README.md" />
+    <Content Include="sock.txt" />
     <TypeScriptCompile Include="cmd.ts" />
     <TypeScriptCompile Include="Grammar\expressions.ts" />
     <TypeScriptCompile Include="Grammar\tokens.ts" />
