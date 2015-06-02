@@ -1,5 +1,4 @@
-![JSOQL logo](https://raw.githubusercontent.com/tastott/jsoql/master/Images/sock.png)
-# JSOQL
+![JSOQL logo](https://raw.githubusercontent.com/tastott/jsoql/master/Images/jsoql-300-100.png)
 ##*JavaScript Object Query Language*
 *Yet another* query language for JSON.
 
