@@ -8,7 +8,7 @@ import path = require('path')
 var argv = yargs
     .usage(GetUsageText())
     .command('query', 'execute a query and output the results as JSON', cmdArgs => {
-        argv = cmdArgs
+        var cmdArgv = cmdArgs
             .option('q', {
                 alias: 'query',
                 required: true,
@@ -31,7 +31,7 @@ var argv = yargs
             .alias('h', 'help')
             .argv;
 
-        DoQueryCommand(argv);
+        DoQueryCommand(cmdArgv);
     })
     .help('h')
     .alias('h', 'help')
@@ -62,8 +62,8 @@ function DoQueryCommand(argv: yargs.Argv) {
         BaseDirectory: process.cwd(),
         Data: {
             "Test": [
-                { Name: 'Dave', FavouriteFood: 'Chips' },
-                { Name: null, FavouriteFood: 'Baked beans' }
+                { Name: 'Dave', FavouriteFood: 'Chips', Age: 42 },
+                { Name: null, FavouriteFood: 'Baked beans', Age: 0 }
             ]
         }
     };

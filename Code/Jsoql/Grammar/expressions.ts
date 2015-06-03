@@ -59,21 +59,25 @@ var exp = {
             "{ Property: $1, Index: $3, Child: $6}"
         ]
     ],
-    Operator: () => [
-        keywords.AND,
-        keywords.OR,
-        '=',
-        '!=',
-        '<',
-        '>',
-        '<=',
-        '>=',
-        '+',
-        '-',
-        '/',
-        '*',
-    ],
+    //Operator: () => [
+    //    keywords.AND,
+    //    keywords.OR,
+    //    '=',
+    //    '!=',
+    //    '<',
+    //    '>',
+    //    '<=',
+    //    '>=',
+    //    '+',
+    //    '-',
+    //    '/',
+    //    '*',
+    //],
     Expression: () => [
+        [
+            '*',
+            "{ Property : '*' }"
+        ],
         [
             exp.Identifier + " ( )",
             "{ Call: $1, Args: []}"

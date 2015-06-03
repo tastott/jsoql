@@ -353,3 +353,4 @@ FakesAssemblies/
 /Code/Jsoql/prepublish.js
 /Code/Jsoql/cmd.js
 /Code/Jsoql/jsoql.js
+*.js.map

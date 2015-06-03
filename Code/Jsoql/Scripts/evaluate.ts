@@ -23,7 +23,9 @@ var operators: FunctionMappings = {
     '<=': args => args[0] <= args[1],
     'and': args => args[0] && args[1],
     'or': args => args[0] || args[1],
-    '+': args => args[0] + args[1]
+    '+': args => args[0] + args[1],
+    '*': args => args[0] * args[1],
+    '/': args => args[0] / args[1]
 };
 
 var scalarFunctions: FunctionMappings = {
@@ -221,7 +223,7 @@ export class Evaluator {
     private DoOperation(operator: string, args: any[]) {
         var func = operators[operator.toLowerCase()];
 
-        if (!func) throw 'Unrecognized operator: ' + name;
+        if (!func) throw 'Unrecognized operator: ' + operator;
 
         return func(args);
     }

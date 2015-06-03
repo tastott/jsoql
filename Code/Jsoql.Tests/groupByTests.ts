@@ -114,3 +114,18 @@ export function GroupByWithScalarFunction() {
     ];
     return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
 }
+
+export function GroupByWithArithmetic() {
+    var data = [
+        { Name: 'Bob', Message: 'Hello, my name is Bob' },
+        { Name: 'Dave', Message: 'Hi Bob, nice to meet you' },
+        { Name: 'Bob', Message: "Well this is nice isn't it?" }
+    ];
+    var query = "SELECT Name, COUNT() / 3 AS Proportion FROM 'var://Test' GROUP BY Name";
+
+    var expected = [
+        { Name: 'Bob', Proportion: 2/3 },
+        { Name: 'Dave', Proportion: 1/3 }
+    ];
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}

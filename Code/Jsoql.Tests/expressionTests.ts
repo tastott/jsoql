@@ -56,3 +56,19 @@ export function Coalesce() {
 
     return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
 }
+
+export function Arithmetic() {
+    var data = [
+        { Value: 1 },
+        { Value: 2 },
+        { Value: 3 }
+    ];
+    var query = "SELECT Value * 2 AS Double FROM 'var://Test'";
+    var expected = [
+        { Double: 2 },
+        { Double: 4 },
+        { Double: 6 }
+    ];
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
