@@ -1,6 +1,6 @@
 {
     "name": "jsoql",
-    "version": "0.0.8",
+    "version": "0.0.10",
     "description": "Library and command line tool for querying JSON data using a SQL-like language (JSOQL)",
     "main": "jsoql.js",
     "author": {
@@ -13,7 +13,10 @@
     ],
     "bin": {
         "jsoql": "cmd.js"
-    },  
+    },
+    "scripts": { 
+        "prepublish":  "node prepublish.js"
+    },
     "preferGlobal": true,
     "dependencies": {
         "buffered-xhr-stream": "^0.1.4",

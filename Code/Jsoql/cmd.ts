@@ -3,10 +3,10 @@ import http = require('http');
 import fs = require('fs')
 import m = require('./Scripts/models')
 import yargs = require('yargs')
-
+import path = require('path')
 
 var argv = yargs
-    .usage('Usage: jsoql [command] [options]')
+    .usage(GetUsageText())
     .command('query', 'execute a query and output the results as JSON', cmdArgs => {
         argv = cmdArgs
             .option('q', {
@@ -38,15 +38,17 @@ var argv = yargs
     .example('jsoql query -q "SELECT * FROM \'file://path/to/file\'"', 'Query some data in a file and write the results to standard output')
     ;
 
-WriteHelp(argv);
+if (!argv.argv._[0]) WriteHelp('Please enter a command');
+else if (argv.argv._[0].toLowerCase() !== 'query') WriteHelp(`'${argv.argv._[0]}' is not a valid command`);
 
-function WriteHelp(argv: yargs.Argv) {
+function WriteHelp(beforeText?: string) {
+    if (beforeText) process.stdout.write(beforeText + '\n');
+    process.stdout.write(argv.help());
+}
 
-    var file = fs.createReadStream('./sock.txt');
-    file.on('end',() => process.stdout.write("\n\n" + argv.help()));
-
-    file.pipe(process.stdout, { end: true });
-
+function GetUsageText() : string{
+    var asciiArt = fs.readFileSync(path.join(__dirname, 'sock.txt')).toString();
+    return asciiArt;
 }
 
 function DoQueryCommand(argv: yargs.Argv) {

@@ -43,6 +43,7 @@
     <TypeScriptCompile Include="cmd.ts" />
     <TypeScriptCompile Include="Grammar\expressions.ts" />
     <TypeScriptCompile Include="Grammar\tokens.ts" />
+    <TypeScriptCompile Include="prepublish.ts" />
     <TypeScriptCompile Include="Scripts\datasource.ts" />
     <TypeScriptCompile Include="jsoql.ts" />
     <TypeScriptCompile Include="Scripts\evaluate.ts" />
