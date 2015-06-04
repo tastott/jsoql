@@ -36,6 +36,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="Content\app.css" />
+    <Content Include="Content\Images\jsoql-150-50.png" />
+    <Content Include="Content\Images\jsoql-300-100.png" />
     <Content Include="Content\Images\sock-32.png" />
     <Content Include="Content\Images\sock-64.png" />
     <Content Include="Content\Images\sock.png" />
