@@ -52,6 +52,7 @@
     <Content Include="README.md" />
     <TypeScriptCompile Include="Scripts\Controllers\appController.ts" />
     <TypeScriptCompile Include="Scripts\Directives\fileDrop.ts" />
+    <TypeScriptCompile Include="Scripts\Directives\fileDialogButton.ts" />
     <TypeScriptCompile Include="Scripts\Directives\folderInput.ts" />
     <TypeScriptCompile Include="Scripts\Directives\queryEditor\models.ts" />
     <TypeScriptCompile Include="Scripts\Directives\queryEditor\propertyCompleter.ts" />
