@@ -125,19 +125,9 @@ export class AceQueryEditorDirective  {
             var editor: AceAjax.Editor = brace.edit(div[0]);
             editor.setShowPrintMargin(false);
 
-            $scope.$watch('Theme', newTheme => {
-                if (newTheme) {
-                    try {
-                        editor.setTheme('ace/theme/' + newTheme);
-                    }
-                    catch (ex) {
-                        console.log('Failed to set theme: ' + newTheme);
-                        console.log(ex);
-                    }
-                }
-            });
-
-         
+            this.SetTheme(editor, $scope.Theme);
+            $scope.$watch('Theme', newTheme => this.SetTheme(editor, newTheme));
+            
             editor.getSession().setMode('ace/mode/sql');
 
             if ($scope.Query) editor.setValue($scope.Query.GetValue());
@@ -151,6 +141,19 @@ export class AceQueryEditorDirective  {
             });
 
             this.ConfigureAutoComplete(editor, $scope);
+        }
+    }
+
+    private SetTheme(editor: AceAjax.Editor, theme: string) {
+        if (theme) {
+            try {
+                console.log('setting editor theme to ' + theme);
+                editor.setTheme('ace/theme/' + theme);
+            }
+            catch (ex) {
+                console.log('Failed to set theme: ' + theme);
+                console.log(ex);
+            }
         }
     }
 
