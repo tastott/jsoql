@@ -5,6 +5,7 @@ import appCtrl = require('./Scripts/Controllers/appController')
 import qrDir = require('./Scripts/Directives/queryResult')
 import qeDir = require('./Scripts/Directives/queryEditor/queryEditor')
 import fiDir = require('./Scripts/Directives/folderInput')
+import fdbDir = require('./Scripts/Directives/fileDialogButton')
 import fdDir = require('./Scripts/Directives/fileDrop')
 import fServ = require('./Scripts/Services/fileService')
 import qServ = require('./Scripts/Services/queryStorageService')
@@ -43,7 +44,8 @@ angular.module('Jsoql', ['ngRoute', 'ui.bootstrap'])
     .directive('queryEditor',() => new qeDir.QueryEditorDirective())
     .directive('queryEditorAce',qeDir.AceQueryEditorDirective.Factory())
     .directive('folderInput',() => new fiDir.FolderInputDirective())
-    .directive('fileDrop', () => new fdDir.FileDropDirective())
+    .directive('fileDrop',() => new fdDir.FileDropDirective())
+    .directive('fileDialogButton', () => new fdbDir.FileDialogButtonDirective())
     .config(['$routeProvider', ($routeProvider: angular.route.IRouteProvider) => {
 
         $routeProvider.when('/home', {
