@@ -11,7 +11,8 @@
             "left",
             "AND",
             "OR",
-            "IS"
+            "IS",
+            "IN"
         ],
         [
             "left",

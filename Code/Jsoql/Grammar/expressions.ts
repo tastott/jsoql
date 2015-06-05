@@ -117,6 +117,10 @@ var exp = {
         [
             keywords.NOT + " "  + exp.Expression,
             "{ Call: \"Not\", Args: [$2] }"
+        ],
+        [
+            exp.Expression + " " + keywords.IN + " " + "( " + exp.ExpressionList + " )",
+            "{ Call: \"In\", Args: [$1, $4]}"
         ]
         //[
         //    exp.Expression + " " + exp.Operator + " " + exp.Expression,

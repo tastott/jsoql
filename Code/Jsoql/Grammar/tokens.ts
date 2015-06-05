@@ -40,7 +40,8 @@ export var keywords = {
     AND: 'AND',
     OR: 'OR',
     IS: 'IS',
-    NOT: 'NOT'
+    NOT: 'NOT',
+    IN: 'IN'
 };
 
 var keywordPatterns = {};

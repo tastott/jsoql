@@ -46,7 +46,8 @@ var scalarFunctions: FunctionMappings = {
     'isnull': args => args[0] === null,
     'isundefined': args => args[0] === undefined,
     'coalesce': args => lazy(args).filter(arg => arg != null).first() || null,
-    'not': args => !args[0]
+    'not': args => !args[0],
+    'in': args => !!lazy(args[1]).some(item => deepEqual(args[0], item))
 }
 
 var aggregateFunctions: FunctionMappings = {

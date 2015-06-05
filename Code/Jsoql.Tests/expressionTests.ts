@@ -108,3 +108,27 @@ export function DeepEqualsWithArray() {
 
     return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
 }
+
+export function In() {
+    var data = [
+        { Value: 1 },
+        { Value: 2 },
+        { Value: 3 }
+    ];
+    var query = "SELECT * FROM 'var://Test' WHERE Value IN (1,3)";
+    var expected = data.slice(0, 1).concat(data.slice(-1));
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
+
+export function DeepIn() {
+    var data = [
+        { Value: 1 },
+        { Value: 2 },
+        { Value: 3 }
+    ];
+    var query = "SELECT t.* FROM 'var://Test' AS t WHERE t IN ({Value: 1}, {Value: 3})";
+    var expected = data.slice(0, 1).concat(data.slice(-1));
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
