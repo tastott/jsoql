@@ -16,3 +16,16 @@ export function DeepSelect() {
     ];
     return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
 }
+
+export function DeepSelectWithArray() {
+    var data = [
+        { Name: 'Dave', FavouriteFood1: 'Chips', FavouriteFood2: 'Doughnuts' },
+        { Name: 'Jim', FavouriteFood1: 'Baked beans', FavouriteFood2:'Broccoli'}
+    ];
+    var query = "SELECT Name, { FavouriteFoods: [FavouriteFood1, FavouriteFood2] } AS FoodSummary FROM 'var://Test'";
+    var expected = [
+        { Name: 'Dave', FoodSummary: { FavouriteFoods: ['Chips', 'Doughnuts'] } },
+        { Name: 'Jim', FoodSummary: { FavouriteFoods: ['Baked beans', 'Broccoli']} }
+    ];
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}

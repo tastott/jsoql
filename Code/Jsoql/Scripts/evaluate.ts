@@ -7,7 +7,7 @@ import qstring = require('./query-string')
 import util = require('./utilities')
 import query = require('./query')
 var clone = require('clone')
-      
+var deepEqual : (a,b) => boolean = require('deep-equal')
 
 
 interface FunctionMappings {
@@ -15,7 +15,7 @@ interface FunctionMappings {
 }
 
 var operators: FunctionMappings = {
-    '=': args => args[0] == args[1],
+    '=': args => deepEqual(args[0], args[1]),
     '!=': args => args[0] !== args[1],
     '>': args => args[0] > args[1],
     '>=': args => args[0] >= args[1],
@@ -103,6 +103,10 @@ export class Evaluator {
 
             return util.MonoProp(results[0]);
         }
+        else if (util.IsArray(expression))
+        {
+            return expression.map(e => this.Evaluate(e, target));
+        }
         else return expression;
     }
 
@@ -175,6 +179,9 @@ export class Evaluator {
                     .toObject()
             }];
         }
+        else if (util.IsArray(expression)) {
+            return [{ Alias: alias, Value: expression.map(e => this.Evaluate(e, target)) }];
+        }
         else return [{ Alias: '', Value: expression }];
     }
 
@@ -208,6 +215,9 @@ export class Evaluator {
                 .toObject();
         }
         else if (expression.Quoted) return expression.Quoted;
+        else if (util.IsArray(expression)) {
+            return expression.map(e => this.EvaluateGroup(e, group));
+        }
         else return expression;
     }
 

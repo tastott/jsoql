@@ -43,6 +43,10 @@ var exp = {
     ],
     Property: () => [
         [
+            '*',
+            "{ Property : '*' }"
+        ],
+        [
             exp.Identifier,
             "{ Property: $1}"
         ],
@@ -74,10 +78,10 @@ var exp = {
     //    '*',
     //],
     Expression: () => [
-        [
-            '*',
-            "{ Property : '*' }"
-        ],
+        //[
+        //    '*',
+        //    "{ Property : '*' }"
+        //],
         [
             exp.Identifier + " ( )",
             "{ Call: $1, Args: []}"
@@ -85,6 +89,10 @@ var exp = {
         [
             exp.Identifier + " ( " + exp.ExpressionList + " )",
             "{ Call: $1, Args: $3}"
+        ],
+        [
+            '[ ' + exp.ExpressionList + ' ]',
+            "$2"
         ],
         exp.Property,
         exp.Quoted,

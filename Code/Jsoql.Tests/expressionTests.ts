@@ -72,3 +72,39 @@ export function Arithmetic() {
 
     return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
 }
+
+export function DeepEquals() {
+    var data = [
+        { Value: { A: 'Blah', B: 'Wotsit' } },
+        { Value: 2 },
+        { Value: 3 }
+    ];
+    var query = "SELECT * FROM 'var://Test' WHERE Value = {A: 'Blah', B: 'Wotsit'}";
+    var expected = data.slice(0, 1);
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
+
+export function DeepEqualsWithNesting() {
+    var data = [
+        { Value: { A: 'Blah', B: 'Wotsit' } },
+        { Value: 2 },
+        { Value: 3 }
+    ];
+    var query = "SELECT t.* FROM 'var://Test' AS t WHERE t = {Value: {A: 'Blah', B: 'Wotsit'}}";
+    var expected = data.slice(0, 1);
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
+
+export function DeepEqualsWithArray() {
+    var data = [
+        { Value: { A: 'Blah', B: [1,2,3] } },
+        { Value: 2 },
+        { Value: 3 }
+    ];
+    var query = "SELECT * FROM 'var://Test' WHERE Value = {A: 'Blah', B: [1,2,3]}";
+    var expected = data.slice(0, 1);
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
