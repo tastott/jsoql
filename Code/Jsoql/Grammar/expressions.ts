@@ -115,7 +115,7 @@ var exp = {
             "{ Call: \"IsUndefined\", Args: [$1] }"
         ],
         [
-            keywords.NOT + " "  + exp.Expression,
+            keywords.NOT + " " + exp.Expression,
             "{ Call: \"Not\", Args: [$2] }"
         ],
         [
@@ -127,15 +127,15 @@ var exp = {
         //    { Operator: "$2", Args: ["$1", "$3"] }
         //]
     ]
-    .concat(<any>operators.map(op =>
-            [
-                exp.Expression + " " + op + " " + exp.Expression,
-                { Operator: "$2", Args: ["$1", "$3"] }
-            ]
+        .concat(<any>operators.map(op =>
+        [
+            exp.Expression + " " + op + " " + exp.Expression,
+            { Operator: "$2", Args: ["$1", "$3"] }
+        ]
         )
-    )
+        )
     ,
-       
+
     KeyValue: () => [
         [
             exp.Identifier + " : " + exp.Expression,
@@ -148,7 +148,7 @@ var exp = {
             "[$1]"
         ],
         [
-           exp.KeyValueList + " , " + exp.KeyValue,
+            exp.KeyValueList + " , " + exp.KeyValue,
             "$1.concat([$3])"
         ]
     ],
@@ -178,7 +178,7 @@ var exp = {
             "{ Expression: $1, Alias: $3}"
         ]
     ],
-    SelectList:() => [
+    SelectList: () => [
         [
             exp.Selectable,
             "[$1]"
@@ -188,7 +188,7 @@ var exp = {
             "$1.concat([$3])"
         ]
     ],
-    FromTarget: () =>  [
+    FromTarget: () => [
         exp.Property,
         exp.Quoted,
         exp.Object
@@ -207,7 +207,7 @@ var exp = {
             "{ Left: $1, Right: $3, Expression: $5}"
         ],
         [
-            exp.FromTargets + " " + keywords.OVER + " " + exp.Property + " " + keywords.AS  + " " + val.PlainIdentifier,
+            exp.FromTargets + " " + keywords.OVER + " " + exp.Property + " " + keywords.AS + " " + val.PlainIdentifier,
             "{ Left: $1, Over: $3, Alias: $5}"
         ]
     ],
@@ -253,9 +253,9 @@ var exp = {
             "$2"
         ]
     ],
-    SelectClause: () =>  [
+    SelectClause: () => [
         [
-            keywords.SELECTTOP + " " +  val.Number + " " + exp.SelectList,
+            keywords.SELECTTOP + " " + val.Number + " " + exp.SelectList,
             "{ SelectList: $3, Limit: $2}"
         ],
         [
@@ -265,7 +265,7 @@ var exp = {
     ],
     GroupByClause: () => [
         [
-           keywords.GROUPBY + " " + exp.ExpressionList,
+            keywords.GROUPBY + " " + exp.ExpressionList,
             "{ Groupings: $2}"
         ],
         [
@@ -273,7 +273,7 @@ var exp = {
             "{ Groupings: $2, Having: $4}"
         ]
     ],
-    Stmt: () =>  [
+    Stmt: () => [
         [
             exp.SelectClause + " " + exp.FromClause,
             { Select: "$1", From: "$2", Positions: { Select: "@1", From: "@2" } }
@@ -292,7 +292,7 @@ var exp = {
         ],
         [
             exp.SelectClause + " " + exp.FromClause + " " + exp.GroupByClause,
-            { Select: "$1", From: "$2", GroupBy: "$3", Positions: { Select: "@1", From: "@2", GroupBy: "@3"} }
+            { Select: "$1", From: "$2", GroupBy: "$3", Positions: { Select: "@1", From: "@2", GroupBy: "@3" } }
         ],
         [
             exp.SelectClause + " " + exp.FromClause + " " + exp.WhereClause + " " + exp.GroupByClause,
@@ -306,6 +306,10 @@ var exp = {
             exp.SelectClause + " " + exp.FromClause + " " + exp.WhereClause + " " + exp.GroupByClause + " " + exp.OrderByClause,
             { Select: "$1", From: "$2", Where: "$3", GroupBy: "$4", OrderBy: "$5", Positions: { Select: "@1", From: "@2", Where: "@3", GroupBy: "@4", OrderBy: "@5" } }
         ],
+        [
+            exp.Stmt + " " + keywords.UNION + " " + exp.Stmt,
+            "{ $1.Union = $3; $$ = $1 }"
+        ]
     ]
 }
 

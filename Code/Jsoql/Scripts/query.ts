@@ -297,23 +297,31 @@ export class JsoqlQuery {
         //Where
         if (this.stmt.Where) seq = this.Where(seq, this.stmt.Where);
 
+        var results: any[];
+
         //Grouping
         //Explicitly
         if (this.stmt.GroupBy) {
             seq = this.GroupBySync(seq, this.stmt.GroupBy.Groupings)
             seq = this.SelectGrouped(seq, this.stmt.GroupBy.Having);
-            return JsoqlQuery.SequenceToArraySync(seq);
+            results = JsoqlQuery.SequenceToArraySync(seq);
         }
         //Implicitly
         else if (lazy(this.stmt.Select.SelectList).some(selectable => evl.Evaluator.IsAggregate(selectable.Expression))) {
 
             var items = JsoqlQuery.SequenceToArraySync(seq);
-            return this.SelectMonoGroup(items);
+            results = this.SelectMonoGroup(items);
         }
         //No grouping
         else {
-            return JsoqlQuery.SequenceToArraySync(this.SelectUngrouped(seq));
+            results = JsoqlQuery.SequenceToArraySync(this.SelectUngrouped(seq));
         }
+
+        if (this.stmt.Union) {
+            var right = new JsoqlQuery(this.stmt.Union, this.dataSourceSequencers, this.queryContext);
+            return results.concat(right.ExecuteSync());
+        }
+        else return results;
     }
 
     Execute(): Q.Promise<any[]> {
@@ -326,24 +334,32 @@ export class JsoqlQuery {
         //Where
         if (this.stmt.Where) seq = this.Where(seq, this.stmt.Where);
 
+        var resultsP: Q.Promise<any[]>;
+
         //Grouping
         //Explicitly
         if (this.stmt.GroupBy) {
-            this.GroupBy(seq, this.stmt.GroupBy.Groupings)
+            resultsP = this.GroupBy(seq, this.stmt.GroupBy.Groupings)
                 .then(groups => this.SelectGrouped(groups, this.stmt.GroupBy.Having))
-                .then(resultSeq => deferred.resolve(resultSeq.toArray()));
+                .then(resultSeq => resultSeq.toArray());
         }
         //Implicitly
         else if (lazy(this.stmt.Select.SelectList).some(selectable => evl.Evaluator.IsAggregate(selectable.Expression))) {
 
-            JsoqlQuery.SequenceToArray(seq)
-                .then(items => deferred.resolve(this.SelectMonoGroup(items)));
+            resultsP = JsoqlQuery.SequenceToArray(seq)
+                .then(items => this.SelectMonoGroup(items));
         }
         //No grouping
         else {
-            JsoqlQuery.SequenceToArray(this.SelectUngrouped(seq))
-                .then(items => deferred.resolve(items));
+            resultsP = JsoqlQuery.SequenceToArray(this.SelectUngrouped(seq));
         }
+
+        if (this.stmt.Union) {
+            var right = new JsoqlQuery(this.stmt.Union, this.dataSourceSequencers, this.queryContext);
+            Q.all([resultsP, right.Execute()])
+                .then(resultss => deferred.resolve(resultss[0].concat(resultss[1])));
+        }
+        else resultsP.then(results => deferred.resolve(results));
 
         return deferred.promise;
     }

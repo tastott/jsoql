@@ -41,7 +41,8 @@ export var keywords = {
     OR: 'OR',
     IS: 'IS',
     NOT: 'NOT',
-    IN: 'IN'
+    IN: 'IN',
+    UNION: 'UNION'
 };
 
 var keywordPatterns = {};

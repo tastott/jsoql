@@ -12,7 +12,8 @@
             "AND",
             "OR",
             "IS",
-            "IN"
+            "IN",
+            "UNION"
         ],
         [
             "left",

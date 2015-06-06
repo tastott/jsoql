@@ -90,6 +90,7 @@ export interface Statement {
         Expression: any;
         Asc: boolean
     }[];
+    Union?: Statement;
     Positions?: Positions
 }
 

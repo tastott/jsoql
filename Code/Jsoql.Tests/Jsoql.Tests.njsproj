@@ -48,6 +48,9 @@
     <Content Include="Data\orders.jsonl" />
     <Content Include="package.json" />
     <Content Include="README.md" />
+    <TypeScriptCompile Include="unionTests.ts">
+      <TestFramework>ExportRunner</TestFramework>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="expressionTests.ts">
       <TestFramework>ExportRunner</TestFramework>
     </TypeScriptCompile>
