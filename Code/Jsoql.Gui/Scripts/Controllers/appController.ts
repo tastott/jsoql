@@ -6,6 +6,7 @@ import _fs = require('../Services/fileService')
 import qes = require('../Services/queryExecutionService')
 import m = require('../models/models')
 import util = require('../utilities')
+import path = require('path')
 
 class QueryTab {
 
@@ -109,6 +110,8 @@ interface AppScope extends angular.IScope {
         EditorThemes: string[];
         SelectedEditorTheme: string
     }
+    LoadTab: (file: File) => void;
+    Environment: string;
 }
 
 export class AppController {
@@ -127,16 +130,17 @@ export class AppController {
         $scope.AddTab = this.AddTab;
         $scope.Reload = this.Reload;
         $scope.OnQueryFileDrop = this.OnQueryFileDrop;
+        $scope.LoadTab = this.LoadTab;
         $scope.Settings = {
             EditorThemes: ['twilight', 'ambiance'],
             SelectedEditorTheme: 'twilight'
         };
+        $scope.Environment = m.Environment[configuration.Environment];
 
         //For demo purposes, the URL can contain some initial query text
         //If so, don't bother loading any other tabs
         if ($routeParams['queryText']) {
-            var tab = new QueryTab(this.$scope, this.queryStorageService, this.queryFileService,
-                this.queryExecutionService, 'query', null, $routeParams['queryText'], $routeParams['baseDirectory']);
+            var tab = this.CreateTab('query', null, $routeParams['queryText'], $routeParams['baseDirectory']);
 
             this.AddTab(tab);
             $scope.SelectedTab = tab;
@@ -151,11 +155,33 @@ export class AppController {
         }
     }
 
+    private CreateTab(name: string, id?: string, queryText?: string, baseDirectory?:string) : QueryTab{
+        return new QueryTab(this.$scope, this.queryStorageService, this.queryFileService,
+            this.queryExecutionService, name, id, queryText, baseDirectory);
+    }
+
+    LoadTab = (file: File) => {
+        //Desktop only
+        if (!this.configuration.IsOnline()) {
+            //Check file isn't already open
+            var alreadyOpen = this.$scope.Tabs.filter(tab => tab.StorageId && tab.StorageId.toLowerCase() === file['path'].toLowerCase())[0];
+            if (alreadyOpen) this.SelectTab(alreadyOpen);
+            else {
+                this.queryFileService.Load(file['path']).then(query => {
+                    this.$scope.$apply(() => {
+                        var tab = this.CreateTab(path.basename(file['path']), file['path'], query);
+                        this.AddTab(tab, true);
+                    });
+                });
+            }
+        }
+    }
+
     OnQueryFileDrop = (file: File) => {
         //NW
         if (!this.configuration.IsOnline()) {
-            var folder = require('path').dirname(file['path']);
-            var filename = require('path').basename(file['path']);
+            var folder = path.dirname(file['path']);
+            var filename = path.basename(file['path']);
 
             //Replace empty query with SELECT *
             if (!this.$scope.SelectedTab.QueryText.Value().trim()) {
@@ -201,15 +227,11 @@ export class AppController {
         }
     }
 
-    AddTab = (tab?: QueryTab) => {
-        tab = tab || new QueryTab(
-            this.$scope,
-            this.queryStorageService,
-            this.queryFileService,
-            this.queryExecutionService,
-            'new');;
+    AddTab = (tab?: QueryTab, select? : boolean) => {
+        var tabToAdd = tab || this.CreateTab('new');
 
-        this.$scope.Tabs.push(tab);
+        this.$scope.Tabs.push(tabToAdd);
+        if (!tab || select) this.SelectTab(tabToAdd);
     }
 
     GetInitialTabs(): Q.Promise<QueryTab[]> {

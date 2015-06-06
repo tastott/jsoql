@@ -1,42 +1,41 @@
 {
-  "name": "jsoql",
-  "version": "0.0.10",
-  "description": "Library and command line tool for querying JSON data using a SQL-like language (JSOQL)",
-  "main": "jsoql.js",
-  "author": {
-    "name": "Tim Stott",
-    "email": ""
-  },
-  "keywords": [
-    "JSON",
-    "SQL"
-  ],
-  "bin": {
-    "jsoql": "cmd.js"
-  },
-  "scripts": {
-    "prepublish": "node prepublish.js"
-  },
-  "preferGlobal": true,
-  "dependencies": {
-    "buffered-xhr-stream": "^0.1.4",
-    "clone": "^1.0.2",
-    "csv-string": "^2.2.5",
-    "deep-equal": "^1.0.0",
-    "glob": "^5.0.5",
-    "oboe": "^2.1.1",
-    "q": "^1.2.0",
-    "replacestream": "^2.1.0",
-    "yargs": "^3.10.0"
-  },
-  "devDependencies": {
-    "jison": "0.4.13"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/tastott/jsoql"
-  },
-  "bugs": {
-    "url": "https://github.com/tastott/jsoql/issues"
-  }
+    "name": "jsoql",
+    "version": "0.0.11",
+    "description": "Library and command line tool for querying JSON data using a SQL-like language (JSOQL)",
+    "main": "jsoql.js",
+    "author": {
+        "name": "Tim Stott",
+        "email": ""
+    },
+    "keywords": [
+        "JSON",
+        "SQL"
+    ],
+    "bin": {
+        "jsoql": "cmd.js"
+    },
+    "scripts": { 
+        "prepublish":  "node prepublish.js"
+    },
+    "preferGlobal": true,
+    "dependencies": {
+        "buffered-xhr-stream": "^0.1.4",
+        "clone": "^1.0.2",
+        "csv-string": "^2.2.5",
+        "glob": "^5.0.5",
+        "oboe": "^2.1.1",
+        "q": "^1.2.0",
+        "replacestream": "^2.1.0",
+        "yargs": "^3.10.0"
+    },
+    "devDependencies": {
+        "jison": "0.4.13"
+    },
+    "repository": {
+	    "type": "git",
+	    "url": "https://github.com/tastott/jsoql"
+    },
+    "bugs": {
+	    "url": "https://github.com/tastott/jsoql/issues"
+    }
 }
