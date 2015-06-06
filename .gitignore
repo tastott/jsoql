@@ -356,3 +356,5 @@ FakesAssemblies/
 *.js.map
 /Code/Jsoql.Gui/Scripts/Directives/fileDialogButton.js
 /Code/Jsoql.Tests/unionTests.js
+/Code/Jsoql.Gui/cmd.js
+/Code/Jsoql.Gui/prepublish.js

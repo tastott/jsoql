@@ -1,12 +1,21 @@
 {
-  "name": "Jsoql.Gui",
-  "version": "1.0.0",
-  "description": "",
+  "name": "jsoql-pad",
+  "version": "0.0.6",
+  "description": "GUI for running and managing JSOQL queries",
   "main": "index-nw.html",
   "scripts": {
-    "start": "nw"
+    "start": "nw",
+    "prepublish":  "node prepublish.js"
   },
+  "bin": {
+    "jsoql-pad": "cmd.js"
+  },
+  "preferGlobal": true,
   "author": "Tim Stott",
+  "keywords": [
+    "JSON",
+    "SQL"
+  ],
   "license": "ISC",
   "dependencies": {
     "angular": "^1.3.15",
@@ -19,6 +28,7 @@
     "font-awesome": "^4.3.0",
     "glob": "^5.0.5",
     "jquery": "^2.1.3",
+    "jsoql": "^0.0.12",
     "lazy.js": "^0.4.0",
     "nw": "^0.12.1",
     "q": "^1.2.0"
@@ -28,8 +38,15 @@
     "height": 800
   },
   "devDependencies": {
-    "assert": "^1.3.0",
-    "browserify": "^10.2.0",
-    "node-static": "^0.7.6"
+        "assert": "^1.3.0",
+        "browserify": "^10.2.0",
+        "node-static": "^0.7.6"
+   },
+  "repository": {
+	    "type": "git",
+	    "url": "https://github.com/tastott/jsoql"
+  },
+  "bugs": {
+	    "url": "https://github.com/tastott/jsoql/issues"
   }
 }

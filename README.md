@@ -4,13 +4,19 @@ A SQL-like language for querying JSON data.
 
 ###[Online demo](http://tastott.github.io/jsoql/#/home?queryText=SELECT%0A%20%20%20%20*%20%0AFROM%20%0A%20%20%20%20'http:%2F%2F~%2FData%2Forders.json'%0A)
 
-###Install
+###Command-line tool
+##Install
 `> npm install jsoql -g`
 
-###Usage
+##Usage
 `> jsoql query -q "SELECT * FROM 'file://mydata.json' WHERE foo = 'bar'"`
+
+###GUI
+##Install
+`> npm install jsoql-pad -g`
+##Usage
+`> jsoql-pad`
 
 ###Coming soon
 
-* Desktop GUI
 * Wiki
