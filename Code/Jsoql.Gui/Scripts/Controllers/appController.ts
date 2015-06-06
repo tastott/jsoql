@@ -110,7 +110,8 @@ interface AppScope extends angular.IScope {
         EditorThemes: string[];
         SelectedEditorTheme: string
     }
-    LoadTab:(file : File) => void;
+    LoadTab: (file: File) => void;
+    Environment: string;
 }
 
 export class AppController {
@@ -134,6 +135,7 @@ export class AppController {
             EditorThemes: ['twilight', 'ambiance'],
             SelectedEditorTheme: 'twilight'
         };
+        $scope.Environment = m.Environment[configuration.Environment];
 
         //For demo purposes, the URL can contain some initial query text
         //If so, don't bother loading any other tabs
