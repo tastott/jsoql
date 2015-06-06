@@ -1,5 +1,8 @@
 ﻿# Jsoql.Gui
 
+##Setup
+`> npm link ../Jsoql` to use local build of JSOQL instead of published version
+
 ## Browser-mode hacks
 
 ### Oboe.js
