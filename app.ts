@@ -14,7 +14,7 @@ import dshServ = require('./Scripts/Services/datasourceHistoryService')
 import repo = require('./Scripts/Services/typedRepository')
 import d = require('./Scripts/models/dictionary')
 import m = require('./Scripts/models/models')
-var jsoql = require('../Jsoql/jsoql') //TODO: Replace with npm module eventually
+var jsoql = require('jsoql')
 
 var config = new m.Configuration( process['browser'] ? m.Environment.Online : m.Environment.Desktop);
 

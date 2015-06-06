@@ -1,17 +1,16 @@
-﻿///<reference path="../typings/jsoql/jsoql.d.ts" />
-import Q = require('q')
+﻿import Q = require('q')
 import m = require('../Models/models')
 import dshs = require('./datasourceHistoryService')
-
+import jsoql = require('jsoql')
 
 export class QueryExecutionService {
 
-    constructor(private jsoqlEngine: JsoqlEngine,
+    constructor(private jsoqlEngine: jsoql.JsoqlEngine,
         private datasourceHistoryService: dshs.DatasourceHistoryService) {
     }
 
-    GetQueryHelp(query: string, cursor: JsoqlPosition, baseDirectory: string): Q.Promise<JsoqlQueryHelpResult> {
-        var context: JsoqlQueryContext = {
+    GetQueryHelp(query: string, cursor: jsoql.JsoqlPosition, baseDirectory: string): Q.Promise<jsoql.JsoqlQueryHelpResult> {
+        var context: jsoql.JsoqlQueryContext = {
             BaseDirectory: baseDirectory
         };
 
@@ -19,7 +18,7 @@ export class QueryExecutionService {
     }
 
     ExecuteQuery(query: string, baseDirectory: string): Q.Promise<m.QueryResult> {
-        var context: JsoqlQueryContext = {
+        var context: jsoql.JsoqlQueryContext = {
             BaseDirectory: baseDirectory
         };
 

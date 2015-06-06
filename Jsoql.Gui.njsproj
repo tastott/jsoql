@@ -35,6 +35,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include=".npmignore" />
     <Content Include="Content\app.css" />
     <Content Include="Content\Images\jsoql-150-50.png" />
     <Content Include="Content\Images\jsoql-300-100.png" />
@@ -44,12 +45,15 @@
     <Content Include="Data\orders.json" />
     <Content Include="index.html" />
     <Content Include="index-nw.html" />
+    <Content Include="README.md" />
     <Content Include="Views\Directives\folderInput.html" />
     <Content Include="Views\Directives\queryEditor.html" />
     <Content Include="Views\home.html" />
     <TypeScriptCompile Include="app.ts" />
     <Content Include="package.json" />
-    <Content Include="README.md" />
+    <Content Include="dev-notes.md" />
+    <TypeScriptCompile Include="cmd.ts" />
+    <TypeScriptCompile Include="prepublish.ts" />
     <TypeScriptCompile Include="Scripts\Controllers\appController.ts" />
     <TypeScriptCompile Include="Scripts\Directives\fileDrop.ts" />
     <TypeScriptCompile Include="Scripts\Directives\fileDialogButton.ts" />
