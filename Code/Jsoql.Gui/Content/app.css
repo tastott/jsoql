@@ -1,7 +1,8 @@
 
-.renderjson {
+.query-result-container {
     background-color:#202020;
     border:none;
+    height:100%;
 }
 .renderjson a              { text-decoration: none; }
 
@@ -53,7 +54,7 @@
 
 .query-editor-ace {
     width:100%;
-    height:400px;
+    height:100%;
 }
 
 .tab-content > .tab-pane
@@ -104,9 +105,39 @@ html, body {
 }
 
 .main-height {
-    height: calc(100% - 50px - 20px);
+    height: calc(100% - 50px - 30px);
 }
 
 .footer-height{
     height: 20px;
+}
+
+.main-panel {
+    padding: 20px;
+    border-radius:8px;
+    margin-left: 74px; 
+    width:calc(100% - 110px)
+}
+
+.left-menu {
+    width: 74px; 
+    position: fixed; 
+    padding:10px;
+}
+
+.main-panel-header {
+    height: 24px;
+}
+
+.main-panel-primary-content {
+    height: calc(100% - 24px - 96px);
+    margin-right:0;
+}
+
+.main-panel-footer {
+    height: 96px;
+}
+
+.query-result-errors, .query-result-empty {
+    padding: 20px;
 }
