@@ -42,6 +42,7 @@
     <Content Include="Content\Images\sock-32.png" />
     <Content Include="Content\Images\sock-64.png" />
     <Content Include="Content\Images\sock.png" />
+    <Content Include="Content\Themes\dark.css" />
     <Content Include="Data\orders.json" />
     <Content Include="index.html" />
     <Content Include="index-nw.html" />
@@ -86,6 +87,7 @@
   <ItemGroup>
     <Folder Include="Content\" />
     <Folder Include="Content\Images\" />
+    <Folder Include="Content\Themes\" />
     <Folder Include="Data\" />
     <Folder Include="Scripts\" />
     <Folder Include="Scripts\Controllers\" />
