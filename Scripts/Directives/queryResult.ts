@@ -24,10 +24,10 @@ export class QueryResultDirective implements ng.IDirective {
                     element.append(renderJson(newValue.Results));
                 }
                 else if (newValue.Errors && newValue.Errors.length) {
-                    element.html('<div>' + newValue.Errors[0] + '</div>');
+                    element.html('<div class="query-result-errors">' + newValue.Errors[0] + '</div>');
                 }
                 else {
-                    element.html('<div>No results</div>');
+                    element.html('<div class="query-result-empty">No results</div>');
                 }
             }
         });
