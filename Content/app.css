@@ -141,3 +141,11 @@ html, body {
 .query-result-errors, .query-result-empty {
     padding: 20px;
 }
+
+.main-panel > table {
+    width: 100%;
+}
+
+.main-panel label {
+    font-family: calibri;
+}
