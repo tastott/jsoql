@@ -1,109 +1,37 @@
-﻿
-<div class="row header-height">
-    <div class="col-lg-1" style="padding: 0;width: 80px;">
-        <a class="app-title" href="https://github.com/tastott/jsoql" title="JSOQL GitHub page">
-            <img src="Content/Images/sock-64.png" />
-        </a>
+﻿<div class="flex-container-horizontal flex-align-top">
+    <div class="header flex-full-width">
+        <div class="flex-container-horizontal flex-align-bottom">
+            <a class="app-title" 
+               style="flex: 0 80px;"
+               href="https://github.com/tastott/jsoql" 
+               title="JSOQL GitHub page">
+                <img src="Content/Images/sock-64.png" />
+            </a>
+            <div>
+                <ul class="nav nav-tabs flex-full-width" role="tablist">
+                    <li ng-repeat="tab in Tabs" ng-class="{'active': tab == SelectedTab}">
+                        <a class="btn" ng-click="SelectTab(tab)" href="">{{tab.DisplayName()}}</a>
+                        <span class="fa fa-times close-button" ng-click="CloseTab(tab)" ng-show="Tabs.length > 1"></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
-    <div class="col-lg-10" style="padding-top:8px">
-        <ul class="nav nav-tabs" role="tablist">
-            <!--<li>
-                <a class="btn-lg" ng-click="AddTab()" href="">
-                    <i class="fa fa-plus"></i>
-                </a>
-            </li>-->
-            <li ng-repeat="tab in Tabs" ng-class="{'active': tab == SelectedTab}">
-                <a class="btn" ng-click="SelectTab(tab)" href="">{{tab.DisplayName()}}</a>
-                <span class="fa fa-times close-button" ng-click="CloseTab(tab)" ng-show="Tabs.length > 1"></span>
-            </li>
-        </ul>
-    </div>
-</div>
-<div class="row main-height">
     <div class="left-menu">
         <ul class="nav nav-pills nav-stacked">
             <li><a href="" ng-click="AddTab()"><i class="fa fa-plus fa-2x"></i></a></li>
             <li><a href="" file-dialog-button file-action="LoadTab"><i class="fa fa-folder-open fa-2x"></i></a></li>
             <li><a href="" ng-click="SelectedTab.SaveQuery()"><i class="fa fa-save fa-2x"></i></a></li>
-            <!--<li><a href=""><i class="fa fa-wrench fa-2x"></i></a></li>-->         
+            <!--<li><a href=""><i class="fa fa-wrench fa-2x"></i></a></li>-->
         </ul>
     </div>
-    <div class="main-panel full-height">
-        <table class="full-height" style="width:100%">
-            <tr style="height:20px;">
-                <td style="width:47.5%"><label class="control-label">QUERY</label></td>
-                <td style="width:5%"></td>
-                <td style="width:47.5%"><label class="control-label">RESULTS</label></td>
-            </tr>
-            <tr style="height:100%">
-                <td>
-                    <div class="full-height" file-drop on-drop="OnQueryFileDrop">
-                        <query-editor-ace class="full-height"
-                                          query="SelectedTab.QueryText"
-                                          base-directory="SelectedTab.BaseDirectory"
-                                          execute="SelectedTab.Execute"
-                                          theme="Settings.SelectedEditorTheme"></query-editor-ace>
-                    </div>
-                </td>
-                <td style="text-align:center">
-                    <button ng-click="SelectedTab.Execute()" class="btn btn-default" style="margin-left:auto; margin-right:auto">
-                        <i class="fa fa-play"></i>
-                    </button>
-                </td>
-                <td>
-                    <div class="query-result-container">
-                        <query-result value="SelectedTab.QueryResult" ng-show="!SelectedTab.IsExecuting" class="full-height"></query-result>
-                        <i class="fa fa-cog fa-spin fa-2x" ng-show="SelectedTab.IsExecuting"></i>
-                    </div>
-                </td>
-            </tr>
-            <tr style="height: 96px">
-                <td>
-                    <div ng-show="Environment == 'Desktop'">
-                        <label>BASE DIRECTORY</label>
-                        <folder-input value="SelectedTab.BaseDirectory"></folder-input>
-                    </div>
-                </td>
-                <td></td>
-                <td>
-                    <div class="btn-group">
-                        <button class="btn btn-default" ng-click="SelectedTab.SaveResults()" ng-disabled="!SelectedTab.SaveResultsEnabled()">
-                            <i class="fa fa-save"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        </table>
-        <!--<div style="position:absolute;  height:calc(100% - 64px); width:400px; background-color:white; z-index:100">
-
-        </div>-->
-        <template>
-            <div class="row main-panel-header">
-                <div class="col-lg-6">
+    <div class="main-panel">
+        <div class="flex-container-horizontal flex-align-top">
+            <div style="flex: 1 0px" class="full-height">
+                <!--<div style="height: 24px">
                     <label class="control-label">QUERY</label>
-                    <div class="btn-group">
-                        <!--<button ng-click="SelectedTab.Execute()" class="btn btn-default">
-                        <i class="fa fa-play"></i>
-                    </button>-->
-                        <!--<select ng-model="Settings.SelectedEditorTheme"
-                            ng-options="theme for theme in Settings.EditorThemes"
-                            class="form-control"
-                            style="width: 150px;"></select>-->
-                    </div>
-                    <div>
-
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <label class="control-label">RESULTS</label>
-                    <!--<button class="btn btn-default" ng-click="SelectedTab.SaveResults()" ng-disabled="!SelectedTab.SaveResultsEnabled()">
-                    <i class="fa fa-save"></i>
-                </button>-->
-                </div>
-            </div>
-            <div class="row main-panel-primary-content">
-                <div class="col-lg-6 full-height">
-                    <!--<div class="row row-margin full-height">-->
+                </div>-->
+                <div style="height: calc(100% - 100px)">
                     <div class="full-height" file-drop on-drop="OnQueryFileDrop">
                         <query-editor-ace class="full-height"
                                           query="SelectedTab.QueryText"
@@ -111,34 +39,33 @@
                                           execute="SelectedTab.Execute"
                                           theme="Settings.SelectedEditorTheme"></query-editor-ace>
                     </div>
-                    <!--</div>-->
-                    <!--<div class="row" ng-show="Environment == 'Desktop'">
-                    <div class="col-lg-12">
-                        <label>BASE DIRECTORY</label>
-                        <folder-input value="SelectedTab.BaseDirectory"></folder-input>
-                    </div>
-                </div>-->
                 </div>
-                <div class="col-lg-6 full-height">
-                    <div class="query-result-container">
-                        <query-result value="SelectedTab.QueryResult" ng-show="!SelectedTab.IsExecuting" class="full-height"></query-result>
-                        <i class="fa fa-cog fa-spin fa-2x" ng-show="SelectedTab.IsExecuting"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="row main-panel-footer">
-                <div class="col-lg-6">
-                    <div class="btn-group">
-                        <button ng-click="SelectedTab.Execute()" class="btn btn-default">
-                            <i class="fa fa-play"></i>
-                        </button>
-                    </div>
+                <div style="height: 100px; padding-top:10px">
                     <div ng-show="Environment == 'Desktop'">
                         <label>BASE DIRECTORY</label>
                         <folder-input value="SelectedTab.BaseDirectory"></folder-input>
                     </div>
                 </div>
-                <div class="col-lg-6">
+            </div>
+            <div style="flex: 0 50px; text-align:center;   top: calc(50% - 25px - 50px); position: relative;">
+                <button ng-click="SelectedTab.Execute()" class="btn btn-default" style="margin-left:auto; margin-right:auto">
+                    <i class="fa fa-play"></i>
+                </button>
+            </div>
+            <div style="flex: 1 0px;" class="full-height">
+                <!--<div style="height: 24px;">
+                    <label class="control-label">RESULTS</label>
+                </div>-->
+                <div style="height: calc(100% - 100px)">
+                    <div class="query-result-container">
+                        <query-result value="SelectedTab.QueryResult" ng-show="!SelectedTab.IsExecuting" class="full-height"></query-result>
+                        <i class="fa fa-cog fa-spin fa-2x" ng-show="SelectedTab.IsExecuting"></i>
+                    </div>
+                </div>
+                <div style="height: 100px;padding-top:10px">
+                    <div>
+                        <label>RESULTS</label>
+                    </div>
                     <div class="btn-group">
                         <button class="btn btn-default" ng-click="SelectedTab.SaveResults()" ng-disabled="!SelectedTab.SaveResultsEnabled()">
                             <i class="fa fa-save"></i>
@@ -146,6 +73,13 @@
                     </div>
                 </div>
             </div>
-        </template> 
+
+        </div>
     </div>
+    <div class="right-menu">
+
+    </div>
+    <div class="footer flex-full-width"></div>
 </div>
+
+
