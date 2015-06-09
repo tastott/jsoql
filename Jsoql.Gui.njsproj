@@ -42,6 +42,7 @@
     <Content Include="Content\Images\sock-32.png" />
     <Content Include="Content\Images\sock-64.png" />
     <Content Include="Content\Images\sock.png" />
+    <Content Include="Content\Themes\light.css" />
     <Content Include="Content\Themes\dark.css" />
     <Content Include="Data\orders.json" />
     <Content Include="index.html" />
@@ -111,6 +112,7 @@
   <ItemGroup>
     <Compile Include="app-browser.js" />
     <Compile Include="Scripts\Vendor\renderjson.js" />
+    <Compile Include="Scripts\Vendor\themer.js" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />

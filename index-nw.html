@@ -1,11 +1,10 @@
 ﻿<!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" ng-app="Jsoql">
 <head>
     <meta charset="utf-8" />
     <title>jsoql Editor</title>
-    <link rel="stylesheet" href="node_modules/bootswatch/slate/bootstrap.css" type="text/css" />
-    <link rel="stylesheet" href="Content/Themes/dark.css" />
+    <link themer-link />
     <!--<link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.css" type="text/css" />-->
     <!--<link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap-theme.css" type="text/css" />-->
     <link rel="stylesheet" href="node_modules/font-awesome/css/font-awesome.css" type="text/css" />
@@ -13,9 +12,10 @@
     <script src="node_modules/angular/angular.js"></script>
     <script src="node_modules/angular-route/angular-route.js"></script>
     <script src="node_modules/angular-bootstrap/dist/ui-bootstrap-tpls.js"></script>
+    <script src="Scripts/Vendor/themer.js"></script>
     <script src="app.js"></script>
 </head>
-<body ng-app="Jsoql">
+<body>
     <div ng-view class="full-height"></div>
 </body>
 </html>

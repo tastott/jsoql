@@ -18,7 +18,7 @@ var jsoql = require('jsoql')
 
 var config = new m.Configuration( process['browser'] ? m.Environment.Online : m.Environment.Desktop);
 
-angular.module('Jsoql', ['ngRoute', 'ui.bootstrap'])
+angular.module('Jsoql', ['ngRoute', 'ui.bootstrap', 'angular-themer'])
     .constant('querySettingsRepository', new d.LocalStorageDictionary<string, qServ.QuerySettings>('querySettings'))
     .constant('datasourceHistoryService', new dshServ.DatasourceHistoryService('datasourceHistory', 10))
     .constant('configuration', config)
@@ -45,7 +45,20 @@ angular.module('Jsoql', ['ngRoute', 'ui.bootstrap'])
     .directive('queryEditorAce',qeDir.AceQueryEditorDirective.Factory())
     .directive('folderInput',() => new fiDir.FolderInputDirective())
     .directive('fileDrop',() => new fdDir.FileDropDirective())
-    .directive('fileDialogButton', () => new fdbDir.FileDialogButtonDirective())
+    .directive('fileDialogButton',() => new fdbDir.FileDialogButtonDirective())
+    .directive('wank',() => {
+        console.log('wank-a-doodle-doo');
+        return {};
+    })
+    .config(['themerProvider', function (themerProvider) {
+        var styles = [
+            { key: 'dark', label: 'Dark', href: ['node_modules/bootswatch/slate/bootstrap.css', 'Content/Themes/dark.css'] },
+            { key: 'light', label: 'Light', href: ['node_modules/bootstrap/dist/css/bootstrap.css','Content/Themes/light.css'] }
+        ];
+        themerProvider.setStyles(styles);
+        themerProvider.setSelected(styles[0].key);
+    }])
+
     .config(['$routeProvider', ($routeProvider: angular.route.IRouteProvider) => {
 
         $routeProvider.when('/home', {
