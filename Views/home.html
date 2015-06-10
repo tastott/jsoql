@@ -17,15 +17,21 @@
             </div>
         </div>
     </div>
-    <div class="left-menu">
+    <div class="left-menu main-panel-height">
         <ul class="nav nav-pills nav-stacked">
             <li><a href="" ng-click="AddTab()"><i class="fa fa-plus fa-2x"></i></a></li>
             <li><a href="" file-dialog-button file-action="LoadTab"><i class="fa fa-folder-open fa-2x"></i></a></li>
             <li><a href="" ng-click="SelectedTab.SaveQuery()"><i class="fa fa-save fa-2x"></i></a></li>
-            <!--<li><a href=""><i class="fa fa-wrench fa-2x"></i></a></li>-->
+            <li><a href="" ng-click="ToggleMenuPanel('Settings')"><i class="fa fa-wrench fa-2x"></i></a></li>
         </ul>
     </div>
-    <div class="main-panel">
+    <div class="menu-slide-panel main-panel-height" ng-show="SelectedMenuPanel == 'Settings'">
+        <label>SETTINGS</label>
+        <div>
+            <div themer-switcher></div>
+        </div>
+    </div>
+    <div class="main-panel main-panel-height">
         <div class="flex-container-horizontal flex-align-top">
             <div style="flex: 1 0px" class="full-height">
                 <!--<div style="height: 24px">
@@ -43,8 +49,7 @@
                     <div ng-show="Environment == 'Desktop'">
                         <label>BASE DIRECTORY</label>
                         <folder-input value="SelectedTab.BaseDirectory"></folder-input>
-                    </div>
-                    <div themer-switcher></div>
+                    </div>   
                 </div>
             </div>
             <div style="flex: 0 50px; text-align:center;   top: calc(50% - 25px - 50px); position: relative;">
@@ -76,7 +81,7 @@
 
         </div>
     </div>
-    <div class="right-menu">
+    <div class="right-menu main-panel-height">
 
     </div>
     <div class="footer flex-full-width">

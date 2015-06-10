@@ -114,6 +114,8 @@ interface AppScope extends angular.IScope {
     }
     LoadTab: (file: File) => void;
     Environment: string;
+    SelectedMenuPanel: string;
+    ToggleMenuPanel(name: string);
 }
 
 export class AppController {
@@ -138,6 +140,7 @@ export class AppController {
             SelectedEditorTheme: 'twilight'
         };
         $scope.Environment = m.Environment[configuration.Environment];
+        $scope.ToggleMenuPanel = this.ToggleMenuPanel;
 
         //For demo purposes, the URL can contain some initial query text
         //If so, don't bother loading any other tabs
@@ -160,6 +163,13 @@ export class AppController {
     private CreateTab(name: string, id?: string, queryText?: string, baseDirectory?:string) : QueryTab{
         return new QueryTab(this.$scope, this.queryStorageService, this.queryFileService,
             this.queryExecutionService, name, id, queryText, baseDirectory);
+    }
+
+    ToggleMenuPanel = (name: string) => {
+        if (this.$scope.SelectedMenuPanel === name) {
+            this.$scope.SelectedMenuPanel = null;
+        }
+        else this.$scope.SelectedMenuPanel = name;
     }
 
     LoadTab = (file: File) => {
