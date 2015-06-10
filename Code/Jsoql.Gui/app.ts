@@ -41,15 +41,12 @@ angular.module('Jsoql', ['ngRoute', 'ui.bootstrap', 'angular-themer'])
     .service('queryExecutionService', qeServ.QueryExecutionService)
     .controller('AppController', appCtrl.AppController)
     .directive('queryResult',() => new qrDir.QueryResultDirective())
-    .directive('queryEditor',() => new qeDir.QueryEditorDirective())
+  
     .directive('queryEditorAce',qeDir.AceQueryEditorDirective.Factory())
     .directive('folderInput',() => new fiDir.FolderInputDirective())
     .directive('fileDrop',() => new fdDir.FileDropDirective())
     .directive('fileDialogButton',() => new fdbDir.FileDialogButtonDirective())
-    .directive('wank',() => {
-        console.log('wank-a-doodle-doo');
-        return {};
-    })
+
     .config(['themerProvider', function (themerProvider) {
         var styles = [
             { key: 'dark', label: 'Dark', href: ['node_modules/bootswatch/slate/bootstrap.css', 'Content/Themes/dark.css'] },

@@ -1,3 +1,17 @@
 ﻿.main-panel {
     background: #3e444c;
+    border:none;
 }
+
+.query-result-container {
+    background-color: #202020;
+}
+
+.renderjson .syntax        { color: white; }
+.renderjson .string        { color: #8f9d6a }
+.renderjson .number        { color: #78CF8A }
+.renderjson .boolean       { color: #78CF8A }
+.renderjson .key           { color: #cda869 }
+.renderjson .keyword       { color: #cda869}
+.renderjson .object.syntax { color: white; }
+.renderjson .array.syntax  { color: white; }
