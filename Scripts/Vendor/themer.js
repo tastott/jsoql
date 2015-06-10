@@ -14,7 +14,7 @@
         });
     };
     
-    var addWatcher = function (watcher) {
+    var addWatcher = this.addWatcher = function (watcher) {
         _watchers.push(watcher);
     };
     
