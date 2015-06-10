@@ -11,17 +11,25 @@ import fServ = require('./Scripts/Services/fileService')
 import qServ = require('./Scripts/Services/queryStorageService')
 import qeServ = require('./Scripts/Services/queryExecutionService')
 import dshServ = require('./Scripts/Services/datasourceHistoryService')
+import prefServ =require('./Scripts/Services/preferencesService')
 import repo = require('./Scripts/Services/typedRepository')
 import d = require('./Scripts/models/dictionary')
 import m = require('./Scripts/models/models')
 var jsoql = require('jsoql')
 
-var config = new m.Configuration( process['browser'] ? m.Environment.Online : m.Environment.Desktop);
+var config = new m.Configuration(process['browser'] ? m.Environment.Online : m.Environment.Desktop);
+
+//I wish I could get this to work with dependency injection :(
+var prefsRepo = new repo.JsonLocalStorageRepository<prefServ.Preferences>('preferences');
+var prefsService = new prefServ.PreferencesService(prefsRepo);
 
 angular.module('Jsoql', ['ngRoute', 'ui.bootstrap', 'angular-themer'])
     .constant('querySettingsRepository', new d.LocalStorageDictionary<string, qServ.QuerySettings>('querySettings'))
+
     .constant('datasourceHistoryService', new dshServ.DatasourceHistoryService('datasourceHistory', 10))
     .constant('configuration', config)
+    .constant('prefsService', prefsService)
+
     .factory('queryFileService',() => config.Environment == m.Environment.Desktop 
         ? new fServ.DesktopFileService('queryFileIds')
         : new fServ.OnlineFileService('queryFileIds')
@@ -37,6 +45,7 @@ angular.module('Jsoql', ['ngRoute', 'ui.bootstrap', 'angular-themer'])
             fileId => dataFileService.LoadSync(fileId)
         )
     )
+
     .service('queryStorageService', qServ.QueryStorageService)
     .service('queryExecutionService', qeServ.QueryExecutionService)
     .controller('AppController', appCtrl.AppController)
@@ -47,13 +56,21 @@ angular.module('Jsoql', ['ngRoute', 'ui.bootstrap', 'angular-themer'])
     .directive('fileDrop',() => new fdDir.FileDropDirective())
     .directive('fileDialogButton',() => new fdbDir.FileDialogButtonDirective())
 
-    .config(['themerProvider', function (themerProvider) {
-        var styles = [
+    .config(['themerProvider', (themerProvider: any) => {
+
+        var themes = [
             { key: 'dark', label: 'Dark', href: ['node_modules/bootswatch/slate/bootstrap.css', 'Content/Themes/dark.css'] },
             { key: 'light', label: 'Light', href: ['node_modules/bootstrap/dist/css/bootstrap.css','Content/Themes/light.css'] }
         ];
-        themerProvider.setStyles(styles);
-        themerProvider.setSelected(styles[0].key);
+        themerProvider.setStyles(themes);
+
+        var initialTheme = prefsService.Get().Theme
+            ? themes.filter(theme => theme.key === prefsService.Get().Theme)[0]
+            : themes[0];
+
+        themerProvider.setSelected(initialTheme.key);
+        themerProvider.addWatcher(theme => prefsService.Set(prefs => prefs.Theme = theme.key));
+      
     }])
 
     .config(['$routeProvider', ($routeProvider: angular.route.IRouteProvider) => {

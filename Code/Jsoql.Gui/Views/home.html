@@ -2,7 +2,7 @@
     <div class="header flex-full-width">
         <div class="flex-container-horizontal flex-align-bottom">
             <a class="app-title" 
-               style="flex: 0 80px;"
+               style="flex: 0 80px"
                href="https://github.com/tastott/jsoql" 
                title="JSOQL GitHub page">
                 <img src="Content/Images/sock-64.png" />
@@ -32,7 +32,7 @@
                     <label class="control-label">QUERY</label>
                 </div>-->
                 <div style="height: calc(100% - 100px)">
-                    <div class="full-height" file-drop on-drop="OnQueryFileDrop">
+                    <div class="query-editor-container full-height" file-drop on-drop="OnQueryFileDrop">
                         <query-editor-ace class="full-height"
                                           query="SelectedTab.QueryText"
                                           base-directory="SelectedTab.BaseDirectory"
@@ -44,6 +44,7 @@
                         <label>BASE DIRECTORY</label>
                         <folder-input value="SelectedTab.BaseDirectory"></folder-input>
                     </div>
+                    <div themer-switcher></div>
                 </div>
             </div>
             <div style="flex: 0 50px; text-align:center;   top: calc(50% - 25px - 50px); position: relative;">
@@ -69,7 +70,6 @@
                         <button class="btn btn-default" ng-click="SelectedTab.SaveResults()" ng-disabled="!SelectedTab.SaveResultsEnabled()">
                             <i class="fa fa-save"></i>
                         </button>
-                        <div themer-switcher></div>
                     </div>
                 </div>
             </div>

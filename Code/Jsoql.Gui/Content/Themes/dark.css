@@ -15,3 +15,7 @@
 .renderjson .keyword       { color: #cda869}
 .renderjson .object.syntax { color: white; }
 .renderjson .array.syntax  { color: white; }
+
+select {
+    color: black;
+}
