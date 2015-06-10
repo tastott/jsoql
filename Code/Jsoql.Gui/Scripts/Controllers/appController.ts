@@ -25,74 +25,7 @@ class QueryTab {
         this.BaseDirectory = new m.EditableText(BaseDirectory || process.cwd());
         this.IsExecuting = false;
 
-        this.QueryResult = {
-            Results: [
-                {
-                    "Order": {
-                        "Id": 11074,
-                        "CustomerId": "SIMOB",
-                        "EmployeeId": 7,
-                        "OrderDate": "\/Date(894412800000-0000)\/",
-                        "RequiredDate": "\/Date(896832000000-0000)\/",
-                        "ShipVia": 2,
-                        "Freight": 18.44,
-                        "ShipName": "Simons bistro",
-                        "ShipAddress": "Vinbæltet 34",
-                        "ShipCity": "Kobenhavn",
-                        "ShipPostalCode": "1734",
-                        "ShipCountry": "Denmark"
-                    },
-                    "OrderDetails": [
-                        {
-                            "OrderId": 11074,
-                            "ProductId": 16,
-                            "UnitPrice": 17.45,
-                            "Quantity": 14,
-                            "Discount": 0.05
-                        }
-                    ]
-                },
-                {
-                    "Order": {
-                        "Id": 11075,
-                        "CustomerId": "RICSU",
-                        "EmployeeId": 8,
-                        "OrderDate": "\/Date(894412800000-0000)\/",
-                        "RequiredDate": "\/Date(896832000000-0000)\/",
-                        "ShipVia": 2,
-                        "Freight": 6.19,
-                        "ShipName": "Richter Supermarkt",
-                        "ShipAddress": "Starenweg 5",
-                        "ShipCity": "Genève",
-                        "ShipPostalCode": "1204",
-                        "ShipCountry": "Switzerland"
-                    },
-                    "OrderDetails": [
-                        {
-                            "OrderId": 11075,
-                            "ProductId": 2,
-                            "UnitPrice": 19,
-                            "Quantity": 10,
-                            "Discount": 0.15
-                        },
-                        {
-                            "OrderId": 11075,
-                            "ProductId": 46,
-                            "UnitPrice": 12,
-                            "Quantity": 30,
-                            "Discount": 0.15
-                        },
-                        {
-                            "OrderId": 11075,
-                            "ProductId": 76,
-                            "UnitPrice": 18,
-                            "Quantity": 2,
-                            "Discount": 0.15
-                        }
-                    ]
-                },
-            ]
-        };
+        this.QueryResult = {};
     }
 
     QueryText: m.EditableText;
