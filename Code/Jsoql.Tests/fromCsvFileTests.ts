@@ -52,3 +52,13 @@ export function FromCsvFileWithDifferentExtension() {
         });
     
 }
+
+export function FromCsvFileWithQuotedNewlines() {
+    var jsoql = "SELECT * FROM 'file://Data/customers-with-newlines.csv'";
+    return testBase.ExecuteAndAssertItems(jsoql, null,
+        results => {
+            assert.equal(results.length, 91);
+            assert.equal(results[17].Address, '67,\nrue des Cinquante Otages');
+        });
+
+}

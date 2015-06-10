@@ -5,6 +5,7 @@ import http = require('http')
 import _url = require('url')
 import m = require('./models')
 import _stream = require('stream')
+var csv = require('csv-string')
 var XhrStream = require('buffered-xhr-stream')
 
 //Basically a copy of StreamedSequence from lazy.node.js because I don't know how to extend that "class"
@@ -49,6 +50,51 @@ LazyStreamedSequence.prototype.each = function(fn) {
 
 interface StreamListener {
     (data: any) : void;
+}
+
+class CsvStream {
+    private csvStream: _stream.Duplex;
+
+    constructor(private stream: _stream.Readable, private headers : string[], private skip : number) {
+        this.csvStream = csv.createStream();
+    }
+
+    removeListener = (event: string, listener: StreamListener) => {
+        if (event !== 'data') throw new Error('Event type not recognized by CSV Stream: ' + event);
+
+        this.csvStream.removeListener(event, listener);
+    }
+
+    on = (event: string, listener: StreamListener) => {
+        switch (event) {
+            case 'data':
+                this.csvStream.on('data',(row: string[]) => {
+                    if (this.skip > 0) {
+                        --this.skip;
+                    }
+                    else {
+                        var obj = lazy(this.headers)
+                            .zip(row)
+                            .toObject();
+
+                        listener(obj);
+                    }
+                });
+                break;
+
+            case 'end':
+                //this.csvStream.
+                break;
+
+            default:
+                throw new Error('Event type not recognized by Oboe Stream: ' + event);
+        }
+    }
+
+    resume = () => {
+        this.stream.pipe(this.csvStream);
+        if (this.stream.resume) this.stream.resume();
+    }
 }
 
 class OboeStream {
@@ -161,6 +207,16 @@ export function lazyOboeFromStream(stream : _stream.Readable, nodePath: string):
     var sequence = new LazyStreamedSequence(callback => {
         var oboeStream = new OboeStream(stream, nodePath);
         callback(<any>oboeStream);
+    });
+
+    return <any>sequence;
+}
+
+export function lazyCsvFromStream(stream: _stream.Readable, headers: string[], skip : number = 0): LazyJS.AsyncSequence<any>  {
+
+    var sequence = new LazyStreamedSequence(callback => {
+        var csvStream = new CsvStream(stream, headers, skip);
+        callback(<any>csvStream);
     });
 
     return <any>sequence;

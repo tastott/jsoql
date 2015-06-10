@@ -123,13 +123,12 @@ class AbstractLinedFileDataSourceSequencer implements DataSourceSequencer {
     }
 }
 
-class CsvFileDataSourceSequencer extends AbstractLinedFileDataSourceSequencer {
+class CsvFileDataSourceSequencer implements DataSourceSequencer {
 
-    constructor(baseFileSequencer: FileSequencer) {
-        super(baseFileSequencer);
+    constructor(private fileSequencer: FileSequencer) {
     }
 
-    protected GetLineHandler(firstLine : string, parameters: DataSourceParameters): LineHandler {
+    Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
         var headers: string[];
         var skip: number;
 
@@ -140,6 +139,7 @@ class CsvFileDataSourceSequencer extends AbstractLinedFileDataSourceSequencer {
         }
         //Use first line as headers
         else {
+            var firstLine = this.fileSequencer.FirstLine(value, context);
             headers = csv.parse(firstLine)[0];
             skip = 1;
         }
@@ -151,15 +151,7 @@ class CsvFileDataSourceSequencer extends AbstractLinedFileDataSourceSequencer {
 
         }
 
-        return {
-            Mapper: line => {
-                var values = csv.parse(line)[0];
-                return lazy(headers)
-                    .zip(values)
-                    .toObject();
-            },
-            Skip: skip
-        };
+        return lazyJson.lazyCsvFromStream(this.fileSequencer.Stream(value, context, parameters), headers, skip);
     }
 }
 
