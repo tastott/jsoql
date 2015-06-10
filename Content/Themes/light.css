@@ -1,3 +1,18 @@
 ﻿.main-panel {
-    background: #ffffff;
+    background: #fff;
+    border: 1px solid #ddd;
 }
+
+.query-result-container {
+    background-color: #fff;
+    border: 1px solid #ddd;
+}
+
+.renderjson .syntax        { color: black; }
+.renderjson .string        { color: #1A1AA6; }
+.renderjson .number        { color: rgb(0, 0, 205)}
+.renderjson .boolean       { color: rgb(0, 0, 205) }
+.renderjson .key           { color: rgb(147, 15, 128) }
+.renderjson .keyword       { color: rgb(147, 15, 128)}
+.renderjson .object.syntax { color: black; }
+.renderjson .array.syntax  { color: black; }

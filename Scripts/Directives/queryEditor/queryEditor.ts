@@ -27,44 +27,6 @@ export interface QueryEditorScope extends ng.IScope {
     Theme: string;
 }
 
-export class QueryEditorDirective implements ng.IDirective {
-
-    public scope = {
-        value: '='
-    }
-
-    public templateUrl = 'Views/Directives/queryEditor.html';
-
-    public link($scope: QueryEditorScope, element: JQuery, attributes: ng.IAttributes) {
-        var editable = element.children();
-        editable.html($scope.Query.GetValue());
-
-        var onChange = require('debounce')(() => {
-            var html = editable.html();
-            var text = GetText(editable[0]);
-            var colouredHtml = text;
-            keywords.forEach(keyword => {
-                colouredHtml = colouredHtml.replace(keyword,(match, capture) => '<span class="jsoql-keyword">' + match + '</span>');
-            });
-            editable.html(colouredHtml);
-        }, 1000);
-
-        editable.on('input',() => {
-            onChange();
-        });
-    }
-
-}
-
-
-function GetText(node: Element): string {
-    if (node.nodeType == 3) return node.textContent;
-    else return $(node)
-        .contents()
-        .map((index, child) => GetText(child))
-        .toArray()
-        .join('');
-}
 
 document = window.document;
 var brace = require('brace')
@@ -73,13 +35,25 @@ require('brace/mode/sql')
 
 //Preload some themes
 require('brace/theme/twilight');
-require('brace/theme/ambiance');
+require('brace/theme/chrome');
+var editorThemes = {
+    'dark': 'twilight',
+    'light': 'chrome'
+};
 
 interface FileUriSuggestion {
     Value: string;
     Score: number;
 }
 
+export interface AppTheme {
+    key: string;
+}
+
+export interface AppThemer {
+    getSelected(): AppTheme;
+    addWatcher(watcher: (theme: AppTheme) => void);
+}
 
 // See http://blog.aaronholmes.net/writing-angularjs-directives-as-typescript-classes/
 
@@ -89,19 +63,19 @@ export class AceQueryEditorDirective  {
     public scope = {
         Query: '=query',
         BaseDirectory: '=baseDirectory',
-        Execute: '=execute',
-        Theme: '=theme'
+        Execute: '=execute'
     }
 
     public static Factory() {
         var directive = (configuration: m.Configuration,
             datasourceHistoryService: dshs.DatasourceHistoryService,
             dataFileService: _fs.FileService,
-            queryExecutionService: qes.QueryExecutionService) => {
-            return new AceQueryEditorDirective(configuration, datasourceHistoryService, dataFileService, queryExecutionService);
+            queryExecutionService: qes.QueryExecutionService,
+            themer : AppThemer) => {
+            return new AceQueryEditorDirective(configuration, datasourceHistoryService, dataFileService, queryExecutionService, themer);
         };
 
-        directive['$inject'] = ['configuration', 'datasourceHistoryService' ,'dataFileService', 'queryExecutionService'];
+        directive['$inject'] = ['configuration', 'datasourceHistoryService' ,'dataFileService', 'queryExecutionService', 'themer'];
 
         return directive;
     }
@@ -109,7 +83,8 @@ export class AceQueryEditorDirective  {
     constructor(private configuration: m.Configuration,
         private datasourceHistoryService: dshs.DatasourceHistoryService,
         private dataFileService: _fs.FileService,
-        private queryExecutionService : qes.QueryExecutionService) {
+        private queryExecutionService: qes.QueryExecutionService,
+        private themer : AppThemer) {
 
         this.link = ($scope: QueryEditorScope, element: JQuery, attributes: ng.IAttributes) => {
    
@@ -125,8 +100,8 @@ export class AceQueryEditorDirective  {
             var editor: AceAjax.Editor = brace.edit(div[0]);
             editor.setShowPrintMargin(false);
 
-            this.SetTheme(editor, $scope.Theme);
-            $scope.$watch('Theme', newTheme => this.SetTheme(editor, newTheme));
+            this.SetTheme(editor, this.themer.getSelected());
+            this.themer.addWatcher(newTheme => this.SetTheme(editor, newTheme));
             
             editor.getSession().setMode('ace/mode/sql');
 
@@ -144,14 +119,14 @@ export class AceQueryEditorDirective  {
         }
     }
 
-    private SetTheme(editor: AceAjax.Editor, theme: string) {
-        if (theme) {
+    private SetTheme(editor: AceAjax.Editor, theme: AppTheme) {
+        if (theme && editorThemes[theme.key]) {
+            var editorTheme = editorThemes[theme.key];
             try {
-                console.log('setting editor theme to ' + theme);
-                editor.setTheme('ace/theme/' + theme);
+                editor.setTheme('ace/theme/' + editorTheme);
             }
             catch (ex) {
-                console.log('Failed to set theme: ' + theme);
+                console.log('Failed to set theme: ' + editorTheme);
                 console.log(ex);
             }
         }
