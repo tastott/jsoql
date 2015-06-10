@@ -1,6 +1,6 @@
 ﻿.main-panel {
     background: #fff;
-    border: 1px solid #ddd;
+    /*border: 1px solid #ddd;*/
 }
 
 .query-result-container {
@@ -16,3 +16,11 @@
 .renderjson .keyword       { color: rgb(147, 15, 128)}
 .renderjson .object.syntax { color: black; }
 .renderjson .array.syntax  { color: black; }
+
+.query-editor-container {
+    border: 1px solid #ddd;
+}
+
+body {
+    background: #e7e7e7;
+}
