@@ -24,6 +24,7 @@ var operators: FunctionMappings = {
     'and': args => args[0] && args[1],
     'or': args => args[0] || args[1],
     '+': args => args[0] + args[1],
+    '-': args => args[0] - args[1],
     '*': args => args[0] * args[1],
     '/': args => args[0] / args[1]
 };

@@ -73,6 +73,38 @@ export function Arithmetic() {
     return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
 }
 
+export function BinaryMinus() {
+    var data = [
+        { Value: 1 },
+        { Value: 2 },
+        { Value: 3 }
+    ];
+    var query = "SELECT Value - 2 AS MinusTwo FROM 'var://Test'";
+    var expected = [
+        { MinusTwo: -1 },
+        { MinusTwo: 0 },
+        { MinusTwo: 1 }
+    ];
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
+
+export function UnaryMinus() {
+    var data = [
+        { Value: 1 },
+        { Value: 2 },
+        { Value: 3 }
+    ];
+    var query = "SELECT -2 + Value AS MinusTwo FROM 'var://Test'";
+    var expected = [
+        { MinusTwo: -1 },
+        { MinusTwo: 0 },
+        { MinusTwo: 1 }
+    ];
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
+
 export function DeepEquals() {
     var data = [
         { Value: { A: 'Blah', B: 'Wotsit' } },

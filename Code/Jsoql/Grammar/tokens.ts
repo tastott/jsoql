@@ -15,6 +15,7 @@ var selfNamedTokens = [
     '!=',
     '=',
     '+',
+    '-',
     '*',
     '/',
 
@@ -53,7 +54,7 @@ export var values = {
     False: 'false',
     Null: "NULL",
     Undefined: "UNDEFINED",
-    Number: '[0-9\.-]+',
+    Number: '[0-9\.]+',
     PlainIdentifier: '[@A-Za-z0-9_]+',
     Quotation: "'[^']*'"
 };

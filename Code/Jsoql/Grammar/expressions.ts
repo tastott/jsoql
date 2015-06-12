@@ -127,13 +127,19 @@ var exp = {
         //    { Operator: "$2", Args: ["$1", "$3"] }
         //]
     ]
-        .concat(<any>operators.map(op =>
+    .concat(<any>operators.map(op =>
         [
             exp.Expression + " " + op + " " + exp.Expression,
             { Operator: "$2", Args: ["$1", "$3"] }
         ]
-        )
-        )
+    ))
+    .concat([
+        [
+            "- Expression %prec UMINUS",
+            "$$ = -$2"
+        ]
+    ])
+
     ,
 
     KeyValue: () => [

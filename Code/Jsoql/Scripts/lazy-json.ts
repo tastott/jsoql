@@ -33,8 +33,8 @@ LazyStreamedSequence.prototype.each = function(fn) {
                     stream.removeListener("data", listener);
                     handle._resolve(false);
                 }
-            } catch (e) {
-                handle._reject(e);
+            } catch (err) {
+                handle._reject(err);
             }
         };
 
