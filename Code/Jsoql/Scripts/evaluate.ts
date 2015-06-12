@@ -188,7 +188,7 @@ export class Evaluator {
     }
 
     public EvaluateGroup(expression: any, group: m.Group) {
-        if (Evaluator.IsAggregate(expression)) {
+        if (Evaluator.IsAggregateFunction(expression)) {
             if (expression.Args && expression.Args.length > 1)
                 throw new Error('Aggregate function expected zero or one arguments');
 
@@ -249,10 +249,18 @@ export class Evaluator {
         return func(items);
     }
 
+    static IsAggregateFunction(expression: any) {
+        return expression
+            && expression.Call
+            && aggregateFunctions[expression.Call.toLowerCase()];
+    }
+
     static IsAggregate(expression: any): boolean {
-        return !!expression
-            && !!expression.Call
-            && !!aggregateFunctions[expression.Call.toLowerCase()];
+
+        if (Evaluator.IsAggregateFunction(expression)) return true;
+
+        else if (expression.Args) return lazy(expression.Args).some(arg => Evaluator.IsAggregate(arg));
+        else return false;
     }
 
     static Key(expression: any): string {
