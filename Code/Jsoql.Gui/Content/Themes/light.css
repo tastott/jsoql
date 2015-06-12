@@ -24,3 +24,8 @@
 body {
     background: #e7e7e7;
 }
+
+.menu-slide-panel {
+    background-color: rgba(231,231,231, 0.9);
+    border: 1px solid #ddd;
+}
