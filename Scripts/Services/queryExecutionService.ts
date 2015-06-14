@@ -3,6 +3,9 @@ import m = require('../Models/models')
 import dshs = require('./datasourceHistoryService')
 import jsoql = require('jsoql')
 
+export interface QueryExecution extends jsoql.JsoqlQueryExecution {
+}
+
 export class QueryExecutionService {
 
     constructor(private jsoqlEngine: jsoql.JsoqlEngine,
@@ -17,7 +20,7 @@ export class QueryExecutionService {
         return this.jsoqlEngine.GetQueryHelp(query, cursor, context);
     }
 
-    ExecuteQueryPaged(query: string, baseDirectory: string): jsoql.JsoqlQueryExecution {
+    ExecuteQueryPaged(query: string, baseDirectory: string): QueryExecution {
         var context: jsoql.JsoqlQueryContext = {
             BaseDirectory: baseDirectory
         };

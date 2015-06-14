@@ -25,18 +25,17 @@ class QueryTab {
         this.BaseDirectory = new m.EditableText(BaseDirectory || process.cwd());
         this.IsExecuting = false;
 
-        this.QueryResult = {};
-
-        this.Results = someDummyData;
+        this.QueryResults = [];
     }
 
+    CurrentQuery: qes.QueryExecution;
     QueryText: m.EditableText;
     QueryResult: m.QueryResult;
     BaseDirectory: m.EditableText;
     StorageId: string;
     IsExecuting: boolean;
 
-    Results: any[];
+    QueryResults: any[];
 
     IsEdited = () => {
         return !this.StorageId || this.QueryText.IsEdited() || this.BaseDirectory.IsEdited();
@@ -48,20 +47,39 @@ class QueryTab {
 
     Execute = () => {
         if (this.QueryText.GetValue()) {
-            this.IsExecuting = true;
+            if (this.CurrentQuery) {
+                this.CurrentQuery.Cancel();
+                this.CurrentQuery = null;
+            }
 
-            this.queryExecutionService.ExecuteQuery(this.QueryText.GetValue(), this.BaseDirectory.GetValue())
-                .then(result => {
-                    this.$scope.$apply(() => this.QueryResult = result); //TOOD: Better way to do this?
-                })
-                .fail(error => {
-                    this.$scope.$apply(() => this.QueryResult = { Errors: [error] });
-                })
-                .finally(() => {
-                    this.$scope.$apply(() => this.IsExecuting = false);
-                });
+            //this.IsExecuting = true;
+
+            this.CurrentQuery = this.queryExecutionService.ExecuteQueryPaged(this.QueryText.GetValue(), this.BaseDirectory.GetValue());
+            
+            this.GetMoreResults();
+            //this.queryExecutionService.ExecuteQuery(this.QueryText.GetValue(), this.BaseDirectory.GetValue())
+            //    .then(result => {
+            //        this.$scope.$apply(() => this.QueryResult = result); //TOOD: Better way to do this?
+            //    })
+            //    .fail(error => {
+            //        this.$scope.$apply(() => this.QueryResult = { Errors: [error] });
+            //    })
+            //    .finally(() => {
+            //        this.$scope.$apply(() => this.IsExecuting = false);
+            //    });
         }
     }
+
+    GetMoreResults = () => {
+        if (this.CurrentQuery) {
+            this.CurrentQuery.GetNext(8)
+                .then(items => {
+                    this.$scope.$apply(() => this.QueryResults.push(items));
+                });
+        }
+
+    }
+
 
     SaveQuery = () => {
         var query: qss.SavedQuery = {
@@ -99,7 +117,7 @@ class QueryTab {
     }
 
     SaveResultsEnabled = () => {
-        return !!this.QueryResult && !!this.QueryResult.Results;
+        return this.CurrentQuery && this.CurrentQuery.IsComplete();
     }
 }
 

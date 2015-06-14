@@ -24,7 +24,7 @@ var config = new m.Configuration(process['browser'] ? m.Environment.Online : m.E
 var prefsRepo = new repo.JsonLocalStorageRepository<prefServ.Preferences>('preferences');
 var prefsService = new prefServ.PreferencesService(prefsRepo);
 
-angular.module('Jsoql', ['ngRoute', 'ui.bootstrap', 'angular-themer'])
+angular.module('Jsoql', ['ngRoute', 'ui.bootstrap', 'angular-themer', 'infinite-scroll'])
     .constant('querySettingsRepository', new d.LocalStorageDictionary<string, qServ.QuerySettings>('querySettings'))
 
     .constant('datasourceHistoryService', new dshServ.DatasourceHistoryService('datasourceHistory', 10))

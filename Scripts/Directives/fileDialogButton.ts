@@ -14,7 +14,7 @@ export class FileDialogButtonDirective implements ng.IDirective {
     //public templateUrl = 'Views/Directives/folderInput.html'
 
     public link($scope: FileDialogButtonScope, element: JQuery, attributes: ng.IAttributes) {
-        var hiddenInput = $('<input type="file" style="opacity: 0; height:0"/>').appendTo('body');
+        var hiddenInput = $('<input type="file" style="opacity: 0; height:0; display: none;"/>').appendTo('body');
         hiddenInput.change(event => {
             if (event.target['files'] && $scope.FileAction) {
                 $scope.FileAction(event.target['files'][0]);
