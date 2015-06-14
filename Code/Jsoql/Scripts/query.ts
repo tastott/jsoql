@@ -49,8 +49,10 @@ class LazyJsQueryExecution implements m.QueryExecution {
         })
     }
 
-    Cancel(): void {
+    Cancel(removeCallbacks?: boolean): void {
         if (this.onCancel) this.onCancel();
+        this.callbacks = [];
+        this.onComplete = null;
     }
 
     GetNext(count?: number): Q.Promise<any[]> {
@@ -106,17 +108,24 @@ class LazyJsQueryExecution implements m.QueryExecution {
 
     private ProcessCallbacks() {
         while (this.callbacks.length) {
-            var callback = this.callbacks.shift();
+            var callback = this.callbacks[0];
 
-            if (callback.Count && this.items.length >= this.currentIndex + callback.Count)
+            if (callback.Count && this.items.length >= this.currentIndex + callback.Count) {
+                this.callbacks.shift();
                 callback.Do(this.GetChunk(callback.Count));
-            else if (!callback.Count && this.isComplete)
+            }
+            else if (!callback.Count && this.isComplete) {
+                this.callbacks.shift();
                 callback.Do(this.GetChunk());
+            }
+            else break;
         }
     }
 
     private GetChunk(count?: number): any[]{
-        return this.items.slice(this.currentIndex, count ? this.currentIndex + count : null);
+        var chunk = this.items.slice(this.currentIndex, count ? this.currentIndex + count : null);
+        this.currentIndex += chunk.length;
+        return chunk;
     }
 }
 

@@ -20,7 +20,7 @@ export interface QueryResult {
 }
 
 export interface QueryExecution {
-    Cancel(): void;
+    Cancel(removeCallbacks? : boolean): void;
     GetNext(count?: number): Q.Promise<any[]>;
     AvailableItems(): number;
     ExecutionTime(): number;
