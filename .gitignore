@@ -359,3 +359,4 @@ FakesAssemblies/
 /Code/Jsoql.Gui/cmd.js
 /Code/Jsoql.Gui/prepublish.js
 /Code/Jsoql.Gui/Scripts/Services/preferencesService.js
+/Code/Jsoql.Gui/Scripts/Directives/prettyJson.js

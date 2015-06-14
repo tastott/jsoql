@@ -19,6 +19,16 @@ export interface QueryResult {
     Datasources?: Datasource[];
 }
 
+export interface QueryExecution {
+    Cancel(): void;
+    GetNext(count?: number): Q.Promise<any[]>;
+    AvailableItems(): number;
+    ExecutionTime(): number;
+    IsComplete(): boolean;
+    OnComplete(handler: () => void);
+}
+
+
 export interface HelpResult {
     PropertiesInScope: any;
 }
@@ -96,5 +106,6 @@ export interface Statement {
 
 export interface JsoqlEngine {
     ExecuteQuery(statement: Statement|string, context?: QueryContext): Q.Promise<QueryResult>;
+    ExecuteQueryLazy(statement: Statement|string, context?: QueryContext) : QueryExecution
     GetQueryHelp(jsoql: string, cursorPositionOrIndex: Position|number, context?: QueryContext): Q.Promise<HelpResult>;
 }

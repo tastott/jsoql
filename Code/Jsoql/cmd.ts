@@ -68,6 +68,14 @@ function DoQueryCommand(argv: yargs.Argv) {
         }
     };
 
+    //var pager = engine.ExecuteQueryPaged(query, context, err => console.log(err));
+
+    //pager.GetPage(0, 3)
+    //    .then(items => {
+    //        var indent = argv['indent'] ? 4 : null;
+    //        process.stdout.write(JSON.stringify(items, null, indent));
+    //    });
+
     engine.ExecuteQuery(query, context)
         .then(results => {
             if (results.Errors && results.Errors.length) {

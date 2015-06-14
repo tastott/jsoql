@@ -13,6 +13,29 @@ export class JsoqlEngineBase implements m.JsoqlEngine {
         this.queryHelper = new qh.QueryHelper(this);
     }
 
+    public ExecuteQueryLazy(statement: m.Statement|string,
+        context?: m.QueryContext,
+        onError? : m.ErrorHandler): m.QueryExecution {
+
+        var parsedStatement: m.Statement;
+
+        try {
+            if (typeof statement === 'string') parsedStatement = p.ParseFull(statement);
+            else parsedStatement = statement;
+
+            var query = new q.JsoqlQuery(parsedStatement, this.datasources, context);
+            var validationErrors = query.Validate();
+
+            if (validationErrors.length && onError) onError(validationErrors.join(', '));
+
+            return query.ExecuteLazy(onError);
+        }
+        catch (ex) {
+            if (onError) onError(ex);
+        }
+
+    }
+
     public ExecuteQuery(statement: m.Statement|string, context?: m.QueryContext): Q.Promise<m.QueryResult> {
 
         var parsedStatement: m.Statement;

@@ -7,6 +7,7 @@ import qeDir = require('./Scripts/Directives/queryEditor/queryEditor')
 import fiDir = require('./Scripts/Directives/folderInput')
 import fdbDir = require('./Scripts/Directives/fileDialogButton')
 import fdDir = require('./Scripts/Directives/fileDrop')
+import pjDir = require('./Scripts/Directives/prettyJson')
 import fServ = require('./Scripts/Services/fileService')
 import qServ = require('./Scripts/Services/queryStorageService')
 import qeServ = require('./Scripts/Services/queryExecutionService')
@@ -55,6 +56,7 @@ angular.module('Jsoql', ['ngRoute', 'ui.bootstrap', 'angular-themer'])
     .directive('folderInput',() => new fiDir.FolderInputDirective())
     .directive('fileDrop',() => new fdDir.FileDropDirective())
     .directive('fileDialogButton',() => new fdbDir.FileDialogButtonDirective())
+    .directive('prettyJson',() => new pjDir.PrettyJsonDirective())
 
     .config(['themerProvider', (themerProvider: any) => {
 

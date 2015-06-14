@@ -17,6 +17,109 @@ interface DatasourceConfig {
     Over?: boolean; 
 }
 
+
+class LazyJsQueryExecution implements m.QueryExecution {
+
+    private currentIndex: number;
+    private items: any[];
+    private onCancel: () => void;
+    private callbacks: {
+        Count?: number;
+        Do: (items: any[]) => void;
+    }[];
+    private onComplete: (() => void)[];
+    private isComplete: boolean;
+    private startTime: number[];
+    private finishTime: number[];
+
+    constructor(sequencePromise: Q.Promise<LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>>) {
+        this.currentIndex = 0;
+        this.items = [];
+        this.callbacks = [];
+        this.isComplete = false;
+        this.onComplete = [];
+
+        this.startTime = process.hrtime();
+
+        sequencePromise.then(seq => {
+            var handle = seq.each(item => this.AddItem(item));
+            if (handle['cancel']) this.onCancel = () => handle['cancel']();
+            if (handle['onComplete']) handle['onComplete'](() => this.SetComplete());
+            else this.SetComplete();
+        })
+    }
+
+    Cancel(): void {
+        if (this.onCancel) this.onCancel();
+    }
+
+    GetNext(count?: number): Q.Promise<any[]> {
+        var deferred = Q.defer<any[]>();
+
+        this.callbacks.push({
+            Count: count,
+            Do: deferred.resolve
+        });
+
+        this.ProcessCallbacks();
+
+        return deferred.promise;
+    }
+
+    AvailableItems(): number {
+        return this.items.length;
+    }
+
+    ExecutionTime(): number {
+        var execTime = this.finishTime
+            ? this.finishTime
+            : process.hrtime(this.startTime);
+
+        return execTime[0] + execTime[1] / 1000;
+    }
+
+    OnComplete(handler: () => void) {
+        if (this.isComplete) setTimeout(handler);
+        else this.onComplete.push(handler);
+    }
+
+    IsComplete(): boolean {
+        return this.isComplete;
+
+    }
+
+    private SetComplete() {
+        this.finishTime = process.hrtime(this.startTime);
+        this.isComplete = true;
+
+        this.ProcessCallbacks();
+
+        this.onComplete.forEach(handler => handler());
+        this.onComplete = [];
+    }
+
+    private AddItem(item: any) {
+        this.items.push(item);
+
+        this.ProcessCallbacks();
+    }
+
+    private ProcessCallbacks() {
+        while (this.callbacks.length) {
+            var callback = this.callbacks.shift();
+
+            if (callback.Count && this.items.length >= this.currentIndex + callback.Count)
+                callback.Do(this.GetChunk(callback.Count));
+            else if (!callback.Count && this.isComplete)
+                callback.Do(this.GetChunk());
+        }
+    }
+
+    private GetChunk(count?: number): any[]{
+        return this.items.slice(this.currentIndex, count ? this.currentIndex + count : null);
+    }
+}
+
 export class JsoqlQuery {
 
     private static UriRegex = new RegExp('^([A-Za-z]+)://(.+)$', 'i');
@@ -373,6 +476,42 @@ export class JsoqlQuery {
         return val.Validate(this.stmt);
     }
 
+    ExecuteLazy(onError : m.ErrorHandler): m.QueryExecution {
+
+        var seqP: Q.Promise<LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>>;
+
+        //From
+        var seq = this.From(this.stmt.From, onError);
+
+        //Where
+        if (this.stmt.Where) seq = this.Where(seq, this.stmt.Where);
+
+        //Grouping
+        //Explicitly
+        if (this.stmt.GroupBy) {
+            seqP = this.GroupBy(seq, this.stmt.GroupBy.Groupings)
+                .then(groups => this.SelectGrouped(groups, this.stmt.GroupBy.Having));
+        }
+        //Implicitly
+        else if (lazy(this.stmt.Select.SelectList).some(selectable => evl.Evaluator.IsAggregate(selectable.Expression))) {
+
+            seqP = JsoqlQuery.SequenceToArray(seq)
+                .then(items => lazy(this.SelectMonoGroup(items)));
+        }
+        //No grouping
+        else {
+            seqP = Q(this.SelectUngrouped(seq));
+        }
+
+        if (this.stmt.Union) {
+            throw new Error("Union not currently supported in page query");
+            //var right = new JsoqlQuery(this.stmt.Union, this.dataSourceSequencers, this.queryContext);
+            //Q.all([resultsP, right.Execute()])
+            //    .then(resultss => deferred.resolve(resultss[0].concat(resultss[1])));
+        }
+        
+        return new LazyJsQueryExecution(seqP);
+    }
 
     private GroupBySync(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, expressions : any[]): LazyJS.Sequence<m.Group> {
         var groupKey = (item: any) => {
