@@ -17,6 +17,14 @@ export class QueryExecutionService {
         return this.jsoqlEngine.GetQueryHelp(query, cursor, context);
     }
 
+    ExecuteQueryPaged(query: string, baseDirectory: string): jsoql.JsoqlQueryExecution {
+        var context: jsoql.JsoqlQueryContext = {
+            BaseDirectory: baseDirectory
+        };
+
+        return this.jsoqlEngine.ExecuteQueryLazy(query, context);
+    }
+
     ExecuteQuery(query: string, baseDirectory: string): Q.Promise<m.QueryResult> {
         var context: jsoql.JsoqlQueryContext = {
             BaseDirectory: baseDirectory

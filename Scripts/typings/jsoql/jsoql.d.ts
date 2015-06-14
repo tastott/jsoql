@@ -22,23 +22,36 @@ declare module 'jsoql' {
         Datasources?: Datasource[];
     }
 
+    interface JsoqlQueryExecution {
+        Cancel(): void;
+        GetNext(count?: number): Q.Promise<any[]>;
+        AvailableItems(): number;
+        ExecutionTime(): number;
+        IsComplete(): boolean;
+        OnComplete(handler: () => void);
+    }
+
+
     export interface JsoqlQueryHelpResult {
         PropertiesInScope: any;
     }
 
     export interface JsoqlEngine {
         ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryResult>;
+        ExecuteQueryLazy(jsoql: string, context?: JsoqlQueryContext): JsoqlQueryExecution;
         GetQueryHelp(jsoql: string, cursorPositionOrIndex: JsoqlPosition|number, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryHelpResult>
     }
 
     export class DesktopJsoqlEngine implements JsoqlEngine {
         ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryResult>;
+        ExecuteQueryLazy(jsoql: string, context?: JsoqlQueryContext): JsoqlQueryExecution;
         GetQueryHelp(jsoql: string, cursorPositionOrIndex: JsoqlPosition|number, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryHelpResult>
     }
 
     export class OnlineJsoqlEngine implements JsoqlEngine {
         constructor(appBaseUrl: string, getStoredFile: (id: string) => string);
         ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryResult>;
+        ExecuteQueryLazy(jsoql: string, context?: JsoqlQueryContext): JsoqlQueryExecution;
         GetQueryHelp(jsoql: string, cursorPositionOrIndex: JsoqlPosition|number, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryHelpResult>
     }
 }

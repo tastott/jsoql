@@ -63,7 +63,9 @@
                 </div>-->
                 <div style="height: calc(100% - 100px)">
                     <div class="query-result-container">
-                        <query-result value="SelectedTab.QueryResult" ng-show="!SelectedTab.IsExecuting" class="full-height"></query-result>
+                        <pretty-json ng-repeat="result in SelectedTab.Results track by $index" content="result"></pretty-json>
+
+                        <!--<query-result value="SelectedTab.QueryResult" ng-show="!SelectedTab.IsExecuting" class="full-height"></query-result>-->
                         <i class="fa fa-cog fa-spin fa-2x" ng-show="SelectedTab.IsExecuting"></i>
                     </div>
                 </div>
