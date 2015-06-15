@@ -8,6 +8,7 @@ import util = require('./utilities')
 import evl = require('./evaluate')
 import val = require('./validate')
 var clone = require('clone')
+var hrtime: (start?: number[]) => number[] = require('browser-process-hrtime')
 
 interface DatasourceConfig {
     Target: any;
@@ -39,7 +40,7 @@ class LazyJsQueryExecution implements m.QueryExecution {
         this.isComplete = false;
         this.onComplete = [];
 
-        this.startTime = process.hrtime();
+        this.startTime = hrtime();
 
         sequencePromise.then(seq => {
             var handle = seq.each(item => this.AddItem(item));
@@ -75,7 +76,7 @@ class LazyJsQueryExecution implements m.QueryExecution {
     ExecutionTime(): number {
         var execTime = this.finishTime
             ? this.finishTime
-            : process.hrtime(this.startTime);
+            : hrtime(this.startTime);
 
         return execTime[0] + execTime[1] / 1000;
     }
@@ -91,7 +92,7 @@ class LazyJsQueryExecution implements m.QueryExecution {
     }
 
     private SetComplete() {
-        this.finishTime = process.hrtime(this.startTime);
+        this.finishTime = hrtime(this.startTime);
         this.isComplete = true;
 
         this.ProcessCallbacks();

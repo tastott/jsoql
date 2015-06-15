@@ -19,6 +19,7 @@
   },
   "preferGlobal": true,
   "dependencies": {
+    "browser-process-hrtime": "^0.1.1",
     "buffered-xhr-stream": "^0.1.4",
     "clone": "^1.0.2",
     "csv-string": "^2.2.5",

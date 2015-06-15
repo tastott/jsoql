@@ -18,7 +18,16 @@ export class LazyScrollDirective implements ng.IDirective {
         element[0].addEventListener('scroll', event => {
             var atBottom = (element[0].scrollTop + element[0].offsetHeight) > (element[0].scrollHeight - threshold);
 
-            if (atBottom) onScroll($scope);
+            if (atBottom) {
+                onScroll($scope);
+            }
+
+            //$('#scroll-debug').html(JSON.stringify({
+            //    scrollTop: element[0].scrollTop,
+            //    height: element[0].offsetHeight,
+            //    scrollHeight: element[0].scrollHeight,
+            //    atBottom: atBottom
+            //}, null, 4));
         });
     }
 

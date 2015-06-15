@@ -32,6 +32,7 @@ export class JsoqlEngineBase implements m.JsoqlEngine {
         }
         catch (ex) {
             if (onError) onError(ex);
+            else console.log('Error occurred while executing query: ' + ex);
         }
 
     }
