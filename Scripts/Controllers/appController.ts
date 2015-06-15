@@ -50,6 +50,7 @@ class QueryTab {
             if (this.CurrentQuery) {
                 this.CurrentQuery.Cancel();
                 this.CurrentQuery = null;
+                this.QueryResults = [];
             }
 
             //this.IsExecuting = true;
@@ -74,7 +75,7 @@ class QueryTab {
         if (this.CurrentQuery) {
             this.CurrentQuery.GetNext(8)
                 .then(items => {
-                    this.$scope.$apply(() => this.QueryResults.push(items));
+                    this.$scope.$apply(() => this.QueryResults = this.QueryResults.concat(items));
                 });
         }
 

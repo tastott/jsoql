@@ -7,6 +7,8 @@
 .renderjson {
     background-color: transparent;
     border:none;
+    padding: 0px 10px 0px 10px;
+    margin: 0;
 }
 .renderjson a              { text-decoration: none; }
 

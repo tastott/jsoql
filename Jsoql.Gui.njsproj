@@ -45,6 +45,7 @@
     <Content Include="Content\Themes\light.css" />
     <Content Include="Content\Themes\dark.css" />
     <Content Include="Data\orders.json" />
+    <Content Include="Data\customers.json" />
     <Content Include="index.html" />
     <Content Include="index-nw.html" />
     <Content Include="README.md" />
