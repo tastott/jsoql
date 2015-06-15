@@ -78,7 +78,7 @@ class LazyJsQueryExecution implements m.QueryExecution {
             ? this.finishTime
             : hrtime(this.startTime);
 
-        return execTime[0] + execTime[1] / 1000;
+        return (execTime[0] * 1000) + (execTime[1] / 1000000);
     }
 
     OnComplete(handler: () => void) {

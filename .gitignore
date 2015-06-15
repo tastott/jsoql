@@ -361,3 +361,4 @@ FakesAssemblies/
 /Code/Jsoql.Gui/Scripts/Services/preferencesService.js
 /Code/Jsoql.Gui/Scripts/Directives/prettyJson.js
 /Code/Jsoql.Gui/Scripts/Directives/lazyScroll.js
+/Code/Jsoql.Gui/Scripts/Directives/periodicRefresh.js

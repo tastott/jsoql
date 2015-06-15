@@ -9,6 +9,7 @@ import fdbDir = require('./Scripts/Directives/fileDialogButton')
 import fdDir = require('./Scripts/Directives/fileDrop')
 import pjDir = require('./Scripts/Directives/prettyJson')
 import lsDir = require('./Scripts/Directives/lazyScroll')
+import prDir = require('./Scripts/Directives/periodicRefresh')
 import fServ = require('./Scripts/Services/fileService')
 import qServ = require('./Scripts/Services/queryStorageService')
 import qeServ = require('./Scripts/Services/queryExecutionService')
@@ -51,14 +52,15 @@ angular.module('Jsoql', ['ngRoute', 'ui.bootstrap', 'angular-themer'])
     .service('queryStorageService', qServ.QueryStorageService)
     .service('queryExecutionService', qeServ.QueryExecutionService)
     .controller('AppController', appCtrl.AppController)
-    .directive('queryResult',() => new qrDir.QueryResultDirective())
-  
+
+    .directive('queryResult',() => new qrDir.QueryResultDirective())  
     .directive('queryEditorAce',qeDir.AceQueryEditorDirective.Factory())
     .directive('folderInput',() => new fiDir.FolderInputDirective())
     .directive('fileDrop',() => new fdDir.FileDropDirective())
     .directive('fileDialogButton',() => new fdbDir.FileDialogButtonDirective())
     .directive('prettyJson',() => new pjDir.PrettyJsonDirective())
     .directive('lazyScroll',lsDir.LazyScrollDirective.Factory())
+    .directive('periodicRefresh', prDir.PeriodicRefreshDirective.Factory())
 
     .config(['themerProvider', (themerProvider: any) => {
 
