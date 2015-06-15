@@ -60,6 +60,7 @@
     <TypeScriptCompile Include="Scripts\Directives\fileDrop.ts" />
     <TypeScriptCompile Include="Scripts\Directives\fileDialogButton.ts" />
     <TypeScriptCompile Include="Scripts\Directives\folderInput.ts" />
+    <TypeScriptCompile Include="Scripts\Directives\lazyScroll.ts" />
     <TypeScriptCompile Include="Scripts\Directives\prettyJson.ts" />
     <TypeScriptCompile Include="Scripts\Directives\queryEditor\models.ts" />
     <TypeScriptCompile Include="Scripts\Directives\queryEditor\propertyCompleter.ts" />

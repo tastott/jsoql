@@ -62,7 +62,7 @@
                     <label class="control-label">RESULTS</label>
                 </div>-->
                 <div style="height: calc(100% - 100px)">
-                    <div class="query-result-container" infinite-scroll="SelectedTab.GetMoreResults()" infinite-scroll-distance="3">
+                    <div class="query-result-container" lazy-scroll="SelectedTab.GetMoreResults()">
                         <pretty-json ng-repeat="result in SelectedTab.QueryResults track by $index" content="result"></pretty-json>
 
                         <!--<query-result value="SelectedTab.QueryResult" ng-show="!SelectedTab.IsExecuting" class="full-height"></query-result>-->
