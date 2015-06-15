@@ -13,7 +13,6 @@ export class PrettyJsonDirective implements ng.IDirective {
     //public templateUrl = 'Views/Directives/folderInput.html'
 
     public link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes) {
-        console.log($scope['content']);
         var html = renderJson($scope['content']);
         element.html('')
         element.append(html);

@@ -85,7 +85,6 @@ export class LocalStorageDictionary<TKey, TValue> extends JsonKeyDictionary<TKey
         var json = window.localStorage.getItem(storageKey);
         if (json) this.dict = JSON.parse(json);
         else this.dict = {};
-        console.log(this.dict);
     }
 
     protected Save() {

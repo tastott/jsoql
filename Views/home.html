@@ -65,8 +65,9 @@
                     </div>
                 </div>
                 <div style="height: 100px;padding-top:10px">
-                    <div>
-                        <label>RESULTS</label>
+                    <div periodic-refresh-interval="100" periodic-refresh-condition="!SelectedTab.CurrentQuery.IsComplete()">
+                        <span style="font-size:0.8em">Results: {{SelectedTab.CurrentQuery.AvailableItems() | number}}</span>
+                        <span style="font-size:0.8em; margin-left: 10px">Query time: {{SelectedTab.CurrentQuery.ExecutionTime() | number:0}}ms</span>
                     </div>
                     <div class="btn-group">
                         <button class="btn btn-default" ng-click="SelectedTab.SaveResults()" ng-disabled="!SelectedTab.SaveResultsEnabled()">
