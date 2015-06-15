@@ -8,6 +8,7 @@ import fiDir = require('./Scripts/Directives/folderInput')
 import fdbDir = require('./Scripts/Directives/fileDialogButton')
 import fdDir = require('./Scripts/Directives/fileDrop')
 import pjDir = require('./Scripts/Directives/prettyJson')
+import lsDir = require('./Scripts/Directives/lazyScroll')
 import fServ = require('./Scripts/Services/fileService')
 import qServ = require('./Scripts/Services/queryStorageService')
 import qeServ = require('./Scripts/Services/queryExecutionService')
@@ -24,7 +25,7 @@ var config = new m.Configuration(process['browser'] ? m.Environment.Online : m.E
 var prefsRepo = new repo.JsonLocalStorageRepository<prefServ.Preferences>('preferences');
 var prefsService = new prefServ.PreferencesService(prefsRepo);
 
-angular.module('Jsoql', ['ngRoute', 'ui.bootstrap', 'angular-themer', 'infinite-scroll'])
+angular.module('Jsoql', ['ngRoute', 'ui.bootstrap', 'angular-themer'])
     .constant('querySettingsRepository', new d.LocalStorageDictionary<string, qServ.QuerySettings>('querySettings'))
 
     .constant('datasourceHistoryService', new dshServ.DatasourceHistoryService('datasourceHistory', 10))
@@ -57,6 +58,7 @@ angular.module('Jsoql', ['ngRoute', 'ui.bootstrap', 'angular-themer', 'infinite-
     .directive('fileDrop',() => new fdDir.FileDropDirective())
     .directive('fileDialogButton',() => new fdbDir.FileDialogButtonDirective())
     .directive('prettyJson',() => new pjDir.PrettyJsonDirective())
+    .directive('lazyScroll',lsDir.LazyScrollDirective.Factory())
 
     .config(['themerProvider', (themerProvider: any) => {
 
