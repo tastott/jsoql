@@ -157,17 +157,18 @@ export class QueryHelper {
                 }
 
                 //Get the items
-                return this.queryEngine.ExecuteQuery(helpStatement, context)
-                    .GetNext()
-                    .then(results => {
-                        if (results) {
+                var results = this.queryEngine.ExecuteQuery(helpStatement, context);
+
+                if (!results.Errors || !results.Errors.length) {
+                    return results.Iterator
+                        .GetAll()
+                        .then(results => {
                             return {
                                 PropertiesInScope: this.GetPropertiesFromItems(results)
                             }
-                        }
-                        else return { PropertiesInScope: {}};
-                    });
-
+                        });
+                }
+                else return Q({ PropertiesInScope: {} });
                 break;
 
             case Scope.Grouped:

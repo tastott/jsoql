@@ -14,8 +14,7 @@ export class JsoqlEngineBase implements m.JsoqlEngine {
     }
 
     public ExecuteQuery(statement: m.Statement|string,
-        context?: m.QueryContext,
-        onError? : m.ErrorHandler): m.QueryResult {
+        context?: m.QueryContext): m.QueryResult {
 
         var parsedStatement: m.Statement;
 
@@ -26,13 +25,12 @@ export class JsoqlEngineBase implements m.JsoqlEngine {
             var query = new q.JsoqlQuery(parsedStatement, this.datasources, context);
             var validationErrors = query.Validate();
 
-            if (validationErrors.length && onError) onError(validationErrors.join(', '));
-
-            return query.ExecuteLazy(onError);
+            if (validationErrors.length) return new q.JsoqlQueryResult(null, query.GetDatasources(), validationErrors);
+               
+            return query.Execute();
         }
         catch (ex) {
-            if (onError) onError(ex);
-            else console.log('Error occurred while executing query: ' + ex);
+            return new q.JsoqlQueryResult(null, [], [ex]);
         }
 
     }

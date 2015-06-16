@@ -13,15 +13,22 @@ export interface Datasource {
     Value: any;
 }
 
-export interface QueryResult {
-    Cancel(removeCallbacks? : boolean): void;
-    GetNext(count?: number): Q.Promise<any[]>;
+export interface QueryIterator {
     AvailableItems(): number;
+    GetNext(count?: number): Q.Promise<any[]>;
+    GetAll(): Q.Promise<any[]>;
+    Cancel(removeCallbacks?: boolean): void;
     ExecutionTime(): number;
     IsComplete(): boolean;
-    OnComplete(handler: () => void): QueryResult;
-    OnError(handler: (error: any) => void): QueryResult;
+    OnComplete(handler: () => void): QueryIterator;
+    OnError(handler: (error: any) => void): QueryIterator;
+}
+
+export interface QueryResult {
+    Iterator?: QueryIterator;
     Datasources: Datasource[];
+    Errors: string[];
+    
     GetAll(): Q.Promise<any[]>;
 }
 

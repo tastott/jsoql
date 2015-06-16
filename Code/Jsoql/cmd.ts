@@ -76,17 +76,17 @@ function DoQueryCommand(argv: yargs.Argv) {
     //        process.stdout.write(JSON.stringify(items, null, indent));
     //    });
 
-    engine.ExecuteQuery(query, context)
-        .GetAll()
-        .then(results => {
-           var indent = argv['indent'] ? 4 : null;
-            process.stdout.write(JSON.stringify(results, null, indent)); 
-        })
-        .fail(error => {
-            var message = '\nError encountered while executing query.';
-            message += `\n\nQuery: ${query } \n\nError: ${error}\n`;
-            process.stderr.write(message);
-        });
+    var results = engine.ExecuteQuery(query, context)
+            .GetAll()
+            .then(results => {
+                var indent = argv['indent'] ? 4 : null;
+                process.stdout.write(JSON.stringify(results, null, indent));
+            })
+            .fail(error => {
+                var message = '\nError encountered while executing query.';
+                message += `\n\nQuery: ${query } \n\nError: ${error}\n`;
+                process.stderr.write(message);
+            });
 }
 
 

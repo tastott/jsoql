@@ -58,7 +58,7 @@ export function FromCsvFileWithQuotedNewlines() {
     return testBase.ExecuteAndAssertItems(jsoql, null,
         results => {
             assert.equal(results.length, 91);
-            assert.equal(results[17].Address, '67,\nrue des Cinquante Otages');
+            assert.equal(results[17].Address, '67,\r\nrue des Cinquante Otages');
         });
 
 }
@@ -67,6 +67,6 @@ export function FromCsvFileLazy() {
     var jsoql = "SELECT * FROM 'file://Data/baseball-players.csv'";
     return testBase.ExecuteLazyToCompletionAndAssert(jsoql,
         result => {
-            assert.equal(result.AvailableItems(), 185891);
+            assert.equal(result.Iterator.AvailableItems(), 18589);
         });
 }

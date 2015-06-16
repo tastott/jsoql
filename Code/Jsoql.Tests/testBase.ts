@@ -21,8 +21,7 @@ export function ExecuteArrayQuery(jsoql: string, values: any[]| jsoql.JsoqlQuery
         : <jsoql.JsoqlQueryContext>values;
 
     try {
-        return Jsoql.ExecuteQuery(jsoql, context)
-            .GetAll();
+        return Jsoql.ExecuteQuery(jsoql, context).GetAll();
     }
     catch (ex) {
         return Q.reject<any[]>(ex);
@@ -42,7 +41,7 @@ export function ExecuteAndAssertResult(query: string,
         : <jsoql.JsoqlQueryContext>values;
 
     try {
-        return Jsoql.ExecuteQuery(query, context)
+        Jsoql.ExecuteQuery(query, context)
             .GetAll()
             .then(results => setTimeout(() => assertCallback(results)))
             .fail(error => setTimeout(() => assert.fail(null, null, error)));
@@ -124,8 +123,13 @@ export function ExecuteLazyToCompletion(query: string): Q.Promise<jsoql.JsoqlQue
     var deferred = Q.defer<jsoql.JsoqlQueryResult>();
 
     try {
-        var queryExec = Jsoql.ExecuteQuery(query, null, error => deferred.reject(error));
-        queryExec.OnComplete(() => deferred.resolve(queryExec));
+        var result = Jsoql.ExecuteQuery(query, null);
+        if (result.Errors && result.Errors.length) deferred.reject(result.Errors[0]);
+        else {
+            result.Iterator
+                .OnError(error => deferred.reject(error))
+                .OnComplete(() => deferred.resolve(result));
+        }
     }
     catch (ex) {
         deferred.reject(ex);
