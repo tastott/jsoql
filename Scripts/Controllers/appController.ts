@@ -45,14 +45,18 @@ class QueryTab {
         return this.name;// + (this.IsEdited() ? ' *' : ''); IsEdited logic not working yet
     }
 
+    private ClearResults() {
+        if (this.CurrentQuery) {
+            this.CurrentQuery.Cancel(true);
+            this.CurrentQuery = null;
+            this.QueryResults = [];
+        }
+    }
+
     Execute = () => {
         if (this.QueryText.GetValue()) {
-            if (this.CurrentQuery) {
-                this.CurrentQuery.Cancel();
-                this.CurrentQuery = null;
-                this.QueryResults = [];
-            }
-
+           
+            this.ClearResults();
             //this.IsExecuting = true;
 
             this.CurrentQuery = this.queryExecutionService.ExecuteQueryPaged(this.QueryText.GetValue(), this.BaseDirectory.GetValue());
@@ -79,6 +83,12 @@ class QueryTab {
                 });
         }
 
+    }
+
+    Cancel = () => {
+        if (this.CurrentQuery && !this.CurrentQuery.IsComplete()) {
+            this.ClearResults();
+        }
     }
 
 
