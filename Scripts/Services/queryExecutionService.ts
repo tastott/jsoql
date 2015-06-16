@@ -3,7 +3,7 @@ import m = require('../Models/models')
 import dshs = require('./datasourceHistoryService')
 import jsoql = require('jsoql')
 
-export interface QueryExecution extends jsoql.JsoqlQueryExecution {
+export interface QueryResult extends jsoql.JsoqlQueryResult {
 }
 
 export class QueryExecutionService {
@@ -20,31 +20,11 @@ export class QueryExecutionService {
         return this.jsoqlEngine.GetQueryHelp(query, cursor, context);
     }
 
-    ExecuteQueryPaged(query: string, baseDirectory: string): QueryExecution {
+    ExecuteQuery(query: string, baseDirectory: string): QueryResult {
         var context: jsoql.JsoqlQueryContext = {
             BaseDirectory: baseDirectory
         };
 
-        return this.jsoqlEngine.ExecuteQueryLazy(query, context);
-    }
-
-    ExecuteQuery(query: string, baseDirectory: string): Q.Promise<m.QueryResult> {
-        var context: jsoql.JsoqlQueryContext = {
-            BaseDirectory: baseDirectory
-        };
-
-        return this.jsoqlEngine.ExecuteQuery(query, context)
-            .then(jsoqlResult => {
-
-                //Remember datasources
-                if (jsoqlResult.Datasources) {
-                    jsoqlResult.Datasources.forEach(ds => this.datasourceHistoryService.Add(ds));
-                }
-
-                return {
-                    Results: jsoqlResult.Results,
-                    Errors: jsoqlResult.Errors
-                };
-            });
+        return this.jsoqlEngine.ExecuteQuery(query, context);
     }
 }

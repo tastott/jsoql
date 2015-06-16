@@ -53,10 +53,10 @@
                 </div>
             </div>
             <div style="flex: 0 50px; text-align:center;   top: calc(50% - 25px - 50px); position: relative;">
-                <button ng-show="SelectedTab.CurrentQuery == null || SelectedTab.CurrentQuery.IsComplete()" ng-click="SelectedTab.Execute()" class="btn btn-default" style="margin-left:auto; margin-right:auto">
+                <button ng-show="!SelectedTab.IsExecuting()" ng-click="SelectedTab.Execute()" class="btn btn-default" style="margin-left:auto; margin-right:auto">
                     <i class="fa fa-play"></i>
                 </button>
-                <button ng-show="SelectedTab.CurrentQuery != null && !SelectedTab.CurrentQuery.IsComplete()" ng-click="SelectedTab.Cancel()" class="btn btn-default" style="margin-left:auto; margin-right:auto">
+                <button ng-show="SelectedTab.IsExecuting()" ng-click="SelectedTab.Cancel()" class="btn btn-default" style="margin-left:auto; margin-right:auto">
                     <i class="fa fa-stop"></i>
                 </button>
             </div>
@@ -70,10 +70,10 @@
                 <div style="height: 100px;padding-top:10px">
                     <div ng-show="SelectedTab.CurrentQuery != null"
                          periodic-refresh="100"
-                         periodic-refresh-condition="!SelectedTab.CurrentQuery.IsComplete()"
+                         periodic-refresh-condition="SelectedTab.IsExecuting()"
                          style="font-size:0.8em">
-                        <span>Results: {{SelectedTab.CurrentQuery.AvailableItems() | number}}</span>
-                        <span style="margin-left: 10px">Query time: {{SelectedTab.CurrentQuery.ExecutionTime() | number:0}}ms</span>
+                        <span>Results: {{SelectedTab.CurrentQuery.Iterator.AvailableItems() | number}}</span>
+                        <span style="margin-left: 10px">Query time: {{SelectedTab.CurrentQuery.Iterator.ExecutionTime() | number:0}}ms</span>
                     </div>
                     <div class="btn-group">
                         <button class="btn btn-default" ng-click="SelectedTab.SaveResults()" ng-disabled="!SelectedTab.SaveResultsEnabled()">
