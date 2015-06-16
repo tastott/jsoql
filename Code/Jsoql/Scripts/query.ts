@@ -172,9 +172,9 @@ class LazyJsQueryIterator implements m.QueryIterator {
                 this.itemCallbacks.shift();
                 callback.Do(this.GetChunk(callback.Count));
             }
-            else if (!callback.Count && this.isComplete) {
+            else if (this.isComplete) {
                 this.itemCallbacks.shift();
-                callback.Do(this.GetChunk());
+                callback.Do(this.GetChunk(callback.Count));
             }
             else break;
         }
