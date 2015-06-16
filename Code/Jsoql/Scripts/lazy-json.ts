@@ -83,7 +83,7 @@ class CsvStream {
                 break;
 
             case 'end':
-                //this.csvStream.
+                this.csvStream.on('end', listener);
                 break;
 
             default:

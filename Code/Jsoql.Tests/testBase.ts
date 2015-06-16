@@ -11,7 +11,7 @@ import Q = require('q')
 var Jsoql = new jsoql.DesktopJsoqlEngine();
 
 export function ExecuteArrayQuery(jsoql: string, values: any[]| jsoql.JsoqlQueryContext): Q.Promise<any[]> {
-
+   
     var context: jsoql.JsoqlQueryContext = Object.prototype.toString.call(values) === '[object Array]'
         ? {
             Data: {
@@ -22,10 +22,7 @@ export function ExecuteArrayQuery(jsoql: string, values: any[]| jsoql.JsoqlQuery
 
     try {
         return Jsoql.ExecuteQuery(jsoql, context)
-            .then(result => {
-                if (result.Errors) throw result.Errors;
-                else return result.Results;
-            });
+            .GetAll();
     }
     catch (ex) {
         return Q.reject<any[]>(ex);
@@ -34,7 +31,7 @@ export function ExecuteArrayQuery(jsoql: string, values: any[]| jsoql.JsoqlQuery
 
 export function ExecuteAndAssertResult(query: string,
     values: any[]| jsoql.JsoqlQueryContext,
-    assertCallback: (result: jsoql.JsoqlQueryResult) => void): Q.Promise<any> {
+    assertCallback: (results: any[]) => void): Q.Promise<any> {
 
     var context: jsoql.JsoqlQueryContext = Object.prototype.toString.call(values) === '[object Array]'
         ? {
@@ -46,7 +43,8 @@ export function ExecuteAndAssertResult(query: string,
 
     try {
         return Jsoql.ExecuteQuery(query, context)
-            .then(result => setTimeout(() => assertCallback(result)))
+            .GetAll()
+            .then(results => setTimeout(() => assertCallback(results)))
             .fail(error => setTimeout(() => assert.fail(null, null, error)));
     }
     catch (ex) {
@@ -122,11 +120,11 @@ export function ExecuteAndAssertWithServer(query: string, data : any[], port : n
         .finally(() => server.close());
 }
 
-export function ExecuteLazyToCompletion(query: string): Q.Promise<jsoql.JsoqlQueryExecution> {
-    var deferred = Q.defer<jsoql.JsoqlQueryExecution>();
+export function ExecuteLazyToCompletion(query: string): Q.Promise<jsoql.JsoqlQueryResult> {
+    var deferred = Q.defer<jsoql.JsoqlQueryResult>();
 
     try {
-        var queryExec = Jsoql.ExecuteQueryLazy(query, null, error => deferred.reject(error));
+        var queryExec = Jsoql.ExecuteQuery(query, null, error => deferred.reject(error));
         queryExec.OnComplete(() => deferred.resolve(queryExec));
     }
     catch (ex) {
@@ -137,7 +135,7 @@ export function ExecuteLazyToCompletion(query: string): Q.Promise<jsoql.JsoqlQue
 
 }
 
-export function ExecuteLazyToCompletionAndAssert(query: string, assertCallback : (result : jsoql.JsoqlQueryExecution) => void): Q.Promise<any> {
+export function ExecuteLazyToCompletionAndAssert(query: string, assertCallback : (result : jsoql.JsoqlQueryResult) => void): Q.Promise<any> {
    
     return ExecuteLazyToCompletion(query)
         .then(result => {

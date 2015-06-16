@@ -53,8 +53,11 @@
                 </div>
             </div>
             <div style="flex: 0 50px; text-align:center;   top: calc(50% - 25px - 50px); position: relative;">
-                <button ng-click="SelectedTab.Execute()" class="btn btn-default" style="margin-left:auto; margin-right:auto">
+                <button ng-show="SelectedTab.CurrentQuery == null || SelectedTab.CurrentQuery.IsComplete()" ng-click="SelectedTab.Execute()" class="btn btn-default" style="margin-left:auto; margin-right:auto">
                     <i class="fa fa-play"></i>
+                </button>
+                <button ng-show="SelectedTab.CurrentQuery != null && !SelectedTab.CurrentQuery.IsComplete()" ng-click="SelectedTab.Cancel()" class="btn btn-default" style="margin-left:auto; margin-right:auto">
+                    <i class="fa fa-stop"></i>
                 </button>
             </div>
             <div style="flex: 1 0px;" class="full-height">

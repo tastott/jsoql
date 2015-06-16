@@ -32,6 +32,5 @@ export function FromAbsoluteFile() {
 
 export function ErrorReturnedForQueryOnNonExistentFile() {
     var query = "SELECT * FROM 'file://doesnotexist.json'";
-    return testBase.ExecuteAndAssertResult(query, null,
-        result => assert.equal(result.Errors.length, 1));
+    return testBase.ExecuteAndAssertFail(query, null);
 }

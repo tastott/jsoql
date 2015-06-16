@@ -158,14 +158,15 @@ export class QueryHelper {
 
                 //Get the items
                 return this.queryEngine.ExecuteQuery(helpStatement, context)
-                    .then(result => {
-                        if (result.Results) {
+                    .GetNext()
+                    .then(results => {
+                        if (results) {
                             return {
-                                PropertiesInScope: this.GetPropertiesFromItems(result.Results)
+                                PropertiesInScope: this.GetPropertiesFromItems(results)
                             }
                         }
                         else return { PropertiesInScope: {}};
-                });
+                    });
 
                 break;
 

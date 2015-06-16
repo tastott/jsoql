@@ -41,7 +41,7 @@ class CallbackSet<T> {
 
 }
 
-class LazyJsQueryExecution implements m.QueryExecution {
+class LazyJsQueryExecution implements m.QueryResult {
 
     private currentIndex: number;
     private items: any[];
@@ -56,7 +56,9 @@ class LazyJsQueryExecution implements m.QueryExecution {
     private startTime: number[];
     private finishTime: number[];
 
-    constructor(sequencePromise: Q.Promise<LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>>) {
+    constructor(sequencePromise: Q.Promise<LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>>,
+        public Datasources: m.Datasource[])
+    {
         this.currentIndex = 0;
         this.items = [];
         this.itemCallbacks = [];
@@ -82,7 +84,18 @@ class LazyJsQueryExecution implements m.QueryExecution {
         this.onError.RemoveAll();
     }
 
-    GetNext(count?: number): Q.Promise<any[]> {
+    GetAll(): Q.Promise<any[]> {
+        var deferred = Q.defer<any[]>();
+
+        this.OnError(error => deferred.reject(error));
+
+        this.GetNext(0)
+            .then(results => deferred.resolve(results));
+
+        return deferred.promise;
+    }
+
+    GetNext(count: number): Q.Promise<any[]> {
         var deferred = Q.defer<any[]>();
 
         this.itemCallbacks.push({
@@ -491,8 +504,12 @@ export class JsoqlQuery {
         return val.Validate(this.stmt);
     }
 
-    ExecuteLazy(onError: m.ErrorHandler): m.QueryExecution {
-        return new LazyJsQueryExecution(this.GetResultsSequence(onError))
+    ExecuteLazy(onError: m.ErrorHandler): m.QueryResult {
+        //Filter out scope-specific datasources
+        var datasources = this.GetDatasources()
+            .filter(ds => ds.Type !== 'var');
+
+        return new LazyJsQueryExecution(this.GetResultsSequence(onError), datasources)
             .OnError(onError);
     }
 

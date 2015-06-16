@@ -13,9 +13,9 @@ export class JsoqlEngineBase implements m.JsoqlEngine {
         this.queryHelper = new qh.QueryHelper(this);
     }
 
-    public ExecuteQueryLazy(statement: m.Statement|string,
+    public ExecuteQuery(statement: m.Statement|string,
         context?: m.QueryContext,
-        onError? : m.ErrorHandler): m.QueryExecution {
+        onError? : m.ErrorHandler): m.QueryResult {
 
         var parsedStatement: m.Statement;
 
@@ -35,48 +35,6 @@ export class JsoqlEngineBase implements m.JsoqlEngine {
             else console.log('Error occurred while executing query: ' + ex);
         }
 
-    }
-
-    public ExecuteQuery(statement: m.Statement|string, context?: m.QueryContext): Q.Promise<m.QueryResult> {
-
-        var parsedStatement: m.Statement;
-
-        try {
-            if (typeof statement === 'string') parsedStatement = p.ParseFull(statement);
-            else parsedStatement = statement;
-
-            var query = new q.JsoqlQuery(parsedStatement, this.datasources, context);
-            var validationErrors = query.Validate();
-
-            if (validationErrors.length) return Q({ Errors: validationErrors });
-
-            //Get datasources used in query excluding any scope-specific stuff (i.e. variables)
-
-            var datasources = query.GetDatasources()
-                .filter(ds => ds.Type !== 'var');
-
-            return query.Execute()
-                .then(results => {
-                    return {
-                        Results: results,
-                        Datasources: datasources
-                    }
-                })
-                .fail(error => {
-                    return {
-                        Results: null,
-                        Datasources: datasources,
-                        Errors: [error]
-                    }
-                });
-        }
-        catch (ex) {
-            var result: m.QueryResult = {
-                Errors: [ex]
-            };
-
-            return Q(result);
-        }
     }
 
     public GetQueryHelp(jsoql: string, cursorPositionOrIndex: m.Position|number, context?: m.QueryContext): Q.Promise<m.HelpResult> {

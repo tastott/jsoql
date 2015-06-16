@@ -14,19 +14,15 @@ export interface Datasource {
 }
 
 export interface QueryResult {
-    Results?: any[];
-    Errors?: string[];
-    Datasources?: Datasource[];
-}
-
-export interface QueryExecution {
     Cancel(removeCallbacks? : boolean): void;
     GetNext(count?: number): Q.Promise<any[]>;
     AvailableItems(): number;
     ExecutionTime(): number;
     IsComplete(): boolean;
-    OnComplete(handler: () => void): QueryExecution;
-    OnError(handler: (error : any) => void): QueryExecution;
+    OnComplete(handler: () => void): QueryResult;
+    OnError(handler: (error: any) => void): QueryResult;
+    Datasources: Datasource[];
+    GetAll(): Q.Promise<any[]>;
 }
 
 
@@ -106,7 +102,6 @@ export interface Statement {
 }
 
 export interface JsoqlEngine {
-    ExecuteQuery(statement: Statement|string, context?: QueryContext): Q.Promise<QueryResult>;
-    ExecuteQueryLazy(statement: Statement|string, context?: QueryContext) : QueryExecution
+    ExecuteQuery(statement: Statement|string, context?: QueryContext): QueryResult;
     GetQueryHelp(jsoql: string, cursorPositionOrIndex: Position|number, context?: QueryContext): Q.Promise<HelpResult>;
 }

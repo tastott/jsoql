@@ -29,6 +29,5 @@ export function FromUrlWithExplicitRoot() {
 
 export function ErrorReturnedForQueryOnNonExistentUrl() {
     var query = "SELECT * FROM 'http://669b40f7-41a4-4aa9-90fb-dab6b0c1844f.com/some.json'";
-    return testBase.ExecuteAndAssertResult(query, null,
-        result => assert.equal(result.Errors.length, 1));
+    return testBase.ExecuteAndAssertFail(query, null);
 }

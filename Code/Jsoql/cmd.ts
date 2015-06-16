@@ -77,18 +77,16 @@ function DoQueryCommand(argv: yargs.Argv) {
     //    });
 
     engine.ExecuteQuery(query, context)
+        .GetAll()
         .then(results => {
-            if (results.Errors && results.Errors.length) {
-                var message = '\nError encountered while executing query.';
-                message += `\n\nQuery: ${query } \n\nError: ${results.Errors[0]}\n`;
-                process.stderr.write(message);
-            }
-            else {
-                var indent = argv['indent'] ? 4 : null;
-                process.stdout.write(JSON.stringify(results.Results, null, indent));
-            }
+           var indent = argv['indent'] ? 4 : null;
+            process.stdout.write(JSON.stringify(results, null, indent)); 
         })
-        .fail(error => console.log(error));
+        .fail(error => {
+            var message = '\nError encountered while executing query.';
+            message += `\n\nQuery: ${query } \n\nError: ${error}\n`;
+            process.stderr.write(message);
+        });
 }
 
 
