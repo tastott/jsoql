@@ -475,38 +475,9 @@ export class JsoqlQuery {
         
         var deferred = Q.defer<any[]>();
 
-        //From
-        var seq = this.From(this.stmt.From, err => deferred.reject(err));
-
-        //Where
-        if (this.stmt.Where) seq = this.Where(seq, this.stmt.Where);
-
-        var resultsP: Q.Promise<any[]>;
-
-        //Grouping
-        //Explicitly
-        if (this.stmt.GroupBy) {
-            resultsP = this.GroupBy(seq, this.stmt.GroupBy.Groupings)
-                .then(groups => this.SelectGrouped(groups, this.stmt.GroupBy.Having))
-                .then(resultSeq => resultSeq.toArray());
-        }
-        //Implicitly
-        else if (lazy(this.stmt.Select.SelectList).some(selectable => evl.Evaluator.IsAggregate(selectable.Expression))) {
-
-            resultsP = JsoqlQuery.SequenceToArray(seq)
-                .then(items => this.SelectMonoGroup(items));
-        }
-        //No grouping
-        else {
-            resultsP = JsoqlQuery.SequenceToArray(this.SelectUngrouped(seq));
-        }
-
-        if (this.stmt.Union) {
-            var right = new JsoqlQuery(this.stmt.Union, this.dataSourceSequencers, this.queryContext);
-            Q.all([resultsP, right.Execute()])
-                .then(resultss => deferred.resolve(resultss[0].concat(resultss[1])));
-        }
-        else resultsP.then(results => deferred.resolve(results));
+        this.GetResultsSequence(error => deferred.reject(error))
+            .then(seq => JsoqlQuery.SequenceToArray(seq))
+            .then(results => deferred.resolve(results));
 
         return deferred.promise;
     }
@@ -520,7 +491,12 @@ export class JsoqlQuery {
         return val.Validate(this.stmt);
     }
 
-    ExecuteLazy(onError : m.ErrorHandler): m.QueryExecution {
+    ExecuteLazy(onError: m.ErrorHandler): m.QueryExecution {
+        return new LazyJsQueryExecution(this.GetResultsSequence(onError))
+            .OnError(onError);
+    }
+
+    private GetResultsSequence(onError: m.ErrorHandler): Q.Promise<LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>> {
 
         var seqP: Q.Promise<LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>>;
 
@@ -554,8 +530,7 @@ export class JsoqlQuery {
             //    .then(resultss => deferred.resolve(resultss[0].concat(resultss[1])));
         }
         
-        return new LazyJsQueryExecution(seqP)
-            .OnError(onError);
+        return seqP;
     }
 
     private GroupBySync(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, expressions : any[]): LazyJS.Sequence<m.Group> {
