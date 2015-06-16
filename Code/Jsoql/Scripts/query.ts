@@ -18,17 +18,40 @@ interface DatasourceConfig {
     Over?: boolean; 
 }
 
+class CallbackSet<T> {
+
+    private callbacks: ((arg: T) => void)[];
+
+    constructor() {
+        this.callbacks = [];
+    }
+
+    public Add(callback: (arg: T) => void) {
+        this.callbacks.push(callback);
+    }
+
+    public DoAll(arg: T) {
+        this.callbacks.forEach(c => c(arg));
+        this.callbacks = [];
+    }
+
+    public RemoveAll() {
+        this.callbacks = [];
+    }
+
+}
 
 class LazyJsQueryExecution implements m.QueryExecution {
 
     private currentIndex: number;
     private items: any[];
     private onCancel: () => void;
-    private callbacks: {
+    private itemCallbacks: {
         Count?: number;
         Do: (items: any[]) => void;
     }[];
-    private onComplete: (() => void)[];
+    private onComplete: CallbackSet<any>;
+    private onError: CallbackSet<any>;
     private isComplete: boolean;
     private startTime: number[];
     private finishTime: number[];
@@ -36,9 +59,10 @@ class LazyJsQueryExecution implements m.QueryExecution {
     constructor(sequencePromise: Q.Promise<LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>>) {
         this.currentIndex = 0;
         this.items = [];
-        this.callbacks = [];
+        this.itemCallbacks = [];
         this.isComplete = false;
-        this.onComplete = [];
+        this.onComplete = new CallbackSet<any>();
+        this.onError = new CallbackSet<any>();
 
         this.startTime = hrtime();
 
@@ -46,20 +70,22 @@ class LazyJsQueryExecution implements m.QueryExecution {
             var handle = seq.each(item => this.AddItem(item));
             if (handle['cancel']) this.onCancel = () => handle['cancel']();
             if (handle['onComplete']) handle['onComplete'](() => this.SetComplete());
+            if (handle['onError']) handle['onError'](err => this.onError.DoAll(err));
             else this.SetComplete();
         })
     }
 
     Cancel(removeCallbacks?: boolean): void {
         if (this.onCancel) this.onCancel();
-        this.callbacks = [];
-        this.onComplete = null;
+        this.itemCallbacks = [];
+        this.onComplete.RemoveAll();
+        this.onError.RemoveAll();
     }
 
     GetNext(count?: number): Q.Promise<any[]> {
         var deferred = Q.defer<any[]>();
 
-        this.callbacks.push({
+        this.itemCallbacks.push({
             Count: count,
             Do: deferred.resolve
         });
@@ -83,13 +109,22 @@ class LazyJsQueryExecution implements m.QueryExecution {
 
     OnComplete(handler: () => void) {
         if (this.isComplete) setTimeout(handler);
-        else this.onComplete.push(handler);
+        else this.onComplete.Add(handler);
+
+        return this;
     }
 
     IsComplete(): boolean {
         return this.isComplete;
-
     }
+
+    OnError(handler: (error: any) => void) {
+        this.onError.Add(handler);
+
+        return this;
+    }
+
+
 
     private SetComplete() {
         this.finishTime = hrtime(this.startTime);
@@ -97,8 +132,7 @@ class LazyJsQueryExecution implements m.QueryExecution {
 
         this.ProcessCallbacks();
 
-        this.onComplete.forEach(handler => handler());
-        this.onComplete = [];
+        this.onComplete.DoAll(null);
     }
 
     private AddItem(item: any) {
@@ -108,15 +142,15 @@ class LazyJsQueryExecution implements m.QueryExecution {
     }
 
     private ProcessCallbacks() {
-        while (this.callbacks.length) {
-            var callback = this.callbacks[0];
+        while (this.itemCallbacks.length) {
+            var callback = this.itemCallbacks[0];
 
             if (callback.Count && this.items.length >= this.currentIndex + callback.Count) {
-                this.callbacks.shift();
+                this.itemCallbacks.shift();
                 callback.Do(this.GetChunk(callback.Count));
             }
             else if (!callback.Count && this.isComplete) {
-                this.callbacks.shift();
+                this.itemCallbacks.shift();
                 callback.Do(this.GetChunk());
             }
             else break;
@@ -520,7 +554,8 @@ export class JsoqlQuery {
             //    .then(resultss => deferred.resolve(resultss[0].concat(resultss[1])));
         }
         
-        return new LazyJsQueryExecution(seqP);
+        return new LazyJsQueryExecution(seqP)
+            .OnError(onError);
     }
 
     private GroupBySync(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, expressions : any[]): LazyJS.Sequence<m.Group> {

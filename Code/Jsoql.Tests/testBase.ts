@@ -126,7 +126,7 @@ export function ExecuteLazyToCompletion(query: string): Q.Promise<jsoql.JsoqlQue
     var deferred = Q.defer<jsoql.JsoqlQueryExecution>();
 
     try {
-        var queryExec = Jsoql.ExecuteQueryLazy(query);
+        var queryExec = Jsoql.ExecuteQueryLazy(query, null, error => deferred.reject(error));
         queryExec.OnComplete(() => deferred.resolve(queryExec));
     }
     catch (ex) {

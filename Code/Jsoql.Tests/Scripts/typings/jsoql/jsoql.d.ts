@@ -28,7 +28,8 @@ declare module 'jsoql' {
         AvailableItems(): number;
         ExecutionTime(): number;
         IsComplete(): boolean;
-        OnComplete(handler: () => void);
+        OnComplete(handler: () => void): JsoqlQueryExecution;
+        OnError(handler: (error : any) => void): JsoqlQueryExecution;
     }
 
 
@@ -38,20 +39,20 @@ declare module 'jsoql' {
 
     export interface JsoqlEngine {
         ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryResult>;
-        ExecuteQueryLazy(jsoql: string, context?: JsoqlQueryContext): JsoqlQueryExecution;
+        ExecuteQueryLazy(jsoql: string, context?: JsoqlQueryContext, onError? : (error : any) => void): JsoqlQueryExecution;
         GetQueryHelp(jsoql: string, cursorPositionOrIndex: JsoqlPosition|number, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryHelpResult>
     }
 
     export class DesktopJsoqlEngine implements JsoqlEngine {
         ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryResult>;
-        ExecuteQueryLazy(jsoql: string, context?: JsoqlQueryContext): JsoqlQueryExecution;
+        ExecuteQueryLazy(jsoql: string, context?: JsoqlQueryContext, onError?: (error: any) => void): JsoqlQueryExecution;
         GetQueryHelp(jsoql: string, cursorPositionOrIndex: JsoqlPosition|number, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryHelpResult>
     }
 
     export class OnlineJsoqlEngine implements JsoqlEngine {
         constructor(appBaseUrl: string, getStoredFile: (id: string) => string);
         ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryResult>;
-        ExecuteQueryLazy(jsoql: string, context?: JsoqlQueryContext): JsoqlQueryExecution;
+        ExecuteQueryLazy(jsoql: string, context?: JsoqlQueryContext, onError?: (error: any) => void): JsoqlQueryExecution;
         GetQueryHelp(jsoql: string, cursorPositionOrIndex: JsoqlPosition|number, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryHelpResult>
     }
 }

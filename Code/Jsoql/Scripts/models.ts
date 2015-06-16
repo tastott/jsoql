@@ -25,7 +25,8 @@ export interface QueryExecution {
     AvailableItems(): number;
     ExecutionTime(): number;
     IsComplete(): boolean;
-    OnComplete(handler: () => void);
+    OnComplete(handler: () => void): QueryExecution;
+    OnError(handler: (error : any) => void): QueryExecution;
 }
 
 

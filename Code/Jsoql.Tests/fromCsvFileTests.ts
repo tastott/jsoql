@@ -62,3 +62,11 @@ export function FromCsvFileWithQuotedNewlines() {
         });
 
 }
+
+export function FromCsvFileLazy() {
+    var jsoql = "SELECT * FROM 'file://Data/baseball-players.csv'";
+    return testBase.ExecuteLazyToCompletionAndAssert(jsoql,
+        result => {
+            assert.equal(result.AvailableItems(), 185891);
+        });
+}
