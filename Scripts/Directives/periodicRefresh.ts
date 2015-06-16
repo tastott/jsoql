@@ -11,9 +11,7 @@ export class PeriodicRefreshDirective implements ng.IDirective {
 
         //var expression = this.$parse(attributes['periodicRefresh']);
 
-        var intervalMillis = attributes['periodicRefreshInterval']
-            ? parseInt(attributes['periodicRefreshInterval'])
-            : 1000;
+        var intervalMillis = parseInt(attributes['periodicRefresh']);
 
         var conditionText = attributes['periodicRefreshCondition'];
         var condition = conditionText
@@ -29,8 +27,10 @@ export class PeriodicRefreshDirective implements ng.IDirective {
 
             interval = this.$interval(() => {
                 //element.html(expression($scope));
-                if (condition && !condition($scope)) this.$interval.cancel(interval);
-                $scope.$digest();
+                if (condition && !condition($scope)) {
+                    this.$interval.cancel(interval);
+                }
+                //$scope.$digest();
             }, intervalMillis, null, true);
             
         };
