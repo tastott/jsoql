@@ -1,11 +1,10 @@
-﻿///<reference path="Scripts/typings/jsoql/jsoql.d.ts"/>
-
+﻿import jsoql = require('jsoql')
 import assert = require('assert');
 import testBase = require('./testBase');
 
 
 export function Union() {
-    var context: JsoqlQueryContext = {
+    var context: jsoql.JsoqlQueryContext = {
         Data: {
             people1: [
                 { Name: 'Dave', FavouriteFoods: ['Chips', 'Doughnuts'] },

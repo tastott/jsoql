@@ -1,5 +1,4 @@
-﻿///<reference path="Scripts/typings/jsoql/jsoql.d.ts"/>
-
+﻿import jsoql = require('jsoql')
 import assert = require('assert');
 import testBase = require('./testBase');
 
@@ -23,7 +22,7 @@ export function Join() {
         { CustomerId: 2, Name: 'Bob', Order: 'B' }
     ];
 
-    var data: JsoqlQueryContext = {
+    var data: jsoql.JsoqlQueryContext = {
         Data: {
             "Orders": dataA,
             "Customers": dataB

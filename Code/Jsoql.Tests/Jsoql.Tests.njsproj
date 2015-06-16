@@ -37,6 +37,7 @@
     <Content Include="Data\customers-with-newlines.csv" />
     <Content Include="Data\customers.csv2" />
     <Content Include="Data\customers.csv" />
+    <Content Include="Data\customers.jsonl" />
     <Content Include="Data\Folder\Nested\order4.json" />
     <Content Include="Data\Folder\order1.blah" />
     <Content Include="Data\Folder\order1.json" />
@@ -49,6 +50,9 @@
     <Content Include="Data\orders.jsonl" />
     <Content Include="package.json" />
     <Content Include="README.md" />
+    <TypeScriptCompile Include="lazyQueryTests.ts">
+      <TestFramework>ExportRunner</TestFramework>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="unionTests.ts">
       <TestFramework>ExportRunner</TestFramework>
     </TypeScriptCompile>

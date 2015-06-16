@@ -1,10 +1,10 @@
-﻿///<reference path="Scripts/typings/jsoql/jsoql.d.ts"/>
-
+﻿
+import jsoql = require('jsoql')
 import assert = require('assert');
 import testBase = require('./testBase');
 
 
-function TestHelper(data: any[], queryWithCursor: string, expected: JsoqlQueryHelpResult) {
+function TestHelper(data: any[], queryWithCursor: string, expected: jsoql.JsoqlQueryHelpResult) {
     //Get position of cursor placeholder and remove it
     var cursor = queryWithCursor.indexOf('@');
     var queryWithoutCursor = queryWithCursor.replace('@', '');
