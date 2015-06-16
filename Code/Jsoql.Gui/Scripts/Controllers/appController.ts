@@ -23,19 +23,21 @@ class QueryTab {
         this.QueryText = new m.EditableText(QueryText || '');
         this.QueryResult = {};
         this.BaseDirectory = new m.EditableText(BaseDirectory || process.cwd());
-        this.IsExecuting = false;
 
         this.QueryResults = [];
     }
 
-    CurrentQuery: qes.QueryExecution;
+    CurrentQuery: qes.QueryResult;
     QueryText: m.EditableText;
     QueryResult: m.QueryResult;
     BaseDirectory: m.EditableText;
     StorageId: string;
-    IsExecuting: boolean;
+    IsExecuting = () => {
+        return this.CurrentQuery && this.CurrentQuery.Iterator && !this.CurrentQuery.Iterator.IsComplete();
+    }
 
     QueryResults: any[];
+    Error: string;
 
     IsEdited = () => {
         return !this.StorageId || this.QueryText.IsEdited() || this.BaseDirectory.IsEdited();
@@ -46,11 +48,14 @@ class QueryTab {
     }
 
     private ClearResults() {
-        if (this.CurrentQuery) {
-            this.CurrentQuery.Cancel(true);
-            this.CurrentQuery = null;
-            this.QueryResults = [];
+        this.QueryResults = [];
+        this.Error = null;
+
+        if (this.CurrentQuery && this.CurrentQuery.Iterator) {
+            this.CurrentQuery.Iterator.Cancel(true);
         }
+
+        this.CurrentQuery = null;
     }
 
     Execute = () => {
@@ -59,9 +64,13 @@ class QueryTab {
             this.ClearResults();
             //this.IsExecuting = true;
 
-            this.CurrentQuery = this.queryExecutionService.ExecuteQueryPaged(this.QueryText.GetValue(), this.BaseDirectory.GetValue());
-            
-            this.GetMoreResults();
+            this.CurrentQuery = this.queryExecutionService.ExecuteQuery(this.QueryText.GetValue(), this.BaseDirectory.GetValue());
+            if (this.CurrentQuery.Errors && this.CurrentQuery.Errors.length) {
+                this.Error = this.CurrentQuery.Errors[0];
+            }
+            else {
+                this.GetMoreResults();
+            }
             //this.queryExecutionService.ExecuteQuery(this.QueryText.GetValue(), this.BaseDirectory.GetValue())
             //    .then(result => {
             //        this.$scope.$apply(() => this.QueryResult = result); //TOOD: Better way to do this?
@@ -77,7 +86,7 @@ class QueryTab {
 
     GetMoreResults = () => {
         if (this.CurrentQuery) {
-            this.CurrentQuery.GetNext(8)
+            this.CurrentQuery.Iterator.GetNext(8)
                 .then(items => {
                     this.$scope.$apply(() => this.QueryResults = this.QueryResults.concat(items));
                 });
@@ -86,7 +95,7 @@ class QueryTab {
     }
 
     Cancel = () => {
-        if (this.CurrentQuery && !this.CurrentQuery.IsComplete()) {
+        if (this.CurrentQuery && this.CurrentQuery.Iterator && !this.CurrentQuery.Iterator.IsComplete()) {
             this.ClearResults();
         }
     }
@@ -128,7 +137,7 @@ class QueryTab {
     }
 
     SaveResultsEnabled = () => {
-        return this.CurrentQuery && this.CurrentQuery.IsComplete();
+        return this.CurrentQuery && this.CurrentQuery.Iterator && this.CurrentQuery.Iterator.IsComplete();
     }
 }
 

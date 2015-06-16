@@ -16,19 +16,23 @@ declare module 'jsoql' {
         Data?: { [key: string]: any[] };
     }
 
-    interface JsoqlQueryResult {
-        Results?: any[];
-        Errors?: string[];
-        Datasources?: Datasource[];
-    }
-
-    interface JsoqlQueryExecution {
-        Cancel(removeCallbacks?: boolean): void;
-        GetNext(count?: number): Q.Promise<any[]>;
+    export interface JsoqlQueryIterator {
         AvailableItems(): number;
+        GetNext(count?: number): Q.Promise<any[]>;
+        GetAll(): Q.Promise<any[]>;
+        Cancel(removeCallbacks?: boolean): void;
         ExecutionTime(): number;
         IsComplete(): boolean;
-        OnComplete(handler: () => void);
+        OnComplete(handler: () => void): JsoqlQueryIterator;
+        OnError(handler: (error: any) => void): JsoqlQueryIterator;
+    }
+
+    export interface JsoqlQueryResult {
+        GetAll(): Q.Promise<any[]>;
+
+        Iterator: JsoqlQueryIterator;
+        Datasources: Datasource[];
+        Errors: string[];
     }
 
 
@@ -37,21 +41,18 @@ declare module 'jsoql' {
     }
 
     export interface JsoqlEngine {
-        ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryResult>;
-        ExecuteQueryLazy(jsoql: string, context?: JsoqlQueryContext): JsoqlQueryExecution;
+        ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): JsoqlQueryResult;
         GetQueryHelp(jsoql: string, cursorPositionOrIndex: JsoqlPosition|number, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryHelpResult>
     }
 
     export class DesktopJsoqlEngine implements JsoqlEngine {
-        ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryResult>;
-        ExecuteQueryLazy(jsoql: string, context?: JsoqlQueryContext): JsoqlQueryExecution;
+        ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): JsoqlQueryResult;
         GetQueryHelp(jsoql: string, cursorPositionOrIndex: JsoqlPosition|number, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryHelpResult>
     }
 
     export class OnlineJsoqlEngine implements JsoqlEngine {
         constructor(appBaseUrl: string, getStoredFile: (id: string) => string);
-        ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryResult>;
-        ExecuteQueryLazy(jsoql: string, context?: JsoqlQueryContext): JsoqlQueryExecution;
+        ExecuteQuery(jsoql: string, context?: JsoqlQueryContext): JsoqlQueryResult;
         GetQueryHelp(jsoql: string, cursorPositionOrIndex: JsoqlPosition|number, context?: JsoqlQueryContext): Q.Promise<JsoqlQueryHelpResult>
     }
 }

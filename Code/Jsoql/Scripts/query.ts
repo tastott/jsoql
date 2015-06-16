@@ -70,11 +70,13 @@ class LazyJsQueryIterator implements m.QueryIterator {
         sequencePromise
             .then(seq => {
                 var handle = seq.each(item => this.AddItem(item));
-                if (handle['cancel']) this.onCancel = () => handle['cancel']();
-                if (handle['onComplete']) handle['onComplete'](() => this.SetComplete());
-                if (handle['onError']) handle['onError'](err => {
-                    this.onError.DoAll(err);
-                });
+                if (handle && handle['cancel']) {
+                    this.onCancel = () => handle['cancel']();
+                    handle['onComplete'](() => this.SetComplete());
+                    handle['onError'](err => {
+                        this.onError.DoAll(err);
+                    });
+                }
                 else this.SetComplete();
             })
             .fail(err => this.onError.DoAll(err))
@@ -554,10 +556,11 @@ export class JsoqlQuery {
         }
 
         if (this.stmt.Union) {
-            throw new Error("Union not currently supported in page query");
-            //var right = new JsoqlQuery(this.stmt.Union, this.dataSourceSequencers, this.queryContext);
-            //Q.all([resultsP, right.Execute()])
-            //    .then(resultss => deferred.resolve(resultss[0].concat(resultss[1])));
+            var right = new JsoqlQuery(this.stmt.Union, this.dataSourceSequencers, this.queryContext);
+            seqP = Q.all([seqP, right.GetResultsSequence()])
+                .then(seqs => {
+                    return seqs[0].concat(<any>seqs[1]);
+                })
         }
         
         seqP.done(seq => deferred.resolve(seq));

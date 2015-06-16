@@ -952,20 +952,30 @@
     var done = false,
         i = 0;
 
-    this.parent.each(function(e) {
+    var handle = this.parent.each(function(e) {
       if (fn(e, i++) === false) {
         done = true;
         return false;
       }
     });
 
-    if (!done) {
-      Lazy(this.arrays).flatten().each(function(e) {
-        if (fn(e, i++) === false) {
-          return false;
+    while (!done && this.arrays.length) {
+            var concatee = this.arrays.shift();
+            if (Array.isArray(concatee)) {
+                concatee = Lazy(concatee);
+            } else if (!concatee.each) throw new Error('Expecting array or sequence to concatenate');
+            
+            var cHandle = concatee.each(function (e) {
+                    if (fn(e, i++) === false) {
+                        done = true;
+                        return false;
+                    }
+            });
+
+            if (handle instanceof AsyncHandle && cHandle instanceof AsyncHandle) handle.waitFor(cHandle);
         }
-      });
-    }
+
+        if (handle instanceof AsyncHandle) return handle;
   };
 
   /**
