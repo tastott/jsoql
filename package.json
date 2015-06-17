@@ -1,6 +1,6 @@
 {
   "name": "jsoql-pad",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "GUI for running and managing JSOQL queries",
   "main": "index-nw.html",
   "scripts": {
@@ -28,7 +28,7 @@
     "font-awesome": "^4.3.0",
     "glob": "^5.0.5",
     "jquery": "^2.1.3",
-    "jsoql": "^0.0.15",
+    "jsoql": "^0.0.16",
     "lazy.js": "^0.4.0",
     "nw": "^0.12.1",
     "q": "^1.2.0"
