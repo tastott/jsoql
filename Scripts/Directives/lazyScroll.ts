@@ -10,15 +10,31 @@ export class LazyScrollDirective implements ng.IDirective {
     public link = ($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes) => {
   
         var onScroll = this.$parse(attributes['lazyScroll']);
-
+      
         var threshold = attributes['lazyScrollThreshold']
             ? parseInt(attributes['lazyScrollThreshold'])
             : 10;
 
-        element[0].addEventListener('scroll', event => {
-            var atBottom = (element[0].scrollTop + element[0].offsetHeight) > (element[0].scrollHeight - threshold);
+        function atBottom() {
+            return (element[0].scrollTop + element[0].offsetHeight) > (element[0].scrollHeight - threshold);
+        }
 
-            if (atBottom) {
+        function fillToBottom() {
+            if ((element[0].scrollHeight - threshold) < element[0].offsetHeight) {
+                //onScroll is assumed to return either a boolean or a promise for a boolean
+                //where true indicates that no more items are available
+                var result = onScroll($scope);
+                if (result && result.then) result.then(complete => {
+                    if (!complete) fillToBottom();
+                });
+                else if (result === false) fillToBottom();
+            }
+        }
+
+        fillToBottom();
+
+        element[0].addEventListener('scroll', event => {
+            if (atBottom()) {
                 onScroll($scope);
             }
 
@@ -29,6 +45,13 @@ export class LazyScrollDirective implements ng.IDirective {
             //    atBottom: atBottom
             //}, null, 4));
         });
+
+        //If reset watch is provided, watch for changes and trigger fill
+        if (attributes['lazyScrollReset']) {
+            $scope.$watch(attributes['lazyScrollReset'],() => {
+                fillToBottom();
+            });
+        }
     }
 
     public static Factory() {

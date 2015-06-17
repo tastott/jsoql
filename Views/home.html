@@ -62,7 +62,9 @@
             </div>
             <div style="flex: 1 0px;" class="full-height">
                 <div style="height: calc(100% - 100px)">
-                    <div lazy-scroll="SelectedTab.GetMoreResults()" class="query-result-container">
+                    <div lazy-scroll="SelectedTab.GetMoreResults()" 
+                         lazy-scroll-reset="SelectedTab.CurrentQuery"
+                         class="query-result-container">
                         <pretty-json ng-repeat="result in SelectedTab.QueryResults track by $index" content="result"></pretty-json>
                         <div class="query-error" ng-show="SelectedTab.Error">
                             <p><i class="fa fa-exclamation-triangle fa-2x"></i></p>
