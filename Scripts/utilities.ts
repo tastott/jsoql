@@ -14,7 +14,8 @@ export function ShowSaveFileDialog(options? : SaveFileOptions): Q.Promise<string
         .attr('nwsaveas', options.InitialFilename || '')
         .css({
             opacity: 0,
-            height: 0
+            height: 0,
+            display: "none"
         });
 
     if (options.InitialDirectory) input.attr('nwworkingdir', options.InitialDirectory);
