@@ -211,3 +211,50 @@ export function SelectWithSingleAliasedDatasource() {
 
     return testBase.ExecuteAndAssertDeepEqual(query, data, data);
 }
+
+export function SelectUsingSquareBracketAccessorOnTableAlias() {
+    var data = [
+        { "First Name": "Tim", "Favourite food": "Chips" },
+        { "First Name": "Dave", "Favourite food": "Batteries" }
+    ];
+    var expected = [
+        { "FirstName": "Tim", "FavouriteFood": "Chips"},
+        { "FirstName": "Dave", "FavouriteFood": "Batteries"}
+    ]
+    var query = "SELECT person['First Name'] AS FirstName, person[\"Favourite food\"] AS FavouriteFood FROM 'var://Test' AS person";
+
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
+
+export function SelectWithSingleQuotedColumnAlias() {
+    var data = [
+        { "FirstName": "Tim" },
+        { "FirstName": "Dave" }
+    ]
+    var expected = [
+        { "First Name": "Tim" },
+        { "First Name": "Dave" }
+    ];
+    
+    var query = "SELECT FirstName AS 'First Name' FROM 'var://Test'";
+
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
+
+export function SelectWithDoubleQuotedColumnAlias() {
+    var data = [
+        { "FirstName": "Tim" },
+        { "FirstName": "Dave" }
+    ]
+    var expected = [
+        { "First Name": "Tim" },
+        { "First Name": "Dave" }
+    ];
+
+    var query = "SELECT FirstName AS \"First Name\" FROM 'var://Test'";
+
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}

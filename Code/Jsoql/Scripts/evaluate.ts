@@ -78,7 +78,6 @@ export class Evaluator {
             if (target[expression.Property] === null) return null;
 
             if (expression.Index != undefined) {
-                //TODO: Check index is integer and target property is array
                 propTarget = target[expression.Property][expression.Index];
             } else propTarget = target[expression.Property];
 
@@ -138,7 +137,7 @@ export class Evaluator {
                 ? aliasPrefix + expression.Property + '[' + expression.Index + ']'
                 : propAlias = aliasPrefix + expression.Property;
 
-            //TODO: Check index is integer and target property is array
+
             var propTarget = target != undefined
                 ? expression.Index != undefined
                     ? propTarget = target[expression.Property][expression.Index]

@@ -26,6 +26,10 @@ var exp = {
         [
             val.Quotation,
             "{ Quoted: $1.replace(/'/g, \"\")}"
+        ],
+        [
+            val.DoubleQuotation,
+            "{ Quoted: $1.replace(/\"/g, \"\")}"
         ]
     ],
     Boolean: () => [
@@ -41,6 +45,13 @@ var exp = {
     Identifier: () => [
         val.PlainIdentifier
     ],
+    Index: () => [
+        val.Number,
+        [
+            exp.Quoted,
+            "$1.Quoted"
+        ]
+    ],
     Property: () => [
         [
             '*',
@@ -51,7 +62,7 @@ var exp = {
             "{ Property: $1}"
         ],
         [
-            exp.Identifier + ' [ ' + val.Number + ' ]',
+            exp.Identifier + ' [ ' + exp.Index + ' ]',
             "{ Property: $1, Index: $3}"
         ],
         [
@@ -59,7 +70,7 @@ var exp = {
             "{ Property: $1, Child: $3}"
         ],
         [
-            exp.Identifier + " [ " + val.Number + " ] . " + exp.Property,
+            exp.Identifier + " [ " + exp.Index + " ] . " + exp.Property,
             "{ Property: $1, Index: $3, Child: $6}"
         ]
     ],
@@ -186,6 +197,10 @@ var exp = {
         [
             exp.Expression + " " + keywords.AS + " " + exp.Identifier,
             "{ Expression: $1, Alias: $3}"
+        ],
+        [
+            exp.Expression + " " + keywords.AS + " " + exp.Quoted,
+            "{ Expression: $1, Alias: $3.Quoted}"
         ]
     ],
     SelectList: () => [
