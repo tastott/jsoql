@@ -70,6 +70,7 @@ export interface FromClauseNode {
         Value: any;
     }[];
     Quoted: string;
+    SubQuery: Statement;
 }
 
 export interface GroupByClause {

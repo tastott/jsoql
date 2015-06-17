@@ -201,7 +201,11 @@ var exp = {
     FromTarget: () => [
         exp.Property,
         exp.Quoted,
-        exp.Object
+        exp.Object,
+        [
+            '( ' + exp.Stmt + ' )',
+            "{ SubQuery: $2 }"
+        ] 
     ],
     AliasedFromTarget: () => [
         [

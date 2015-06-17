@@ -1,4 +1,5 @@
-﻿var lazy : LazyJS.LazyStatic = require('./Hacks/lazy.node')
+﻿var lazy: LazyJS.LazyStatic = require('./Hacks/lazy.node')
+import lazyExt = require('./lazy-ext')
 import Q = require('q')
 import ds = require('./datasource')
 import parse = require('./parse')
@@ -16,6 +17,7 @@ interface DatasourceConfig {
     Parameters?: any;
     Condition?: any;
     Over?: boolean; 
+    SubQuery?: boolean;
 }
 
 class CallbackSet<T> {
@@ -243,15 +245,20 @@ export class JsoqlQuery {
         }
     }
 
-    private GetSequence(target: any, parameters: any, onError : m.ErrorHandler): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+    private GetSequence(config : DatasourceConfig, onError : m.ErrorHandler): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
-        var ds = this.ToDatasource(target);
+        if (config.SubQuery) {
+            var subQuery = new JsoqlQuery(config.Target, this.dataSourceSequencers, this.queryContext);
+            return new lazyExt.PromisedSequence(subQuery.GetResultsSequence());
+        }
+
+        var ds = this.ToDatasource(config.Target);
 
         if (ds.Type === 'var') {
             return this.dataSourceSequencers['var'].Get(ds.Value, {}, this.queryContext, onError);
         }
         else {
-            parameters = parameters || {};
+            var parameters = config.Parameters || {};
             var dataSource = this.dataSourceSequencers[ds.Type];
             if (!dataSource) throw new Error("Invalid scheme for data source: '" + ds.Type + "'");
 
@@ -264,7 +271,7 @@ export class JsoqlQuery {
 
         var targets = this.CollectDatasources(fromClause);
 
-        var seq = this.GetSequence(targets[0].Target, targets[0].Parameters, onError);
+        var seq = this.GetSequence(targets[0], onError);
 
         if (targets.length > 1 || targets[0].Alias) {
             var aliases = lazy(targets).map(t => t.Alias);
@@ -287,7 +294,7 @@ export class JsoqlQuery {
             //Join/over each subsequent table
             lazy(targets).slice(1).each(target => {
 
-                if (target.Condition) seq = this.Join(seq, this.GetSequence(target.Target, target.Parameters, onError), target.Alias, target.Condition);
+                if (target.Condition) seq = this.Join(seq, this.GetSequence(target, onError), target.Alias, target.Condition);
                 else if (target.Over) seq = this.Over(seq, target.Target, target.Alias);
                 else throw new Error("Unsupported FROM clause");
                
@@ -383,6 +390,14 @@ export class JsoqlQuery {
                     .filter(kv => kv.Key !== 'uri')
                     .map(kv => [kv.Key, kv.Value])
                     .toObject()
+            }];
+        }
+        //Sub-query
+        else if (fromClauseNode.SubQuery) {
+            return [{
+                Target: fromClauseNode.SubQuery,
+                Alias: null,
+                SubQuery: true
             }];
         }
         //Un-aliased

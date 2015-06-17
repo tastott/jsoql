@@ -51,6 +51,9 @@
     <Content Include="Data\orders.jsonl" />
     <Content Include="package.json" />
     <Content Include="README.md" />
+    <TypeScriptCompile Include="fromSubQueryTests.ts">
+      <TestFramework>ExportRunner</TestFramework>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="lazyQueryTests.ts">
       <TestFramework>ExportRunner</TestFramework>
     </TypeScriptCompile>

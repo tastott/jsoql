@@ -221,3 +221,5 @@ export function lazyCsvFromStream(stream: _stream.Readable, headers: string[], s
 
     return <any>sequence;
 }
+
+
