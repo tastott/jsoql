@@ -196,3 +196,10 @@ html, body {
 .menu-slide-panel.ng-hide {
   width:0px;
 }
+
+.query-error{
+    color: #dd0000;
+  font-weight: bold;
+  padding: 20px;
+  text-align:center;
+}

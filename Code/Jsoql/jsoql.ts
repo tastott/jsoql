@@ -30,7 +30,7 @@ export class JsoqlEngineBase implements m.JsoqlEngine {
             return query.Execute();
         }
         catch (ex) {
-            return new q.JsoqlQueryResult(null, [], [ex]);
+            return new q.JsoqlQueryResult(null, [], [ex.message]);
         }
 
     }
