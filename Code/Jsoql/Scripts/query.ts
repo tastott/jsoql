@@ -95,10 +95,7 @@ class LazyJsQueryIterator implements m.QueryIterator {
 
         this.OnError(error => deferred.reject(error));
 
-        this.GetNext(0)
-            .then(results => {
-                deferred.resolve(results);
-            });
+        this.OnComplete(() => deferred.resolve(this.items));
 
         return deferred.promise;
     }

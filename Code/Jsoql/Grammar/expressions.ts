@@ -91,6 +91,10 @@ var exp = {
             "{ Call: $1, Args: $3}"
         ],
         [
+            '[ ]',
+            "[]"
+        ],
+        [
             '[ ' + exp.ExpressionList + ' ]',
             "$2"
         ],

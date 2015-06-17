@@ -21,7 +21,6 @@ class QueryTab {
 
         this.StorageId = StorageId || null;
         this.QueryText = new m.EditableText(QueryText || '');
-        this.QueryResult = {};
         this.BaseDirectory = new m.EditableText(BaseDirectory || process.cwd());
 
         this.QueryResults = [];
@@ -29,7 +28,6 @@ class QueryTab {
 
     CurrentQuery: qes.QueryResult;
     QueryText: m.EditableText;
-    QueryResult: m.QueryResult;
     BaseDirectory: m.EditableText;
     StorageId: string;
     IsExecuting = () => {
@@ -123,16 +121,18 @@ class QueryTab {
 
     SaveResults = () => {
         if (this.SaveResultsEnabled()) {
-            var json = JSON.stringify(this.QueryResult.Results, null, 4);
+            this.CurrentQuery.GetAll()
+                .then(results => {
+                    var json = JSON.stringify(results, null, 4);
 
-            this.queryFileService.Download(json, 'results.json')
-                .fail(error => {
-                    console.log(error);
-                })
-                .then(() => {
-                    console.log('file saved');
+                    return this.queryFileService.Download(json, 'results.json')
+                        .fail(error => {
+                        console.log(error);
+                    })
+                        .then(() => {
+                        console.log('file saved');
+                    });
                 });
-                
             }
     }
 
