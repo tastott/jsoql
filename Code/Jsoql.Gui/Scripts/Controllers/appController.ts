@@ -83,13 +83,15 @@ class QueryTab {
     }
 
     GetMoreResults = () => {
-        if (this.CurrentQuery) {
-            this.CurrentQuery.Iterator.GetNext(8)
+        console.log('getting more');
+        if (this.CurrentQuery && this.CurrentQuery.Iterator) {
+            return this.CurrentQuery.Iterator.GetNext(8)
                 .then(items => {
                     this.$scope.$apply(() => this.QueryResults = this.QueryResults.concat(items));
+                    return items.length == 0; //return true to indicate completion
                 });
         }
-
+        else return Q(true); //return true to indicate completion
     }
 
     Cancel = () => {
