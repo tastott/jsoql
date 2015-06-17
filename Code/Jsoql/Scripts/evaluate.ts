@@ -188,7 +188,12 @@ export class Evaluator {
     }
 
     public EvaluateGroup(expression: any, group: m.Group) {
-        if (Evaluator.IsAggregateFunction(expression)) {
+
+        var expressionKey = JSON.stringify(expression);
+        if (group.Key[expressionKey] !== undefined) {
+            return group.Key[expressionKey];
+        }
+        else if (Evaluator.IsAggregateFunction(expression)) {
             if (expression.Args && expression.Args.length > 1)
                 throw new Error('Aggregate function expected zero or one arguments');
 
@@ -198,10 +203,10 @@ export class Evaluator {
 
             return this.DoAggregateFunction(expression.Call, items);
         }
-        else if (expression.Property) {
-            var key = Evaluator.Key(expression);
-            return group.Key[key];
-        }
+        //else if (expression.Property) {
+        //    var key = Evaluator.Alias(expression);
+        //    return group.Key[key];
+        //}
         else if (expression.Call) {
             var args = expression.Args.map(arg => this.EvaluateGroup(arg, group));
             return this.DoScalarFunction(expression.Call, args);
@@ -263,14 +268,14 @@ export class Evaluator {
         else return false;
     }
 
-    static Key(expression: any): string {
+    static Alias(expression: any): string {
         if (expression.Property) {
             var propKey;
             if (expression.Index != undefined) {
                 propKey = expression.Property + '[' + expression.Index + ']';
             } else propKey = expression.Property
 
-            if (expression.Child) return propKey + '.' + this.Key(expression.Child);
+            if (expression.Child) return propKey + '.' + this.Alias(expression.Child);
             else return propKey;
         }
         else if (expression.Call) {

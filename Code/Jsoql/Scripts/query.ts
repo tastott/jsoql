@@ -435,7 +435,7 @@ export class JsoqlQuery {
         return groups.map(group =>
             lazy(this.stmt.Select.SelectList)
                 .map(selectable => [
-                selectable.Alias || evl.Evaluator.Key(selectable.Expression),
+                selectable.Alias || evl.Evaluator.Alias(selectable.Expression),
                 this.evaluator.EvaluateGroup(selectable.Expression, group)
             ])
                 .toObject()
@@ -445,14 +445,14 @@ export class JsoqlQuery {
     private SelectMonoGroup(items : any[]): any[] {
         
         var group: m.Group = {
-            Key: null,
+            Key: {},
             Items: items
         };
 
         return [
             lazy(this.stmt.Select.SelectList)
                 .map(selectable => [
-                selectable.Alias || evl.Evaluator.Key(selectable.Expression),
+                selectable.Alias || evl.Evaluator.Alias(selectable.Expression),
                 this.evaluator.EvaluateGroup(selectable.Expression, group)
             ])
             .toObject()
@@ -583,7 +583,7 @@ export class JsoqlQuery {
     private GroupBySync(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, expressions : any[]): LazyJS.Sequence<m.Group> {
         var groupKey = (item: any) => {
             var object = lazy(expressions)
-                .map(exp => [evl.Evaluator.Key(exp), this.evaluator.Evaluate(exp, item)])
+                .map(exp => [evl.Evaluator.Alias(exp), this.evaluator.Evaluate(exp, item)])
                 .toObject();
 
             return JSON.stringify(object);
@@ -606,7 +606,7 @@ export class JsoqlQuery {
     private GroupBy(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, expressions: any[]): Q.Promise<LazyJS.Sequence<m.Group>> {
         var groupKey = (item: any) => {
             var object = lazy(expressions)
-                .map(exp => [evl.Evaluator.Key(exp), this.evaluator.Evaluate(exp, item)])
+                .map(exp => [JSON.stringify(exp), this.evaluator.Evaluate(exp, item)])
                 .toObject();
 
             return JSON.stringify(object);

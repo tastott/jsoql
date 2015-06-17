@@ -129,3 +129,49 @@ export function GroupByWithArithmetic() {
     ];
     return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
 }
+
+export function GroupByStringExpression() {
+    var data = [
+        { FirstName: 'Bob', LastName: 'Hoskins', Message: 'Hello, my name is Bob' },
+        { FirstName: 'Dave', LastName: 'Hasselhoff', Message: 'Hi Bob, nice to meet you' },
+        { FirstName: 'Bob', LastName: 'Hoskins', Message: "Well this is nice isn't it?" }
+    ];
+    var query = "SELECT FirstName + ' ' + LastName AS Name FROM 'var://Test' GROUP BY FirstName + ' ' + LastName";
+
+    var expected = [
+        { Name: 'Bob Hoskins'},
+        { Name: 'Dave Hasselhoff'}
+    ];
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
+
+export function GroupByNumericExpression() {
+    var data = [
+        { PersonId: 1, Message: 'Hello, my name is Bob' },
+        { PersonId: 2, Message: 'Hi Bob, nice to meet you' },
+        { PersonId: 1, Message: "Well this is nice isn't it?" }
+    ];
+    var query = "SELECT PersonId + 1 AS IdPlusOne FROM 'var://Test' GROUP BY PersonId + 1";
+
+    var expected = [
+        { IdPlusOne: 2},
+        { IdPlusOne: 3 }
+    ];
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
+
+
+export function GroupByFunction() {
+    var data = [
+        { FirstName: 'Bob', LastName: 'Hoskins', Message: 'Hello, my name is Bob' },
+        { FirstName: 'Dave', LastName: 'Hasselhoff', Message: 'Hi Bob, nice to meet you' },
+        { FirstName: 'Bob', LastName: 'Hoskins', Message: "Well this is nice isn't it?" }
+    ];
+    var query = "SELECT REGEXMATCH(FirstName, '^[A-Z]') AS FirstLetter FROM 'var://Test' GROUP BY REGEXMATCH(FirstName, '^[A-Z]')";
+
+    var expected = [
+        { FirstLetter: 'B' },
+        { FirstLetter: 'D' }
+    ];
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}

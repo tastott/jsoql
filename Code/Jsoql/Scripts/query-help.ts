@@ -176,7 +176,7 @@ export class QueryHelper {
                 //Return the whole chain as a string because only the whole thing makes sense as a suggestion
                 var groupProperties = lazy(originalStatement.GroupBy.Groupings)
                     .filter(g => g.Property)
-                    .map(topProp => [evl.Evaluator.Key(topProp), true])
+                    .map(topProp => [evl.Evaluator.Alias(topProp), true])
                     .toObject();
                     
 
