@@ -365,3 +365,4 @@ FakesAssemblies/
 /Code/Jsoql.Tests/lazyQueryTests.js
 /Code/Jsoql.Tests/fromSubQueryTests.js
 /Code/Jsoql/Scripts/lazy-ext.js
+/Code/Jsoql.Tests/commentTests.js

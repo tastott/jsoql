@@ -82,7 +82,8 @@ export function GetJisonTokens(): string[][]{
 
     return [
         ['\\.\\s', "return 'TrailingDot'"],
-        ['\\.$', "return 'FinalDot'"]
+        ['\\.$', "return 'FinalDot'"],
+        ['--.*', '/* ignore comment */']
     ].concat(
         selfNamedTokens.map(t => [RegexEscape(t), "return '" + t + "'"]),
         Object.keys(keywords).map(kw => [keywordPatterns[kw], "return '" + kw + "'"]),
