@@ -55,6 +55,9 @@
       <SubType>Code</SubType>
       <TestFramework>ExportRunner</TestFramework>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="dateTests.ts">
+      <TestFramework>ExportRunner</TestFramework>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="fromSubQueryTests.ts">
       <TestFramework>ExportRunner</TestFramework>
     </TypeScriptCompile>

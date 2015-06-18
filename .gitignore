@@ -366,3 +366,5 @@ FakesAssemblies/
 /Code/Jsoql.Tests/fromSubQueryTests.js
 /Code/Jsoql/Scripts/lazy-ext.js
 /Code/Jsoql.Tests/commentTests.js
+/Code/Jsoql.Tests/dateTests.js
+/Code/Jsoql/Scripts/date-time.js

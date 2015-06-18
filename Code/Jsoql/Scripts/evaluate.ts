@@ -6,6 +6,7 @@ import m = require('./models')
 import qstring = require('./query-string')
 import util = require('./utilities')
 import query = require('./query')
+import dateTime = require('./date-time')
 var clone = require('clone')
 var deepEqual : (a,b) => boolean = require('deep-equal')
 
@@ -48,7 +49,8 @@ var scalarFunctions: FunctionMappings = {
     'isundefined': args => args[0] === undefined,
     'coalesce': args => lazy(args).filter(arg => arg != null).first() || null,
     'not': args => !args[0],
-    'in': args => !!lazy(args[1]).some(item => deepEqual(args[0], item))
+    'in': args => !!lazy(args[1]).some(item => deepEqual(args[0], item)),
+    'datepart': args => dateTime.DatePart(args[0], args[1])
 }
 
 var aggregateFunctions: FunctionMappings = {

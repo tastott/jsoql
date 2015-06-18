@@ -46,6 +46,7 @@
     <TypeScriptCompile Include="prepublish.ts" />
     <TypeScriptCompile Include="Scripts\datasource.ts" />
     <TypeScriptCompile Include="jsoql.ts" />
+    <TypeScriptCompile Include="Scripts\date-time.ts" />
     <TypeScriptCompile Include="Scripts\evaluate.ts" />
     <TypeScriptCompile Include="Scripts\lazy-ext.ts" />
     <TypeScriptCompile Include="Scripts\query-help.ts" />
