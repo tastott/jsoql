@@ -111,13 +111,14 @@ export function DatePartPreservesTimeOffsetFromSourceIfThirdArgumentIsTrue() {
             date: '2015-12-31T23:59:59-01:00'
         }
     ];
-    var query = "SELECT DATEPART('year', date, true) AS Year,  DATEPART('month', date, true) AS Month,  DATEPART('day', date, true) AS Day FROM 'var://Test'";
+    var query = "SELECT DATEPART('year', date, true) AS Year,  DATEPART('month', date, true) AS Month,  DATEPART('day', date, true) AS Day,  DATEPART('hour', date, true) AS Hour FROM 'var://Test'";
 
     var expected = [
         {
             Year: 2015,
             Month: 12,
-            Day: 31
+            Day: 31,
+            Hour: 23
         }
     ];
 

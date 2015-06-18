@@ -50,7 +50,7 @@ var scalarFunctions: FunctionMappings = {
     'coalesce': args => lazy(args).filter(arg => arg != null).first() || null,
     'not': args => !args[0],
     'in': args => !!lazy(args[1]).some(item => deepEqual(args[0], item)),
-    'datepart': args => dateTime.DatePart(args[0], args[1])
+    'datepart': args => dateTime.DatePart(args[0], args[1], args[2])
 }
 
 var aggregateFunctions: FunctionMappings = {
@@ -62,7 +62,8 @@ var aggregateFunctions: FunctionMappings = {
         var count = items.length;
         if (count) return lazy(items).sum() / count;
         else return undefined;
-    }
+    },
+    'first': items => items[0]
 };
 
 export class Evaluator {

@@ -55,10 +55,7 @@ export function GroupBy() {
         { Thing: true },
         { Thing: false }
     ];
-    return testBase.ExecuteArrayQuery("SELECT Thing FROM 'var://Test' GROUP BY Thing", data)
-        .then(results => {
-        setTimeout(() => assert.deepEqual(results, expected));
-    });
+    return testBase.ExecuteAndAssertDeepEqual("SELECT Thing FROM 'var://Test' GROUP BY Thing", data, expected);
 }
 
 export function GroupByWithAggregate() {

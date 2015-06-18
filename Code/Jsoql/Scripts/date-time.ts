@@ -1,11 +1,15 @@
 ﻿export function DatePart(part: string, dateString: string, keepOffset?: boolean) {
 
-    //var timezonePattern = /(-|+)([
     var date = new Date(dateString);
 
     if (!date.valueOf()) return null;
 
-    //if(keepOffset && dateString.match(/
+    var timezone = dateString.match(/(-|\+)([0-2][0-9]):([0-6][0-9])$/);
+
+    if (keepOffset && timezone) {
+        var offsetMinutes = parseInt(timezone[1] + timezone[2]) * 60 + parseInt(timezone[3]);
+        date = new Date(date.valueOf() + offsetMinutes * 60000);
+    }
 
     switch (part.toLowerCase()) {
         case 'year': return date.getUTCFullYear();

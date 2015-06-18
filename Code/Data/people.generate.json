@@ -1,0 +1,8 @@
+[
+  "{{repeat(20)}}",
+  {
+    "name": "{{firstName()}} {{surname()}}",
+    "gender": "{{gender()}}",
+    "dateOfBirth": "{{date(new Date(1980,1,1), new Date(2000,1,1), 'YYYY-MM-ddThh:mm:ss')}}"
+  }
+]
