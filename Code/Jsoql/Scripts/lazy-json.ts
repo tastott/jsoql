@@ -9,7 +9,7 @@ var csv = require('csv-string')
 var XhrStream = require('buffered-xhr-stream')
 
 //Basically a copy of StreamedSequence from lazy.node.js because I don't know how to extend that "class"
-function LazyStreamedSequence(openStream: (callback: (stream: _stream.Readable) => void) => void) {
+function LazyStreamedSequence(openStream: (callback: (stream: _stream.Readable, err? : string) => void) => void) {
     this.openStream = openStream;
 }
 
@@ -20,29 +20,36 @@ LazyStreamedSequence.prototype.each = function(fn) {
 
     var handle = new (<any>lazy).AsyncHandle(function cancel() { cancelled = true; });
 
-    this.openStream(function (stream) {
-        if (stream.setEncoding) {
-            stream.setEncoding(this.encoding || 'utf8');
-        }
+    this.openStream(function (stream: _stream.Readable, err: string) {
 
-        stream.resume();
+        //Abort if there's an error already
+        if (err) {
+            handle._reject(err);
+        } else {
 
-        var listener = function (e) {
-            try {
-                if (cancelled || fn(e) === false) {
-                    stream.removeListener("data", listener);
-                    handle._resolve(false);
-                }
-            } catch (err) {
-                handle._reject(err);
+            if (stream.setEncoding) {
+                stream.setEncoding(this.encoding || 'utf8');
             }
-        };
 
-        stream.on("data", listener);
+            stream.resume();
 
-        stream.on("end", function () {
-            handle._resolve(true);
-        });
+            var listener = function (e) {
+                try {
+                    if (cancelled || fn(e) === false) {
+                        stream.removeListener("data", listener);
+                        handle._resolve(false);
+                    }
+                } catch (err) {
+                    handle._reject(err);
+                }
+            };
+
+            stream.on("data", listener);
+
+            stream.on("end", function () {
+                handle._resolve(true);
+            });
+        }
     });
 
     return handle;
@@ -184,17 +191,23 @@ export function lazyOboeHttp(options: {
             callback(<any>oboeStream);
 
         } else {
-            var req = http.get(options.url,(sourceStream: _stream.Readable) => {
+            var req = http.get(options.url,(res) => {
 
-                if (options.streamTransform) {
-                    sourceStream = options.streamTransform(sourceStream);
+                if (res.statusCode !== 200) {
+                    callback(null, `Bad response status: ${res.statusMessage} (${res.statusCode})`);
+                } else {
+
+                    var sourceStream: _stream.Readable = res;
+
+                    if (options.streamTransform) {
+                        sourceStream = options.streamTransform(sourceStream);
+                    }
+
+                    var oboeStream = new OboeStream(sourceStream, options.nodePath);
+
+                    callback(<any>oboeStream);
                 }
-
-                var oboeStream = new OboeStream(sourceStream, options.nodePath);
-
-                callback(<any>oboeStream);
             });
-
             if (options.onError) req.on('error', errorHandler);
         }
     });

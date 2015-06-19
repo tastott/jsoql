@@ -27,7 +27,12 @@ export function FromUrlWithExplicitRoot() {
         .fail(error => setTimeout(() => assert.fail(null, null, error)));
 }
 
-export function ErrorReturnedForQueryOnNonExistentUrl() {
+export function ErrorReturnedForNonExistentDomain() {
     var query = "SELECT * FROM 'http://669b40f7-41a4-4aa9-90fb-dab6b0c1844f.com/some.json'";
+    return testBase.ExecuteAndAssertFail(query, null);
+}
+
+export function ErrorReturnedFor404() {
+    var query = "SELECT * FROM 'http://www.google.com/669b40f7-41a4-4aa9-90fb-dab6b0c1844f.json'";
     return testBase.ExecuteAndAssertFail(query, null);
 }

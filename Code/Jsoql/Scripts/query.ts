@@ -253,18 +253,19 @@ export class JsoqlQuery {
         }
 
         var ds = this.ToDatasource(config.Target);
+        var sequencer: ds.DataSourceSequencer;
+        var parameters = {};
 
         if (ds.Type === 'var') {
-            return this.dataSourceSequencers['var'].Get(ds.Value, {}, this.queryContext, onError);
+            sequencer = this.dataSourceSequencers['var'];
         }
         else {
-            var parameters = config.Parameters || {};
-            var dataSource = this.dataSourceSequencers[ds.Type];
-            if (!dataSource) throw new Error("Invalid scheme for data source: '" + ds.Type + "'");
-
-            return dataSource.Get(ds.Value, parameters, this.queryContext, onError);
+            parameters = config.Parameters || parameters;
+            sequencer = this.dataSourceSequencers[ds.Type];
+            if (!sequencer) throw new Error("Invalid scheme for data source: '" + ds.Type + "'");
         }
-        
+
+        return sequencer.Get(ds.Value, parameters, this.queryContext, onError);
     }
 
     private From(fromClause: any, onError: m.ErrorHandler): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
