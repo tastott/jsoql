@@ -150,7 +150,7 @@ var exp = {
     ))
     .concat([
         [
-            "- Expression %prec UMINUS",
+            "- Expression", // %prec UMINUS",
             "$$ = -$2"
         ]
     ])
