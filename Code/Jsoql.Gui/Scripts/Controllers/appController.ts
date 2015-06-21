@@ -68,14 +68,15 @@ class QueryTab {
             }
             else {
                 this.GetMoreResults();
+                this.CurrentQuery.Iterator.OnError(error => {
+                    this.Error = error;
+                    this.QueryResults = [];
+                    this.CurrentQuery = null;
+                });
+
             }
 
-            this.CurrentQuery.Iterator.OnError(error => {
-                this.Error = error;
-                this.QueryResults = [];
-                this.CurrentQuery = null;
-            });
-
+           
             //this.queryExecutionService.ExecuteQuery(this.QueryText.GetValue(), this.BaseDirectory.GetValue())
             //    .then(result => {
             //        this.$scope.$apply(() => this.QueryResult = result); //TOOD: Better way to do this?
@@ -107,6 +108,11 @@ class QueryTab {
         }
     }
 
+    QueryShareLink = () => {
+        if (this.QueryText.GetValue()) {
+            return window.location.protocol + '//' + `${location.host}${location.pathname}#/home?queryText=${encodeURIComponent(this.QueryText.GetValue()) }&executeNow=true`;
+        } else return "";
+    }
 
     SaveQuery = () => {
         var query: qss.SavedQuery = {
@@ -167,6 +173,7 @@ interface AppScope extends angular.IScope {
     Environment: string;
     SelectedMenuPanel: string;
     ToggleMenuPanel(name: string);
+    CanShareQuery(): boolean;
 }
 
 export class AppController {
@@ -192,6 +199,7 @@ export class AppController {
         };
         $scope.Environment = m.Environment[configuration.Environment];
         $scope.ToggleMenuPanel = this.ToggleMenuPanel;
+        $scope.CanShareQuery = () => configuration.IsOnline();
 
         //For demo purposes, the URL can contain some initial query text
         //If so, don't bother loading any other tabs

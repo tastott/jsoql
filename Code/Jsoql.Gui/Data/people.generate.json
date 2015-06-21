@@ -1,0 +1,26 @@
+[
+  '{{repeat(24)}}',
+  {
+    id: '{{index()}}',
+    name: '{{firstName()}} {{surname()}}',
+    gender: '{{gender()}}',
+    dateOfBirth: '{{date(new Date(1920, 0, 1), new Date(), "YYYY-MM-ddThh:mm:ss")}}',
+    placeOfBirth: {
+       address: '{{integer(100, 999)}} {{street()}}, {{city()}}, {{state()}}, {{integer(100, 10000)}}',
+        latitude: '{{floating(-90.000001, 90)}}',
+		longitude: '{{floating(-180.000001, 180)}}'
+    },
+    contact: {
+       email: '{{email()}}',
+    phone: '+1 {{phone()}}',
+    address: '{{integer(100, 999)}} {{street()}}, {{city()}}, {{state()}}, {{integer(100, 10000)}}'
+    },
+    pets: [
+      '{{repeat(0,4)}}',
+      {
+        name: '{{firstName()}}',
+        species: '{{random("snake", "dog", "cat", "rat", "owl")}}'
+      }
+    ]
+  }
+]
