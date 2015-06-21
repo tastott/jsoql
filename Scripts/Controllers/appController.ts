@@ -200,6 +200,10 @@ export class AppController {
 
             this.AddTab(tab);
             $scope.SelectedTab = tab;
+
+            if ($routeParams['executeNow'] && $routeParams['executeNow'].toLowerCase() === 'true') {
+                $scope.SelectedTab.Execute();
+            }
         }
         else {
             this.GetInitialTabs()
