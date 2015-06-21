@@ -69,6 +69,12 @@ class QueryTab {
             else {
                 this.GetMoreResults();
             }
+
+            this.CurrentQuery.Iterator.OnError(error => {
+                this.Error = error;
+                this.CurrentQuery = null;
+            });
+
             //this.queryExecutionService.ExecuteQuery(this.QueryText.GetValue(), this.BaseDirectory.GetValue())
             //    .then(result => {
             //        this.$scope.$apply(() => this.QueryResult = result); //TOOD: Better way to do this?

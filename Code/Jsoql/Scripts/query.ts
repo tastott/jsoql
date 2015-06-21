@@ -50,7 +50,8 @@ class LazyJsQueryIterator implements m.QueryIterator {
     private onCancel: () => void;
     private itemCallbacks: {
         Count?: number;
-        Do: (items: any[]) => void;
+        Resolve: (items: any[]) => void;
+        Reject: (err: any) => void;
     }[];
     private onComplete: CallbackSet<any>;
     private onError: CallbackSet<any>;
@@ -75,9 +76,7 @@ class LazyJsQueryIterator implements m.QueryIterator {
                 if (handle && handle['cancel']) {
                     this.onCancel = () => handle['cancel']();
                     handle['onComplete'](() => this.SetComplete());
-                    handle['onError'](err => {
-                        this.onError.DoAll(err);
-                    });
+                    handle['onError'](err => this.HandleError(err));
                 }
                 else this.SetComplete();
             })
@@ -107,7 +106,8 @@ class LazyJsQueryIterator implements m.QueryIterator {
 
         this.itemCallbacks.push({
             Count: count,
-            Do: deferred.resolve
+            Resolve: deferred.resolve,
+            Reject: deferred.reject
         });
 
         this.ProcessCallbacks();
@@ -146,6 +146,12 @@ class LazyJsQueryIterator implements m.QueryIterator {
         return this;
     }
 
+    private HandleError(error: any) {
+        this.onError.DoAll(error);
+        this.itemCallbacks.forEach(c => c.Reject(error));
+        this.itemCallbacks = [];
+        this.SetComplete();
+    }
 
 
     private SetComplete() {
@@ -169,11 +175,11 @@ class LazyJsQueryIterator implements m.QueryIterator {
 
             if (callback.Count && this.items.length >= this.currentIndex + callback.Count) {
                 this.itemCallbacks.shift();
-                callback.Do(this.GetChunk(callback.Count));
+                callback.Resolve(this.GetChunk(callback.Count));
             }
             else if (this.isComplete) {
                 this.itemCallbacks.shift();
-                callback.Do(this.GetChunk(callback.Count));
+                callback.Resolve(this.GetChunk(callback.Count));
             }
             else break;
         }
