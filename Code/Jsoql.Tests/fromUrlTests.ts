@@ -27,6 +27,16 @@ export function FromUrlWithExplicitRoot() {
         .fail(error => setTimeout(() => assert.fail(null, null, error)));
 }
 
+export function FromUrlWithObjectRoot() {
+
+    var jsoql = "SELECT * FROM 'http://localhost:8000/whatever.json'";
+
+    return readFilePromised('./Data/nested-orders.json', 'utf8')
+        .then(json => JSON.parse(json))
+        .then(data => testBase.ExecuteAndAssertWithServer(jsoql, data, 8000, results => assert.deepEqual(results, [data])))
+        .fail(error => setTimeout(() => assert.fail(null, null, error)));
+}
+
 export function ErrorReturnedForNonExistentDomain() {
     var query = "SELECT * FROM 'http://669b40f7-41a4-4aa9-90fb-dab6b0c1844f.com/some.json'";
     return testBase.ExecuteAndAssertFail(query, null);

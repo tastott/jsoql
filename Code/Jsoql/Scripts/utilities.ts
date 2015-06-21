@@ -38,3 +38,26 @@ export function FindAllMatches(str: string, pattern: string, flags = ''): RegExp
 
     return results;
 }
+
+export class CallbackSet<T> {
+
+    private callbacks: ((arg: T) => void)[];
+
+    constructor() {
+        this.callbacks = [];
+    }
+
+    public Add(callback: (arg: T) => void) {
+        this.callbacks.push(callback);
+    }
+
+    public DoAll(arg: T, keepCallbacks : boolean = false) {
+        this.callbacks.forEach(c => c(arg));
+        if(!keepCallbacks) this.callbacks = [];
+    }
+
+    public RemoveAll() {
+        this.callbacks = [];
+    }
+
+}

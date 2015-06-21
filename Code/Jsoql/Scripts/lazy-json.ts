@@ -4,6 +4,7 @@ import fs = require('fs')
 import http = require('http')
 import _url = require('url')
 import m = require('./models')
+import util = require('./utilities')
 import _stream = require('stream')
 var csv = require('csv-string')
 var XhrStream = require('buffered-xhr-stream')
@@ -155,7 +156,93 @@ class OboeStream {
     }
 }
 
+enum EnsureJsonArrayState {
+    RootTypeNotKnownYet,
+    RootTypeIsObject,
+    RootTypeIsArray
+}
 
+class EnsureJsonArrayStream {
+    private onData: util.CallbackSet<any>;
+    private onEnd: util.CallbackSet<any>;
+    private onError: util.CallbackSet<any>;
+
+    private state: EnsureJsonArrayState;
+
+    constructor(private jsonStream: _stream.Readable) {
+
+        this.onData = new util.CallbackSet<any>();
+        this.onEnd = new util.CallbackSet<any>();
+        this.onError = new util.CallbackSet<any>();
+
+        this.state = EnsureJsonArrayState.RootTypeNotKnownYet;
+
+        jsonStream.setEncoding('utf8');
+
+        jsonStream.on('data', data => {
+            if (this.state == EnsureJsonArrayState.RootTypeNotKnownYet) {
+                var nonWhiteSpaceMatch = data.match(/\S/);
+
+                //Root is array, no need to fiddle with source stream
+                if (nonWhiteSpaceMatch && nonWhiteSpaceMatch[0] == '[') {
+                    this.state = EnsureJsonArrayState.RootTypeIsArray;
+                    this.onData.DoAll(data, true);
+                }
+                //Root is object, prepend '[' and remember to append ']' when source is finished
+                else if (nonWhiteSpaceMatch && nonWhiteSpaceMatch[0] == '{') {
+                    this.state = EnsureJsonArrayState.RootTypeIsObject;
+                    this.onData.DoAll('[' + data, true);
+                }
+            }
+            else {
+                this.onData.DoAll(data, true);
+            }
+        });
+
+        //Append ']' for object root
+        jsonStream.on('end',() => {
+            if (this.state == EnsureJsonArrayState.RootTypeIsObject) {
+                this.onData.DoAll(']', true);
+            }
+
+            this.onEnd.DoAll(null);
+        });
+
+        jsonStream.on('error', err => {
+            this.onError.DoAll(err, true);
+        });
+    }
+
+    public readable = true;
+    public _read = null;
+
+    removeListener = (event: string, listener: StreamListener) => {
+        this.jsonStream.removeListener(event, listener);
+    }
+
+    on = (event: string, listener: StreamListener) => {
+        switch (event) {
+            case 'data':
+                this.onData.Add(listener);
+                break;
+
+            case 'end':
+                this.onEnd.Add(listener);
+                break;
+
+            case 'error':
+                this.onError.Add(listener);
+                break;
+
+            default:
+                throw new Error('Event type not recognized by EnsureJsonArrayStream: ' + event);
+        }
+    }
+
+    resume = () => {
+        if (this.jsonStream.resume) this.jsonStream.resume();
+    }
+}
 
 export function lazyOboeHttp(options: {
     url: string;
@@ -187,6 +274,9 @@ export function lazyOboeHttp(options: {
                 sourceStream = options.streamTransform(sourceStream);
             }
 
+            //Wrap an object root as an array
+            sourceStream = new EnsureJsonArrayStream(sourceStream);
+
             var oboeStream = new OboeStream(sourceStream, options.nodePath);
             callback(<any>oboeStream);
 
@@ -203,6 +293,9 @@ export function lazyOboeHttp(options: {
                         sourceStream = options.streamTransform(sourceStream);
                     }
 
+                    //Wrap an object root as an array
+                    sourceStream = <any>new EnsureJsonArrayStream(sourceStream);
+
                     var oboeStream = new OboeStream(sourceStream, options.nodePath);
 
                     callback(<any>oboeStream);
@@ -218,6 +311,9 @@ export function lazyOboeHttp(options: {
 export function lazyOboeFromStream(stream : _stream.Readable, nodePath: string): LazyJS.AsyncSequence<any> {
    
     var sequence = new LazyStreamedSequence(callback => {
+        //Wrap an object root as an array
+        stream = <any>new EnsureJsonArrayStream(stream);
+
         var oboeStream = new OboeStream(stream, nodePath);
         callback(<any>oboeStream);
     });

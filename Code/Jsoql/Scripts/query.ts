@@ -20,28 +20,7 @@ interface DatasourceConfig {
     SubQuery?: boolean;
 }
 
-class CallbackSet<T> {
 
-    private callbacks: ((arg: T) => void)[];
-
-    constructor() {
-        this.callbacks = [];
-    }
-
-    public Add(callback: (arg: T) => void) {
-        this.callbacks.push(callback);
-    }
-
-    public DoAll(arg: T) {
-        this.callbacks.forEach(c => c(arg));
-        this.callbacks = [];
-    }
-
-    public RemoveAll() {
-        this.callbacks = [];
-    }
-
-}
 
 class LazyJsQueryIterator implements m.QueryIterator {
 
@@ -53,8 +32,8 @@ class LazyJsQueryIterator implements m.QueryIterator {
         Resolve: (items: any[]) => void;
         Reject: (err: any) => void;
     }[];
-    private onComplete: CallbackSet<any>;
-    private onError: CallbackSet<any>;
+    private onComplete: util.CallbackSet<any>;
+    private onError: util.CallbackSet<any>;
     private isComplete: boolean;
     private startTime: number[];
     private finishTime: number[];
@@ -66,8 +45,8 @@ class LazyJsQueryIterator implements m.QueryIterator {
         this.items = [];
         this.itemCallbacks = [];
         this.isComplete = false;
-        this.onComplete = new CallbackSet<any>();
-        this.onError = new CallbackSet<any>();
+        this.onComplete = new util.CallbackSet<any>();
+        this.onError = new util.CallbackSet<any>();
         this.startTime = hrtime();
 
         sequencePromise
