@@ -111,6 +111,24 @@ export class Evaluator {
         {
             return expression.map(e => this.Evaluate(e, target));
         }
+        else if (expression.Case !== undefined) {
+            var whens: { When: any; Then: any }[] = expression.Whens;
+            var firstMatch: { When: any; Then: any };
+
+            //First WHEN expression to match this expression
+            if (expression.Case != null) {
+                var matchWith = this.Evaluate(expression.Case, target);
+                firstMatch = lazy(whens).find(when => deepEqual(this.Evaluate(when.When, target), matchWith));
+            }
+            //First WHEN expression to be true
+            else {
+                firstMatch= lazy(whens).find(when => !!this.Evaluate(when.When, target));
+            }
+
+            if (firstMatch) return this.Evaluate(firstMatch.Then, target);
+            else if (expression.Else !== undefined) return this.Evaluate(expression.Else, target);
+            else return null;
+        }
         else return expression;
     }
 
@@ -186,6 +204,9 @@ export class Evaluator {
         else if (util.IsArray(expression)) {
             return [{ Alias: alias, Value: expression.map(e => this.Evaluate(e, target)) }];
         }
+        else if (expression.Case !== undefined) {
+            return [{ Alias: '', Value: this.Evaluate(expression, target) }];
+        }
         else return [{ Alias: '', Value: expression }];
     }
 
@@ -226,6 +247,24 @@ export class Evaluator {
         else if (expression.Quoted) return expression.Quoted;
         else if (util.IsArray(expression)) {
             return expression.map(e => this.EvaluateGroup(e, group));
+        }
+        else if (expression.Case !== undefined) {
+            var whens: { When: any; Then: any }[] = expression.Whens;
+            var firstMatch: { When: any; Then: any };
+             
+            //First WHEN expression to match this expression
+            if (expression.Case != null) {
+                var matchWith = this.EvaluateGroup(expression.Case, group);
+                firstMatch = lazy(whens).find(when => deepEqual(this.EvaluateGroup(when.When, group), matchWith));
+            }
+            //First WHEN expression to be true
+            else {
+                firstMatch = lazy(whens).find(when => !!this.EvaluateGroup(when.When, group));
+            }
+
+            if (firstMatch) return this.EvaluateGroup(firstMatch.Then, group);
+            else if (expression.Else !== undefined) return this.EvaluateGroup(expression.Else, group);
+            else return null;
         }
         else return expression;
     }

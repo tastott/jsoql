@@ -74,20 +74,35 @@ var exp = {
             "{ Property: $1, Index: $3, Child: $6}"
         ]
     ],
-    //Operator: () => [
-    //    keywords.AND,
-    //    keywords.OR,
-    //    '=',
-    //    '!=',
-    //    '<',
-    //    '>',
-    //    '<=',
-    //    '>=',
-    //    '+',
-    //    '-',
-    //    '/',
-    //    '*',
-    //],
+    WhenThenList: () => [
+        [
+            keywords.WHEN + " " + exp.Expression + " " + keywords.THEN + " " + exp.Expression,
+            "[{ When: $2, Then: $4 }]"
+        ],
+        [
+            exp.WhenThenList + " " + keywords.WHEN + " " + exp.Expression + " " + keywords.THEN + " " + exp.Expression,
+            "$1.concat([{ When: $3, Then: $5 }])"
+        ]
+    ],
+    CaseExpression: () => [
+        [
+            keywords.CASE + " " + exp.Expression + " " + exp.WhenThenList + " " + keywords.END,
+            { Case: "$2", Whens: "$3" }
+        ],
+        [
+            keywords.CASE + " " + exp.WhenThenList + " " + keywords.END,
+            { Case: null, Whens: "$2" }
+        ],
+        [
+            keywords.CASE + " " + exp.Expression + " " + exp.WhenThenList + " " + keywords.ELSE + " " + exp.Expression + " " + keywords.END,
+            { Case: "$2", Whens: "$3", Else: "$5"}
+        ],
+        [
+            keywords.CASE + " " + exp.WhenThenList + " " + keywords.ELSE + " " + exp.Expression + " " + keywords.END,
+            { Case: null, Whens: "$2", Else: "$4" }
+        ]
+    ],
+
     Expression: () => [
         //[
         //    '*',
@@ -113,6 +128,7 @@ var exp = {
         exp.Quoted,
         exp.Boolean,
         exp.Object,
+        exp.CaseExpression,
         [
             val.Number,
             "parseFloat($1)"

@@ -43,7 +43,12 @@ export var keywords = {
     IS: 'IS',
     NOT: 'NOT',
     IN: 'IN',
-    UNION: 'UNION'
+    UNION: 'UNION',
+    CASE: 'CASE',
+    WHEN: 'WHEN',
+    THEN: 'THEN',
+    ELSE: 'ELSE',
+    END: 'END'
 };
 
 var keywordPatterns = {};

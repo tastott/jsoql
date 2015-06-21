@@ -51,6 +51,9 @@
     <Content Include="Data\orders.jsonl" />
     <Content Include="package.json" />
     <Content Include="README.md" />
+    <TypeScriptCompile Include="caseTests.ts">
+      <TestFramework>ExportRunner</TestFramework>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="commentTests.ts">
       <SubType>Code</SubType>
       <TestFramework>ExportRunner</TestFramework>
