@@ -192,7 +192,8 @@ class EnsureJsonArrayStream {
 
         this.state = EnsureJsonArrayState.RootTypeNotKnownYet;
 
-        jsonStream.setEncoding('utf8');
+        //not applicable in browser?
+        if(jsonStream.setEncoding) jsonStream.setEncoding('utf8');
 
         jsonStream.on('data', data => {
             if (this.state == EnsureJsonArrayState.RootTypeNotKnownYet) {
