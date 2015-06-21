@@ -77,12 +77,12 @@ var QueryTab = (function () {
                 }
                 else {
                     _this.GetMoreResults();
+                    _this.CurrentQuery.Iterator.OnError(function (error) {
+                        _this.Error = error;
+                        _this.QueryResults = [];
+                        _this.CurrentQuery = null;
+                    });
                 }
-                _this.CurrentQuery.Iterator.OnError(function (error) {
-                    _this.Error = error;
-                    _this.QueryResults = [];
-                    _this.CurrentQuery = null;
-                });
             }
         };
         this.GetMoreResults = function () {
@@ -100,6 +100,13 @@ var QueryTab = (function () {
             if (_this.CurrentQuery && _this.CurrentQuery.Iterator && !_this.CurrentQuery.Iterator.IsComplete()) {
                 _this.ClearResults();
             }
+        };
+        this.QueryShareLink = function () {
+            if (_this.QueryText.GetValue()) {
+                return window.location.protocol + '//' + ("" + location.host + location.pathname + "#/home?queryText=" + encodeURIComponent(_this.QueryText.GetValue()) + "&executeNow=true");
+            }
+            else
+                return "";
         };
         this.SaveQuery = function () {
             var query = {

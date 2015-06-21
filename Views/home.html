@@ -23,6 +23,7 @@
             <li><a href="" file-dialog-button file-action="LoadTab"><i class="fa fa-folder-open fa-2x"></i></a></li>
             <li><a href="" ng-click="SelectedTab.SaveQuery()"><i class="fa fa-save fa-2x"></i></a></li>
             <li><a href="" ng-click="ToggleMenuPanel('Settings')"><i class="fa fa-wrench fa-2x"></i></a></li>
+            <li><a href="{{SelectedTab.QueryShareLink()}}" ng-show="CanShareQuery()" target="_blank"><i class="fa fa-share fa-2x"></i></a></li>
         </ul>
     </div>
     <div class="menu-slide-panel main-panel-height" ng-show="SelectedMenuPanel == 'Settings'">
