@@ -50,6 +50,10 @@ LazyStreamedSequence.prototype.each = function(fn) {
             stream.on("end", function () {
                 handle._resolve(true);
             });
+
+            stream.on("error", error => {
+                handle._reject(error);
+            });
         }
     });
 
@@ -94,8 +98,12 @@ class CsvStream {
                 this.csvStream.on('end', listener);
                 break;
 
+            case 'error':
+                this.csvStream.on('error', listener);
+                break;
+
             default:
-                throw new Error('Event type not recognized by Oboe Stream: ' + event);
+                throw new Error('Event type not recognized by CSV Stream: ' + event);
         }
     }
 
@@ -144,6 +152,13 @@ class OboeStream {
 
             case 'end':
                 this.oboeObj.done(listener);
+                break;
+
+            case 'error':
+                this.oboeObj.fail(error => {
+                    var errorString = JSON.stringify(error);
+                    listener(`JSON parse error: ${errorString}`);
+                });
                 break;
 
             default:

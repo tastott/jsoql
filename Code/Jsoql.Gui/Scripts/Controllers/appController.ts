@@ -72,6 +72,7 @@ class QueryTab {
 
             this.CurrentQuery.Iterator.OnError(error => {
                 this.Error = error;
+                this.QueryResults = [];
                 this.CurrentQuery = null;
             });
 

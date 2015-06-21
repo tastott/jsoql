@@ -34,6 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
+    <Content Include="Data\customers-bad.jsonl" />
     <Content Include="Data\customers-with-newlines.csv" />
     <Content Include="Data\customers.csv2" />
     <Content Include="Data\customers.csv" />
@@ -46,6 +47,7 @@
     <Content Include="Data\Folder\order3.json" />
     <Content Include="Data\baseball-players.csv" />
     <Content Include="Data\nested-orders.json" />
+    <Content Include="Data\orders-bad.json" />
     <Content Include="Data\single-order.json" />
     <Content Include="Data\orders.json" />
     <Content Include="Data\orders.jsonl" />

@@ -30,7 +30,7 @@ export interface DataSourceSequencers {
 
 
 interface LineHandler {
-    Mapper: (line: string) => any;
+    Mapper: (line: string, lineNo : number) => any;
     Skip: number;
 }
 
@@ -162,12 +162,12 @@ class JsonlFileDataSourceSequencer extends AbstractLinedFileDataSourceSequencer 
 
     protected GetLineHandler(firstLine: string, parameters: DataSourceParameters): LineHandler {
         return {
-            Mapper: line => {
+            Mapper: (line,index) => {
                 try {
                     return JSON.parse(line);
                 }
                 catch (err) {
-                    throw 'Failed to parse line: ' + line;
+                    throw `Failed to parse line ${index+1}: ${line}`;
                 }
             },
             Skip: 0

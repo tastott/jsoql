@@ -56,7 +56,7 @@ declare module LazyJS {
     }
 
     interface MapCallback<T, U> {
-        (value: T): U;
+        (value: T, index? : number): U;
     }
 
     interface MapStringCallback {

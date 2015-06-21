@@ -34,3 +34,13 @@ export function ErrorReturnedForQueryOnNonExistentFile() {
     var query = "SELECT * FROM 'file://doesnotexist.json'";
     return testBase.ExecuteAndAssertFail(query, null);
 }
+
+export function ErrorReturnedForBadJsonlData() {
+    var query = "SELECT * FROM 'file://../Data/customers-bad.jsonl'";
+    return testBase.ExecuteAndAssertFail(query, null);
+}
+
+export function ErrorReturnedForBadJsonData() {
+    var query = "SELECT * FROM 'file://../Data/orders-bad.json'";
+    return testBase.ExecuteAndAssertFail(query, null);
+}
