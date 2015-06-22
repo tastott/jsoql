@@ -33,6 +33,86 @@ export function DateDiffYear() {
     return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
 }
 
+export function DateDiffYearElapsed() {
+    var query = "SELECT DATEDIFF('year', date, '2015-06-11T13:29:00', true) AS Blah FROM 'var://Test'";
+
+    var expected = [
+        { Blah: 95 },
+        { Blah: 38 },
+        { Blah: 12 },
+        { Blah: 95 }
+    ];
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
+
+export function DateDiffMonth() {
+
+    var data2 = [
+        { date: '2015-06-10T13:30:00' },
+        { date: '2015-07-01T13:28:00' },
+        { date: '2015-05-31T13:28:00' },
+        { date: '2014-06-30T13:28:00' }
+    ];
+
+    var query = "SELECT DATEDIFF('month', date, '2015-06-11T13:29:00') AS Blah FROM 'var://Test'";
+   
+    var expected = [
+        { Blah: 0 },
+        { Blah: -1},
+        { Blah: 1},
+        { Blah: 12 }
+    ];
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data2, expected);
+}
+
+export function DateDiffMonthElapsed() {
+    var query = "SELECT DATEDIFF('month', date, '2015-06-11T12:29:00', true) AS Blah FROM 'var://Test'";
+
+    var expected = [
+        { Blah: 1141 },
+        { Blah: 457 },
+        { Blah: 155 },
+        { Blah: 1150 }
+    ];
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
+
+export function DateDiffDay() {
+    var data2 = [
+        { date: '2015-06-10T13:30:00' },
+        { date: '2015-06-12T13:28:00' },
+        { date: '2015-06-11T13:28:00' },
+        { date: '2015-05-11T13:28:00' }
+    ];
+
+    var query = "SELECT DATEDIFF('day', date, '2015-06-11T13:29:00') AS Blah FROM 'var://Test'";
+    
+    var expected = [
+        { Blah: 1 },
+        { Blah: -1},
+        { Blah: 0},
+        { Blah: 31}
+    ];
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data2, expected);
+}
+
+export function DateDiffDayElapsed() {
+    var query = "SELECT DATEDIFF('day', date, '2015-06-11T00:00:00', true) AS Blah FROM 'var://Test'";
+
+    var expected = [
+        { Blah: 34735 },
+        { Blah: 13918 },
+        { Blah: 4746 },
+        { Blah: 35018 }
+    ];
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
+
 export function DatePartYear() {
 
     var query = "SELECT DATEPART('year', date) AS Blah FROM 'var://Test'";
@@ -138,4 +218,22 @@ export function DatePartPreservesTimeOffsetFromSourceIfThirdArgumentIsTrue() {
     return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
 }
 
+export function GetDateReturnsSameValueForAllItems() {
+    var data = [
+        { Id: 1 },
+        { Id: 2 },
+        { Id: 3 }
+    ];
 
+    var query = "SELECT GETDATE() AS now FROM 'var://Test'";
+    
+    return testBase.ExecuteAndAssertResult(query, data, results => {
+        var singleDate;
+
+        results.forEach(item => {
+            assert.ok(item.now.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z$/), item.now);
+            assert.ok(!singleDate || singleDate === item.now, singleDate + " " + item.now);
+            singleDate = item.now;
+        });
+    });
+}

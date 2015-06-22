@@ -10,9 +10,12 @@ import dateTime = require('./date-time')
 var clone = require('clone')
 var deepEqual : (a,b) => boolean = require('deep-equal')
 
+interface EvaluationContext {
+    CurrentDate: Date
+};
 
 interface FunctionMappings {
-    [key: string]: (items: any[]) => any;
+    [key: string]: (items: any[], context? : EvaluationContext) => any;
 }
 
 var operators: FunctionMappings = {
@@ -51,7 +54,8 @@ var scalarFunctions: FunctionMappings = {
     'not': args => !args[0],
     'in': args => !!lazy(args[1]).some(item => deepEqual(args[0], item)),
     'datepart': args => dateTime.DatePart(args[0], args[1], args[2]),
-    'datediff': args => dateTime.DateDiff(args[0], args[1], args[2])
+    'datediff': args => dateTime.DateDiff(args[0], args[1], args[2], args[3]),
+    'getdate': (args, context) => context.CurrentDate.toISOString()
 }
 
 var aggregateFunctions: FunctionMappings = {
@@ -67,8 +71,13 @@ var aggregateFunctions: FunctionMappings = {
     'first': items => items[0]
 };
 
-export class Evaluator {
-    constructor(private datasources: ds.DataSourceSequencers = null) { }
+export class Evaluator implements EvaluationContext {
+
+    public CurrentDate: Date;
+
+    constructor(private datasources: ds.DataSourceSequencers = null) {
+        this.CurrentDate = new Date();
+    }
 
     public Evaluate(expression: any, target: any) {
         if (expression.Operator) {
@@ -276,7 +285,7 @@ export class Evaluator {
 
         if (!func) throw 'Unrecognized function: ' + name;
 
-        return func(args);
+        return func(args, this);
     }
 
     private DoOperation(operator: string, args: any[]) {

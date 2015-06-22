@@ -25,7 +25,7 @@ export function DatePart(part: string, dateString: string, keepOffset?: boolean)
     }
 }
 
-export function DateDiff(part: string, dateStringA: string, dateStringB: string, elapsedTime : boolean = false) {
+export function DateDiff(part: string, dateStringA: string, dateStringB: string, elapsedTime : boolean) {
 
     var dateA = moment(dateStringA);
     var dateB = moment(dateStringB);
@@ -39,45 +39,43 @@ export function DateDiff(part: string, dateStringA: string, dateStringB: string,
     //    date = new Date(date.valueOf() + offsetMinutes * 60000);
     //}
 
-    var unit: string;
-    switch (part.toLowerCase()) {
-        case 'year': unit = 'years';break ;
-        case 'month': unit = 'months'; break;
-        case 'day': unit = 'days'; break;
-        case 'hour': unit = 'hours'; break;
-        case 'minute': unit = 'minutes'; break;
-        case 'second': unit = 'seconds'; break;
-        default:
-            throw new Error(`Unrecognized date part: '${part}'`);
-    }
-
-    if (elapsedTime) {
-        var unit: string;
+    //if (elapsedTime) {
+        var unitIndex: number;
         switch (part.toLowerCase()) {
-            case 'year': unit = 'years'; break;
-            case 'month': unit = 'months'; break;
-            case 'day': unit = 'days'; break;
-            case 'hour': unit = 'hours'; break;
-            case 'minute': unit = 'minutes'; break;
-            case 'second': unit = 'seconds'; break;
+            case 'year': unitIndex = 0; break;
+            case 'month': unitIndex = 1; break;
+            case 'day': unitIndex = 2; break;
+            case 'hour': unitIndex = 3; break;
+            case 'minute': unitIndex = 4; break;
+            case 'second': unitIndex = 5; break;
             default:
                 throw new Error(`Unrecognized date part: '${part}'`);
         }
 
-        return dateB.diff(dateA, unit);
-    }
-    else {
-        switch (part.toLowerCase()) {
-            case 'year':
-                return dateB.year() - dateA.year();
-                break;
-            //case 'month': unit = 'months'; break;
-            //case 'day': unit = 'days'; break;
-            //case 'hour': unit = 'hours'; break;
-            //case 'minute': unit = 'minutes'; break;
-            //case 'second': unit = 'seconds'; break;
-            default:
-                throw new Error(`Unrecognized date part: '${part}'`);
-        }
-    }
+        var momentUnits = ['years', 'months', 'days', 'hours', 'minutes', 'seconds', 'milliseconds'];
+        var unit = momentUnits[unitIndex];
+
+        var result = dateB.diff(dateA, unit);
+        if (elapsedTime) return result;
+        else if (dateA.isBefore(dateB) && dateA.clone().add(result, unit).get(unit) < dateB.get(unit)) return result + 1;
+        else if (dateA.isAfter(dateB) && dateA.clone().add(result, unit).get(unit) > dateB.get(unit)) return result - 1;
+        else return result;
+
+    //}
+    //else {
+    //    switch (part.toLowerCase()) {
+    //        case 'year':
+    //            return dateB.year() - dateA.year();
+    //            break;
+    //        case 'month':
+    //            return (dateB.year() - dateA.year()) * 12 + dateB.month() - dateA.month();
+    //            break;
+    //        case 'day': unit = 'days'; break;
+    //        case 'hour': unit = 'hours'; break;
+    //        case 'minute': unit = 'minutes'; break;
+    //        case 'second': unit = 'seconds'; break;
+    //        default:
+    //            throw new Error(`Unrecognized date part: '${part}'`);
+    //    }
+    //}
 }

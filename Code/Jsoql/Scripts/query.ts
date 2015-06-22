@@ -188,7 +188,7 @@ export class JsoqlQuery {
 
     private static UriRegex = new RegExp('^([A-Za-z]+)://(.+)$', 'i');
     private queryContext: m.QueryContext;
-    private evaluator: evl.Evaluator;
+    //private evaluator: evl.Evaluator;
 
     constructor(private stmt: m.Statement,
         private dataSourceSequencers : ds.DataSourceSequencers,
@@ -201,7 +201,7 @@ export class JsoqlQuery {
             Data: queryContext.Data || {}
         };
 
-        this.evaluator = new evl.Evaluator(this.dataSourceSequencers); 
+        //this.evaluator = new evl.Evaluator(this.dataSourceSequencers); 
     }
 
     private ToDatasource(target: any) : m.Datasource {
@@ -253,7 +253,8 @@ export class JsoqlQuery {
         return sequencer.Get(ds.Value, parameters, this.queryContext, onError);
     }
 
-    private From(fromClause: any, onError: m.ErrorHandler): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+    private From(fromClause: any, onError: m.ErrorHandler,
+        evaluator : evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
         var targets = this.CollectDatasources(fromClause);
 
@@ -280,8 +281,8 @@ export class JsoqlQuery {
             //Join/over each subsequent table
             lazy(targets).slice(1).each(target => {
 
-                if (target.Condition) seq = this.Join(seq, this.GetSequence(target, onError), target.Alias, target.Condition);
-                else if (target.Over) seq = this.Over(seq, target.Target, target.Alias);
+                if (target.Condition) seq = this.Join(seq, this.GetSequence(target, onError), target.Alias, target.Condition, evaluator);
+                else if (target.Over) seq = this.Over(seq, target.Target, target.Alias, evaluator);
                 else throw new Error("Unsupported FROM clause");
                
             });
@@ -292,10 +293,11 @@ export class JsoqlQuery {
 
     private Over(left: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
         childExpression : any,
-        childAlias: string): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+        childAlias: string,
+        evaluator : evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
         return left.map(li => {
-            var children = this.evaluator.Evaluate(childExpression, li) || [];
+            var children = evaluator.Evaluate(childExpression, li) || [];
             return children.map(child => {
                 var merged = clone(li);
                 merged[childAlias] = child;
@@ -309,7 +311,8 @@ export class JsoqlQuery {
     private Join(left: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
         right: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
         rightAlias: string,
-        condition : any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+        condition: any,
+        evaluator: evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
         //For each item on left of join, find 0 to many matching items from the right side, using the ON expression
         return left.map(li => {
@@ -319,7 +322,7 @@ export class JsoqlQuery {
                 merged[rightAlias] = ri;
 
                 //Return non-null value to indicate match
-                if (this.evaluator.Evaluate(condition, merged)) return merged;
+                if (evaluator.Evaluate(condition, merged)) return merged;
                 else return null;
             })
             .compact() //Throw away null (non-matching) values
@@ -400,35 +403,36 @@ export class JsoqlQuery {
 
     }
 
-    private Where(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, whereClause : any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
+    private Where(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, whereClause: any, evaluator: evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
         return seq.filter(item => {
-            return this.evaluator.Evaluate(this.stmt.Where, item);
+            return evaluator.Evaluate(this.stmt.Where, item);
         })
     }
 
     private SelectGrouped(groups: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
-        having: any): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
+        having: any,
+        evaluator: evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
 
         if (having) {
-            groups = groups.filter(group => this.evaluator.EvaluateGroup(having, group));
+            groups = groups.filter(group => evaluator.EvaluateGroup(having, group));
         }
 
 
         (this.stmt.OrderBy || []).forEach(orderByExp => {
-            groups = groups.sortBy(group => this.evaluator.EvaluateGroup(orderByExp.Expression, group), !orderByExp.Asc);
+            groups = groups.sortBy(group => evaluator.EvaluateGroup(orderByExp.Expression, group), !orderByExp.Asc);
         });
 
         return groups.map(group =>
             lazy(this.stmt.Select.SelectList)
                 .map(selectable => [
                 selectable.Alias || evl.Evaluator.Alias(selectable.Expression),
-                this.evaluator.EvaluateGroup(selectable.Expression, group)
+                evaluator.EvaluateGroup(selectable.Expression, group)
             ])
                 .toObject()
             )
             .first(this.stmt.Select.Limit || Number.MAX_VALUE);
     }
-    private SelectMonoGroup(items : any[]): any[] {
+    private SelectMonoGroup(items: any[], evaluator: evl.Evaluator): any[] {
         
         var group: m.Group = {
             Key: {},
@@ -439,15 +443,16 @@ export class JsoqlQuery {
             lazy(this.stmt.Select.SelectList)
                 .map(selectable => [
                 selectable.Alias || evl.Evaluator.Alias(selectable.Expression),
-                this.evaluator.EvaluateGroup(selectable.Expression, group)
+                evaluator.EvaluateGroup(selectable.Expression, group)
             ])
             .toObject()
         ];
     }
 
-    private SelectUngrouped(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>): LazyJS.Sequence<any>|LazyJS.AsyncSequence <any>{
+    private SelectUngrouped(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
+        evaluator: evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
         (this.stmt.OrderBy || []).forEach(orderByExp => {
-            seq = seq.sortBy(item => this.evaluator.Evaluate(orderByExp.Expression, item), !orderByExp.Asc);
+            seq = seq.sortBy(item => evaluator.Evaluate(orderByExp.Expression, item), !orderByExp.Asc);
         });
 
         //Select
@@ -456,7 +461,7 @@ export class JsoqlQuery {
             .map(item => {
             return lazy(this.stmt.Select.SelectList)
                 .map(selectable =>
-                    this.evaluator.EvaluateAliased(selectable.Expression, item)
+                    evaluator.EvaluateAliased(selectable.Expression, item)
                         .map(aliasValue => {
                         return {
                             Alias: selectable.Alias || aliasValue.Alias,
@@ -472,30 +477,32 @@ export class JsoqlQuery {
 
 
     ExecuteSync(): any[]{
+        var evaluator = new evl.Evaluator(this.dataSourceSequencers); 
+
         //From
-        var seq = this.From(this.stmt.From,() => { });
+        var seq = this.From(this.stmt.From,() => { }, evaluator);
 
         //Where
-        if (this.stmt.Where) seq = this.Where(seq, this.stmt.Where);
+        if (this.stmt.Where) seq = this.Where(seq, this.stmt.Where, evaluator);
 
         var results: any[];
 
         //Grouping
         //Explicitly
         if (this.stmt.GroupBy) {
-            seq = this.GroupBySync(seq, this.stmt.GroupBy.Groupings)
-            seq = this.SelectGrouped(seq, this.stmt.GroupBy.Having);
+            seq = this.GroupBySync(seq, this.stmt.GroupBy.Groupings, evaluator)
+            seq = this.SelectGrouped(seq, this.stmt.GroupBy.Having, evaluator);
             results = JsoqlQuery.SequenceToArraySync(seq);
         }
         //Implicitly
         else if (lazy(this.stmt.Select.SelectList).some(selectable => evl.Evaluator.IsAggregate(selectable.Expression))) {
 
             var items = JsoqlQuery.SequenceToArraySync(seq);
-            results = this.SelectMonoGroup(items);
+            results = this.SelectMonoGroup(items, evaluator);
         }
         //No grouping
         else {
-            results = JsoqlQuery.SequenceToArraySync(this.SelectUngrouped(seq));
+            results = JsoqlQuery.SequenceToArraySync(this.SelectUngrouped(seq, evaluator));
         }
 
         if (this.stmt.Union) {
@@ -525,32 +532,32 @@ export class JsoqlQuery {
     }
 
     private GetResultsSequence(): Q.Promise<LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>> {
-
+        var evaluator = new evl.Evaluator(this.dataSourceSequencers); 
         var deferred = Q.defer<LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>>();
 
         var seqP: Q.Promise<LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>>;
 
         //From
-        var seq = this.From(this.stmt.From, error => deferred.reject(error));
+        var seq = this.From(this.stmt.From, error => deferred.reject(error), evaluator);
 
         //Where
-        if (this.stmt.Where) seq = this.Where(seq, this.stmt.Where);
+        if (this.stmt.Where) seq = this.Where(seq, this.stmt.Where, evaluator);
 
         //Grouping
         //Explicitly
         if (this.stmt.GroupBy) {
-            seqP = this.GroupBy(seq, this.stmt.GroupBy.Groupings)
-                .then(groups => this.SelectGrouped(groups, this.stmt.GroupBy.Having));
+            seqP = this.GroupBy(seq, this.stmt.GroupBy.Groupings, evaluator)
+                .then(groups => this.SelectGrouped(groups, this.stmt.GroupBy.Having, evaluator));
         }
         //Implicitly
         else if (lazy(this.stmt.Select.SelectList).some(selectable => evl.Evaluator.IsAggregate(selectable.Expression))) {
 
             seqP = JsoqlQuery.SequenceToArray(seq)
-                .then(items => lazy(this.SelectMonoGroup(items)));
+                .then(items => lazy(this.SelectMonoGroup(items, evaluator)));
         }
         //No grouping
         else {
-            seqP = Q(this.SelectUngrouped(seq));
+            seqP = Q(this.SelectUngrouped(seq, evaluator));
         }
 
         if (this.stmt.Union) {
@@ -566,10 +573,12 @@ export class JsoqlQuery {
         return deferred.promise;
     }
 
-    private GroupBySync(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, expressions : any[]): LazyJS.Sequence<m.Group> {
+    private GroupBySync(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
+        expressions: any[],
+        evaluator : evl.Evaluator): LazyJS.Sequence<m.Group> {
         var groupKey = (item: any) => {
             var object = lazy(expressions)
-                .map(exp => [evl.Evaluator.Alias(exp), this.evaluator.Evaluate(exp, item)])
+                .map(exp => [evl.Evaluator.Alias(exp), evaluator.Evaluate(exp, item)])
                 .toObject();
 
             return JSON.stringify(object);
@@ -589,10 +598,12 @@ export class JsoqlQuery {
         return lazy(groups);
     }
 
-    private GroupBy(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, expressions: any[]): Q.Promise<LazyJS.Sequence<m.Group>> {
+    private GroupBy(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
+        expressions: any[],
+        evaluator : evl.Evaluator): Q.Promise<LazyJS.Sequence<m.Group>> {
         var groupKey = (item: any) => {
             var object = lazy(expressions)
-                .map(exp => [JSON.stringify(exp), this.evaluator.Evaluate(exp, item)])
+                .map(exp => [JSON.stringify(exp), evaluator.Evaluate(exp, item)])
                 .toObject();
 
             return JSON.stringify(object);
