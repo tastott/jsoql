@@ -8,6 +8,9 @@ A SQL-like language for querying JSON data.
 
 ###[Wiki](https://github.com/tastott/jsoql/wiki)
 
+###[Examples](https://github.com/tastott/jsoql/wiki/examples)
+
+
 #Command-line tool
 ##Install
 `> npm install jsoql -g`
