@@ -20,6 +20,19 @@ var data = [
     }
 ];
 
+export function DateDiffYear() {
+    var query = "SELECT DATEDIFF('year', date, '2015-06-22T13:29:00') AS Blah FROM 'var://Test'";
+
+    var expected = [
+        { Blah: 95 },
+        { Blah: 38 },
+        { Blah: 13 },
+        { Blah: 96 }
+    ];
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
+
 export function DatePartYear() {
 
     var query = "SELECT DATEPART('year', date) AS Blah FROM 'var://Test'";

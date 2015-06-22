@@ -57,6 +57,8 @@
     <TypeScriptCompile Include="Scripts\query-string.ts" />
     <TypeScriptCompile Include="Scripts\query.ts" />
     <TypeScriptCompile Include="Scripts\typings\lazyjs\lazyjs.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\moment\moment-node.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\moment\moment.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\node\node.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\oboe\oboe.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\q\Q.d.ts" />
@@ -70,6 +72,7 @@
     <Folder Include="Scripts\Hacks\" />
     <Folder Include="Scripts\typings\" />
     <Folder Include="Scripts\typings\lazyjs\" />
+    <Folder Include="Scripts\typings\moment\" />
     <Folder Include="Scripts\typings\node\" />
     <Folder Include="Scripts\typings\oboe\" />
     <Folder Include="Scripts\typings\q\" />

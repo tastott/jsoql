@@ -50,7 +50,8 @@ var scalarFunctions: FunctionMappings = {
     'coalesce': args => lazy(args).filter(arg => arg != null).first() || null,
     'not': args => !args[0],
     'in': args => !!lazy(args[1]).some(item => deepEqual(args[0], item)),
-    'datepart': args => dateTime.DatePart(args[0], args[1], args[2])
+    'datepart': args => dateTime.DatePart(args[0], args[1], args[2]),
+    'datediff': args => dateTime.DateDiff(args[0], args[1], args[2])
 }
 
 var aggregateFunctions: FunctionMappings = {
