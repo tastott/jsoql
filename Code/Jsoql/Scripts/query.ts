@@ -18,8 +18,16 @@ interface DatasourceConfig {
     Condition?: any;
     Over?: boolean; 
     SubQuery?: boolean;
+    Join?: string;
 }
 
+interface Join {
+    Type: string;
+    Left: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>;
+    Right: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>;
+    Condition: any;
+    RightAlias: string;
+}
 
 
 class LazyJsQueryIterator implements m.QueryIterator {
@@ -281,7 +289,13 @@ export class JsoqlQuery {
             //Join/over each subsequent table
             lazy(targets).slice(1).each(target => {
 
-                if (target.Condition) seq = this.Join(seq, this.GetSequence(target, onError), target.Alias, target.Condition, evaluator);
+                if (target.Join) seq = this.Join({
+                    Type: target.Join,
+                    Left: seq,
+                    Right: this.GetSequence(target, onError),
+                    RightAlias: target.Alias,
+                    Condition: target.Condition
+                }, evaluator);
                 else if (target.Over) seq = this.Over(seq, target.Target, target.Alias, evaluator);
                 else throw new Error("Unsupported FROM clause");
                
@@ -308,24 +322,44 @@ export class JsoqlQuery {
 
     }
 
-    private Join(left: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
-        right: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
-        rightAlias: string,
-        condition: any,
-        evaluator: evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+    private Join(join : Join, evaluator: evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
-        //For each item on left of join, find 0 to many matching items from the right side, using the ON expression
-        return left.map(li => {
-            return right.map(ri => {
+        var seqA = join.Type === 'Right' ? join.Right : join.Left;
+        var seqB = join.Type === 'Right' ? join.Left : join.Right;
+
+        //For each item in sequence A, find 0 to many matching items in sequence B, using the ON expression
+        return seqA.map(li => {
+
+            //We'll keep track of whether one or more matches is found in the B sequence (for outer joins)
+            var hasMatches = false;
+
+            var matches = seqB.map(ri => {
                 //Create prospective merged item containing left and right side items
                 var merged = clone(li);
-                merged[rightAlias] = ri;
+                merged[join.RightAlias] = ri;
 
                 //Return non-null value to indicate match
-                if (evaluator.Evaluate(condition, merged)) return merged;
+                if (evaluator.Evaluate(join.Condition, merged)) {
+                    hasMatches = true;
+                    return merged;
+                }
                 else return null;
             })
-            .compact() //Throw away null (non-matching) values
+            .compact(); //Throw away null (non-matching) values
+
+            //For outer joins, concatenate an extra item with a null value for sequence B
+            //And filter it out if a match has been found
+            if (join.Type === 'Left' || join.Type === 'Right') {
+                var defaultValue = clone(li);
+                defaultValue[join.RightAlias] = null;
+
+                //This relies on lazy evaluation of the filter predicate after matches have been sought in sequence B
+                var defaultValueSequence = lazy([defaultValue]).async(0).filter(x => !hasMatches);
+
+                matches = matches.concat(<any>defaultValueSequence);
+            }
+
+            return matches;
         })
         .flatten(); //Flatten the sequence of sequences
 
@@ -339,6 +373,7 @@ export class JsoqlQuery {
                 .concat(this.CollectDatasources(fromClauseNode.Right)
                 .map(n => {
                         n.Condition = fromClauseNode.Expression;
+                        n.Join = fromClauseNode.Join;
                         return n;
                     })
                 );

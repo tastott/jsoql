@@ -249,7 +249,27 @@ var exp = {
         exp.AliasedFromTarget,
         [
             exp.FromTargets + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression,
-            "{ Left: $1, Right: $3, Expression: $5}"
+            "{ Join: 'Inner', Left: $1, Right: $3, Expression: $5}"
+        ],
+        [
+            exp.FromTargets + " " + keywords.INNER + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression,
+            "{ Join: 'Inner', Left: $1, Right: $4, Expression: $6}"
+        ],
+        [
+            exp.FromTargets + " " + keywords.LEFT + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression,
+            "{ Join: 'Left', Left: $1, Right: $4, Expression: $6}"
+        ],
+        [
+            exp.FromTargets + " " + keywords.LEFT + " " + keywords.OUTER + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression,
+            "{ Join: 'Left', Left: $1, Right: $5, Expression: $7}"
+        ],
+        [
+            exp.FromTargets + " " + keywords.RIGHT + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression,
+            "{ Join: 'Right', Left: $1, Right: $4, Expression: $6}"
+        ],
+        [
+            exp.FromTargets + " " + keywords.RIGHT + " " + keywords.OUTER + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression,
+            "{ Join: 'Right', Left: $1, Right: $5, Expression: $7}"
         ],
         [
             exp.FromTargets + " " + keywords.OVER + " " + exp.Property + " " + keywords.AS + " " + val.PlainIdentifier,
@@ -478,15 +498,15 @@ export function GetJisonExpressionsHelpful() {
     expressions['FromTargets'] = expressions['FromTargets'].concat([
         [
             exp.FromTargets + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON,
-            "$$ = { Left: $1, Right: $3, Expression: null}"
+            "$$ = { Join: 'Inner', Left: $1, Right: $3, Expression: null}"
         ],
         [
             exp.FromTargets + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression + " TrailingDot",
-            "$$ = { Left: $1, Right: $3, Expression: null}"
+            "$$ = { Join: 'Inner', Left: $1, Right: $3, Expression: null}"
         ],
         [
             exp.FromTargets + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression + " FinalDot",
-            "$$ = { Left: $1, Right: $3, Expression: null}"
+            "$$ = { Join: 'Inner', Left: $1, Right: $3, Expression: null}"
         ]
     ]);
 

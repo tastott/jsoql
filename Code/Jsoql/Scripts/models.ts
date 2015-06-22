@@ -71,6 +71,7 @@ export interface FromClauseNode {
     }[];
     Quoted: string;
     SubQuery: Statement;
+    Join?: string;
 }
 
 export interface GroupByClause {

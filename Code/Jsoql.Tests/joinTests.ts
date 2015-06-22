@@ -3,7 +3,7 @@ import assert = require('assert');
 import testBase = require('./testBase');
 
 
-export function Join() {
+export function ImplicitInnerJoin() {
     
     var dataA = [
         { Order: 'A', CustomerId: 1 },
@@ -32,6 +32,40 @@ export function Join() {
     return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
 }
 
+
+export function ExplicitInnerJoin() {
+
+    var dataA = [
+        { Order: 'A', CustomerId: 1 },
+        { Order: 'B', CustomerId: 1 },
+        { Order: 'B', CustomerId: 2 }
+    ];
+
+    var dataB = [
+        { CustomerId: 1, Name: 'Tim' },
+        { CustomerId: 2, Name: 'Bob' },
+    ];
+
+    var expected = [
+        { CustomerId: 1, Name: 'Tim', Order: 'A' },
+        { CustomerId: 1, Name: 'Tim', Order: 'B' },
+        { CustomerId: 2, Name: 'Bob', Order: 'B' }
+    ];
+
+    var data: jsoql.JsoqlQueryContext = {
+        Data: {
+            "Orders": dataA,
+            "Customers": dataB
+        }
+    };
+    var query = 
+        "SELECT c.CustomerId AS CustomerId, c.Name AS Name, o.Order AS Order \
+        FROM 'var://Orders' AS o \
+        INNER JOIN 'var://Customers' AS c ON o.CustomerId = c.CustomerId";
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
+
 export function JoinHttpDatasources() {
 
     var data = [1, 2, 3, 4, 5, 6, 7, 8].map(i => {
@@ -45,4 +79,95 @@ export function JoinHttpDatasources() {
     return testBase.ExecuteAndAssertWithServer(query, data, 8000, results => {
         assert.deepEqual(results, expected);
     });
+}
+
+
+function _LeftJoin(joinTokens : string) {
+
+    var customers = [
+        { CustomerId: 1, Name: 'Tim' },
+        { CustomerId: 2, Name: 'Bob' },
+        { CustomerId: 3, Name: 'Genghis' },
+    ];
+
+    var orders = [
+        { Order: 'A', CustomerId: 1 },
+        { Order: 'B', CustomerId: 1 },
+        { Order: 'C', CustomerId: 2 },
+        { Order: 'D', CustomerId: 4 }
+    ];
+
+   
+    var expected = [
+        { CustomerId: 1, Name: 'Tim', Order: 'A' },
+        { CustomerId: 1, Name: 'Tim', Order: 'B' },
+        { CustomerId: 2, Name: 'Bob', Order: 'C' },
+        { CustomerId: 3, Name: 'Genghis', Order: null },
+    ];
+
+    var data: jsoql.JsoqlQueryContext = {
+        Data: {
+            "Orders": orders,
+            "Customers": customers
+        }
+    };
+    var query =
+        `SELECT c.CustomerId AS CustomerId, c.Name AS Name, o.Order AS Order \
+        FROM 'var://Customers' AS c\
+        ${joinTokens} 'var://Orders' AS o ON c.CustomerId = o.CustomerId`;
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
+
+export function LeftJoin() {
+    return _LeftJoin("LEFT JOIN");
+}
+
+export function LeftOuterJoin() {
+    return _LeftJoin("LEFT OUTER JOIN");
+}
+
+function _RightJoin(joinTokens : string) {
+
+    var customers = [
+        { CustomerId: 1, Name: 'Tim' },
+        { CustomerId: 2, Name: 'Bob' },
+        { CustomerId: 3, Name: 'Genghis' },
+    ];
+
+    var orders = [
+        { Order: 'A', CustomerId: 1 },
+        { Order: 'B', CustomerId: 1 },
+        { Order: 'C', CustomerId: 2 },
+        { Order: 'D', CustomerId: 4 }
+    ];
+
+
+    var expected = [
+        { Order: 'A', Customer: 'Tim' },
+        { Order: 'B', Customer: 'Tim'},
+        { Order: 'C', Customer: 'Bob'},
+        { Order: 'D', Customer: null }
+    ];
+
+    var data: jsoql.JsoqlQueryContext = {
+        Data: {
+            "Orders": orders,
+            "Customers": customers
+        }
+    };
+    var query =
+        `SELECT o.Order AS Order, c.Name AS Customer \
+        FROM 'var://Customers' AS c\
+        ${joinTokens} 'var://Orders' AS o ON c.CustomerId = o.CustomerId`;
+
+    return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+}
+
+export function RightJoin() {
+    return _RightJoin("RIGHT JOIN");
+}
+
+export function RightOuterJoin() {
+    return _RightJoin("RIGHT OUTER JOIN");
 }
