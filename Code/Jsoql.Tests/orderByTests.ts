@@ -55,12 +55,12 @@ export function OrderByImplicitAsc() {
 export function OrderByMultiple() {
     var data = [
         { Value: 2, Thing: 1 },
-        { Value: 1, Thing: 1 },
+        { Value: 1, Thing: 9 },
         { Value: 2, Thing: 3 }
     ];
 
     var expected = [
-        { Value: 1, Thing: 1 },
+        { Value: 1, Thing: 9 },
         { Value: 2, Thing: 1 },
         { Value: 2, Thing: 3 }
     ];

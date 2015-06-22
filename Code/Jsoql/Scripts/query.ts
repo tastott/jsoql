@@ -418,7 +418,7 @@ export class JsoqlQuery {
         }
 
 
-        (this.stmt.OrderBy || []).forEach(orderByExp => {
+        lazy(this.stmt.OrderBy || []).reverse().each(orderByExp => {
             groups = groups.sortBy(group => evaluator.EvaluateGroup(orderByExp.Expression, group), !orderByExp.Asc);
         });
 
@@ -451,7 +451,7 @@ export class JsoqlQuery {
 
     private SelectUngrouped(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
         evaluator: evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
-        (this.stmt.OrderBy || []).forEach(orderByExp => {
+        lazy(this.stmt.OrderBy || []).reverse().each(orderByExp => {
             seq = seq.sortBy(item => evaluator.Evaluate(orderByExp.Expression, item), !orderByExp.Asc);
         });
 
