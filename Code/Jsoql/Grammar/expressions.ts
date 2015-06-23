@@ -95,7 +95,7 @@ var exp = {
         ],
         [
             keywords.CASE + " " + exp.Expression + " " + exp.WhenThenList + " " + keywords.ELSE + " " + exp.Expression + " " + keywords.END,
-            { Case: "$2", Whens: "$3", Else: "$5"}
+            { Case: "$2", Whens: "$3", Else: "$5" }
         ],
         [
             keywords.CASE + " " + exp.WhenThenList + " " + keywords.ELSE + " " + exp.Expression + " " + keywords.END,
@@ -158,13 +158,13 @@ var exp = {
         //    { Operator: "$2", Args: ["$1", "$3"] }
         //]
     ]
-    .concat(<any>operators.map(op =>
+        .concat(<any>operators.map(op =>
         [
             exp.Expression + " " + op + " " + exp.Expression,
             { Operator: "$2", Args: ["$1", "$3"] }
         ]
-    ))
-    .concat([
+        ))
+        .concat([
         [
             "- Expression", // %prec UMINUS",
             "$$ = -$2"
@@ -230,8 +230,14 @@ var exp = {
         ]
     ],
     FromTarget: () => [
-        exp.Property,
-        exp.Quoted,
+        [
+            exp.Property,
+            "{ Target: $1 }"
+        ],
+        [
+            exp.Quoted,
+            "{ Target: $1.Quoted }"
+        ],
         exp.Object,
         [
             '( ' + exp.Stmt + ' )',
@@ -241,7 +247,7 @@ var exp = {
     AliasedFromTarget: () => [
         [
             exp.FromTarget + " " + keywords.AS + " " + exp.Identifier,
-            "{Target: $1, Alias: $3}"
+            "$$ = $1; $$.Alias = $3"
         ]
     ],
     FromTargets: () => [
@@ -249,39 +255,39 @@ var exp = {
         exp.AliasedFromTarget,
         [
             exp.FromTargets + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression,
-            "{ Join: 'Inner', Left: $1, Right: $3, Expression: $5}"
+            "{ Join: { Type: 'Inner', Left: $1, Right: $3, Condition: $5}}"
         ],
         [
             exp.FromTargets + " " + keywords.INNER + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression,
-            "{ Join: 'Inner', Left: $1, Right: $4, Expression: $6}"
+            "{ Join: {Type: 'Inner', Left: $1, Right: $4, Condition: $6}}"
         ],
         [
             exp.FromTargets + " " + keywords.LEFT + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression,
-            "{ Join: 'Left', Left: $1, Right: $4, Expression: $6}"
+            "{ Join: {Type: 'Left', Left: $1, Right: $4, Condition: $6}}"
         ],
         [
             exp.FromTargets + " " + keywords.LEFT + " " + keywords.OUTER + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression,
-            "{ Join: 'Left', Left: $1, Right: $5, Expression: $7}"
+            "{ Join: {Type: 'Left', Left: $1, Right: $5, Condition: $7}}"
         ],
         [
             exp.FromTargets + " " + keywords.RIGHT + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression,
-            "{ Join: 'Right', Left: $1, Right: $4, Expression: $6}"
+            "{ Join: {Type: 'Right', Left: $1, Right: $4, Condition: $6}}"
         ],
         [
             exp.FromTargets + " " + keywords.RIGHT + " " + keywords.OUTER + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression,
-            "{ Join: 'Right', Left: $1, Right: $5, Expression: $7}"
+            "{ Join: {Type: 'Right', Left: $1, Right: $5, Condition: $7}}"
         ],
         [
             exp.FromTargets + " " + keywords.FULL + " " + keywords.OUTER + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression,
-            "{ Join: 'Full', Left: $1, Right: $5, Expression: $7}"
+            "{ Join: {Type: 'Full', Left: $1, Right: $5, Condition: $7}}"
         ],
         [
             exp.FromTargets + " " + keywords.CROSS + " " + keywords.JOIN + " " + exp.AliasedFromTarget,
-            "{ Join: 'Cross', Left: $1, Right: $4}"
+            "{ Join: {Type: 'Cross', Left: $1, Right: $4}}"
         ],
         [
             exp.FromTargets + " " + keywords.OVER + " " + exp.Property + " " + keywords.AS + " " + val.PlainIdentifier,
-            "{ Left: $1, Over: $3, Alias: $5}"
+            "{ Over: { Left: $1, Right: $3, Alias: $5}}"
         ]
     ],
     OrderByExpression: () => [
@@ -506,15 +512,15 @@ export function GetJisonExpressionsHelpful() {
     expressions['FromTargets'] = expressions['FromTargets'].concat([
         [
             exp.FromTargets + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON,
-            "$$ = { Join: 'Inner', Left: $1, Right: $3, Expression: null}"
+            "$$ = { Join: {Type: 'Inner', Left: $1, Right: $3, Condition: null}}"
         ],
         [
             exp.FromTargets + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression + " TrailingDot",
-            "$$ = { Join: 'Inner', Left: $1, Right: $3, Expression: null}"
+            "$$ = { Join: {Type: 'Inner', Left: $1, Right: $3, Condition: null}}"
         ],
         [
             exp.FromTargets + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression + " FinalDot",
-            "$$ = { Join: 'Inner', Left: $1, Right: $3, Expression: null}"
+            "$$ = { Join: {Type: 'Inner', Left: $1, Right: $3, Condition: null}}"
         ]
     ]);
 

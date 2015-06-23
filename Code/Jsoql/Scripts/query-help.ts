@@ -128,12 +128,14 @@ export class QueryHelper {
     }
 
     private MungeFromClauseRecursive(fromClauseNode: m.FromClauseNode) {
-        if (fromClauseNode.Expression !== undefined) {
-            fromClauseNode.Expression = true;
+        if (fromClauseNode.Join && fromClauseNode.Join.Condition !== undefined) {
+            fromClauseNode.Join.Condition = true;
         }
 
-        if (fromClauseNode.Left) this.MungeFromClause(fromClauseNode.Left);
-        if (fromClauseNode.Right) this.MungeFromClause(fromClauseNode.Right);
+        if (fromClauseNode.Join) {
+            this.MungeFromClause(fromClauseNode.Join.Left);
+            this.MungeFromClause(fromClauseNode.Join.Right);
+        }
     }
 
     private GetScopeHelp(originalStatement: m.Statement, scope: Scope, context?: m.QueryContext): Q.Promise<m.HelpResult> {

@@ -9,6 +9,8 @@ import util = require('./utilities')
 import evl = require('./evaluate')
 import val = require('./validate')
 var clone = require('clone')
+var merge = require('merge')
+
 var hrtime: (start?: number[]) => number[] = require('browser-process-hrtime')
 
 interface DatasourceConfig {
@@ -238,84 +240,105 @@ export class JsoqlQuery {
         }
     }
 
-    private GetSequence(config : DatasourceConfig, onError : m.ErrorHandler): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+    private ParseKeyValuesDatasource(keyValues: m.KeyValue[]): { Uri: string; Parameters: any; } {
+        var evaluatedKeyValues = lazy(keyValues)
+            .map(kv => {
+            return {
+                Key: kv.Key,
+                Value: evl.Evaluator.Evaluate(kv.Value, null)
+            };
+        });
+        var uri = evaluatedKeyValues.find(kv => kv.Key === 'uri');
+        if (!uri) throw new Error("Datasource is missing the 'uri' property.");
 
-        if (config.SubQuery) {
-            var subQuery = new JsoqlQuery(config.Target, this.dataSourceSequencers, this.queryContext);
-            return new lazyExt.PromisedSequence(subQuery.GetResultsSequence());
+        var parameters = evaluatedKeyValues
+            .filter(kv => kv.Key !== 'uri')
+            .map(kv => [kv.Key, kv.Value])
+            .toObject();
+
+        return {
+            Uri: uri.Value,
+            Parameters: parameters
+        };
+
+    }
+    private ParseUri(uri: string): { Schema: string; Value: string; } {
+        var match = uri.match(JsoqlQuery.UriRegex);
+        var match = uri.match(JsoqlQuery.UriRegex);
+        if (!match) throw new Error(`Unrecognized format for datasource: ${uri}`);
+
+        return {
+            Schema: match[1],
+            Value: match[2]
+        };
+    }
+
+    private GetSequence(uri: string, parameters: any, onError: m.ErrorHandler): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
+        var parsed = this.ParseUri(uri);
+        
+        if (!this.dataSourceSequencers[parsed.Schema]) throw new Error(`Unrecognized schema for datasource: ${parsed.Schema}`);
+
+        return this.dataSourceSequencers[parsed.Schema].Get(parsed.Value, parameters, this.queryContext, onError);
+    }
+
+    private FromLeaf(fromClause: m.FromClauseNode, onError: m.ErrorHandler,
+        evaluator: evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+
+        var seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>;
+
+        //Sub-query
+        if (fromClause.SubQuery) {
+            var subQuery = new JsoqlQuery(fromClause.SubQuery, this.dataSourceSequencers, this.queryContext);
+            seq = new lazyExt.PromisedSequence(subQuery.GetResultsSequence());
         }
+        //Object literal (uri + parameters)
+        else if (fromClause.KeyValues) {
+            var parsed = this.ParseKeyValuesDatasource(fromClause.KeyValues);
 
-        var ds = this.ToDatasource(config.Target);
-        var sequencer: ds.DataSourceSequencer;
-        var parameters = {};
-
-        if (ds.Type === 'var') {
-            sequencer = this.dataSourceSequencers['var'];
+            seq = this.GetSequence(parsed.Uri, parsed.Parameters, onError);
         }
+        //Quoted (uri shorthand)
+        else if (typeof fromClause.Target === 'string') {
+            seq = this.GetSequence(fromClause.Target, {}, onError);
+        }
+        //Unquoted (i.e. some variable in context)
         else {
-            parameters = config.Parameters || parameters;
-            sequencer = this.dataSourceSequencers[ds.Type];
-            if (!sequencer) throw new Error("Invalid scheme for data source: '" + ds.Type + "'");
+
+            seq = this.dataSourceSequencers['var'].Get(fromClause.Target, {}, this.queryContext, onError);
         }
 
-        return sequencer.Get(ds.Value, parameters, this.queryContext, onError);
+        if (fromClause.Alias) {
+            seq = seq.map(item => {
+                var mapped = {};
+                mapped[fromClause.Alias] = item;
+                return mapped;
+            });
+        }
+
+        return seq;
     }
 
     private From(fromClause: m.FromClauseNode, onError: m.ErrorHandler,
         evaluator : evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
-        //Unquoted (i.e. some variable in context)
-        if (fromClause.Target) {
-            return this.dataSourceSequencers['var'].Get(fromClause.Target, {}, this.queryContext, onError);
+        //Join operation
+        if (fromClause.Join) {
+
+            var left = this.From(fromClause.Join.Left, onError, evaluator);
+            var right = this.From(fromClause.Join.Right, onError, evaluator);
+
+            return this.Join(fromClause.Join.Type, left, right, fromClause.Join.Condition, evaluator);
         }
-        //Quoted (uri shorthand)
-        else if (fromClause.Quoted) {
-            var match = fromClause.Quoted.match(JsoqlQuery.UriRegex);
-            if (!match) throw new Error(`Unrecognized format for datasource: ${fromClause.Quoted}`);
-            else if (!this.dataSourceSequencers[match[1]]) throw new Error(`Unrecognized schema for datasource: ${match[1]}`);
+        //Over operation
+        else if (fromClause.Over) {
+            var left = this.From(fromClause.Over.Left, onError, evaluator);
 
-            return this.dataSourceSequencers[match[1]].Get(match[2], {}, this.queryContext, onError);
+            return this.Over(left, fromClause.Over.Right, fromClause.Over.Alias, evaluator);
         }
-
-        var targets = this.CollectDatasources(fromClause);
-
-        var seq = this.GetSequence(targets[0], onError);
-
-        if (targets.length > 1 || targets[0].Alias) {
-            var aliases = lazy(targets).map(t => t.Alias);
-
-            //Aliases are mandatory if multiple targets are used
-            if (targets.length > 1 && lazy(aliases).some(a => !a)) {
-                throw 'Each table must have an alias if more than one table is specified';
-            }
-            if (aliases.uniq().size() < targets.length) {
-                throw 'Table aliases must be unique';
-            }
-
-            //Map each item to a property with the alias of its source table
-            seq = seq.map(item => {
-                var mapped = {};
-                mapped[targets[0].Alias] = item;
-                return mapped;
-            });
-
-            //Join/over each subsequent table
-            lazy(targets).slice(1).each(target => {
-
-                if (target.Join) seq = this.Join({
-                    Type: target.Join,
-                    Left: seq,
-                    Right: this.GetSequence(target, onError),
-                    RightAlias: target.Alias,
-                    Condition: target.Condition
-                }, evaluator);
-                else if (target.Over) seq = this.Over(seq, target.Target, target.Alias, evaluator);
-                else throw new Error("Unsupported FROM clause");
-               
-            });
+        //Leaf
+        else {
+            return this.FromLeaf(fromClause, onError, evaluator);
         }
-
-        return seq;
     }
 
     private Over(left: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
@@ -335,120 +358,59 @@ export class JsoqlQuery {
 
     }
 
-    private Join(join : Join, evaluator: evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+    private Join(type: string,
+        left: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
+        right: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
+        condition : any,
+        evaluator: evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
-        var seqA = join.Type === 'Right' ? join.Right : join.Left;
-        var seqB = join.Type === 'Right' ? join.Left : join.Right;
+        switch (type) {
+            case 'Inner':
+            case 'Left':
+            case 'Right':
 
-        //For each item in sequence A, find 0 to many matching items in sequence B, using the ON expression
-        return seqA.map(li => {
+                var seqA = type === 'Right' ? right : left;
+                var seqB = type === 'Right' ? left : right;
 
-            //We'll keep track of whether one or more matches is found in the B sequence (for outer joins)
-            var hasMatches = false;
+                //For each item in sequence A, find 0 to many matching items in sequence B, using the ON expression
+                return seqA.map(li => {
 
-            var matches = seqB.map(ri => {
-                //Create prospective merged item containing left and right side items
-                var merged = clone(li);
-                merged[join.RightAlias] = ri;
+                    //We'll keep track of whether one or more matches is found in the B sequence (for outer joins)
+                    var hasMatches = false;
 
-                //Return non-null value to indicate match
-                if (evaluator.Evaluate(join.Condition, merged)) {
-                    hasMatches = true;
-                    return merged;
-                }
-                else return null;
-            })
-            .compact(); //Throw away null (non-matching) values
+                    var matches = seqB.map(ri => {
+                        //Create prospective merged item containing left and right side items
+                        var merged = merge(true, li, ri);
 
-            //For outer joins, concatenate an extra item with a null value for sequence B
-            //And filter it out if a match has been found
-            if (join.Type === 'Left' || join.Type === 'Right') {
-                var defaultValue = clone(li);
-                defaultValue[join.RightAlias] = null;
-
-                //This relies on lazy evaluation of the filter predicate after matches have been sought in sequence B
-                var defaultValueSequence = lazy([defaultValue]).async(0).filter(x => !hasMatches);
-
-                matches = matches.concat(<any>defaultValueSequence);
-            }
-
-            return matches;
-        })
-        .flatten(); //Flatten the sequence of sequences
-
-    }
-
-    private CollectDatasources(fromClauseNode: m.FromClauseNode): DatasourceConfig[] {
-
-        //Join
-        if (fromClauseNode.Expression) {
-            return this.CollectDatasources(fromClauseNode.Left)
-                .concat(this.CollectDatasources(fromClauseNode.Right)
-                .map(n => {
-                        n.Condition = fromClauseNode.Expression;
-                        n.Join = fromClauseNode.Join;
-                        return n;
+                        //Return non-null value to indicate match
+                        if (evaluator.Evaluate(condition, merged)) {
+                            hasMatches = true;
+                            return merged;
+                        }
+                        else return null;
                     })
-                );
-        }
-        //Over
-        else if (fromClauseNode.Over) {
-            return this.CollectDatasources(fromClauseNode.Left)
-                .concat([{ Target: fromClauseNode.Over, Alias: fromClauseNode.Alias, Over: true }]);       
-        }
-        //Aliased
-        else if (fromClauseNode.Target) {
-            //Quoted
-            if (fromClauseNode.Target.Quoted) {
-                return [{ Target: fromClauseNode.Target.Quoted, Alias: fromClauseNode.Alias }];
-            }
-            //Unquoted
-            else {
-                var collected = this.CollectDatasources(fromClauseNode.Target);
-                return [{ Target: collected[0].Target, Alias: fromClauseNode.Alias, Parameters: collected[0].Parameters }];
-            }
-        }
-        //Object
-        else if (fromClauseNode.KeyValues) {
-            var keyValues = lazy(fromClauseNode.KeyValues)
-                .map(kv => {
-                    return {
-                        Key: kv.Key,
-                        Value: evl.Evaluator.Evaluate(kv.Value, null)
-                    };
-                });
-            var uri = keyValues.find(kv => kv.Key === 'uri');
-            if (!uri) throw new Error("Datasource is missing the 'uri' property.");
+                    .compact(); //Throw away null (non-matching) values
 
-            return [{
-                Target: uri.Value,
-                Alias: null,
-                Parameters: keyValues
-                    .filter(kv => kv.Key !== 'uri')
-                    .map(kv => [kv.Key, kv.Value])
-                    .toObject()
-            }];
-        }
-        //Sub-query
-        else if (fromClauseNode.SubQuery) {
-            return [{
-                Target: fromClauseNode.SubQuery,
-                Alias: null,
-                SubQuery: true
-            }];
-        }
-        //Un-aliased
-        else {
-            //Quoted
-            if (fromClauseNode.Quoted) {
-                return [{ Target: fromClauseNode.Quoted, Alias: null }];
-            }
-            //Un-quoted
-            else {
-                return [{ Target: fromClauseNode, Alias: null }];
-            }
-        }
+                    //For outer joins, concatenate an extra item with a null value for sequence B
+                    //And filter it out if a match has been found
+                    if (type === 'Left' || type === 'Right') {
+                        var defaultValue = li;
+                        //defaultValue[join.RightAlias] = null;
 
+                        //This relies on lazy evaluation of the filter predicate after matches have been sought in sequence B
+                        var defaultValueSequence = lazy([defaultValue]).async(0).filter(x => !hasMatches);
+
+                        matches = matches.concat(<any>defaultValueSequence);
+                    }
+
+                    return matches;
+                })
+                    .flatten(); //Flatten the sequence of sequences
+                break;
+
+    
+            default: throw new Error(`Unrecognized join type: '${type}'`);
+        }
     }
 
     private Where(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, whereClause: any, evaluator: evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
@@ -560,9 +522,58 @@ export class JsoqlQuery {
         else return results;
     }
 
-    GetDatasources(): m.Datasource[]{
-        return this.CollectDatasources(this.stmt.From)
-            .map(dsc => this.ToDatasource(dsc.Target));
+    GetDatasources(): m.Datasource[] {
+        return <any>lazy(this.GetFromLeaves(this.stmt.From))
+            .map(fromClause => {
+                //Sub-query
+                if (fromClause.SubQuery) {
+                    var subQuery = new JsoqlQuery(fromClause.SubQuery, this.dataSourceSequencers, this.queryContext);
+                    return subQuery.GetDatasources();
+                }
+                //Object literal (uri + parameters)
+                else if (fromClause.KeyValues) {
+                    var parsed = this.ParseKeyValuesDatasource(fromClause.KeyValues);
+                    var parsedUri = this.ParseUri(parsed.Uri);
+
+                    return [{
+                        Type: parsedUri.Schema,
+                        Value: parsedUri.Value
+                    }];
+
+                }
+                //Quoted (uri shorthand)
+                else if (typeof fromClause.Target === 'string') {
+                    var parsedUri = this.ParseUri(fromClause.Target);
+
+                    return [{
+                        Type: parsedUri.Schema,
+                        Value: parsedUri.Value
+                    }];
+                }
+                //Unquoted (i.e. some variable in context)
+                else return [{
+                    Type: 'var',
+                    Value: fromClause.Target
+                }];
+            })
+            .flatten();
+    }
+
+    GetFromLeaves(fromClause : m.FromClauseNode): m.FromClauseNode[]{
+
+        //Join operation
+        if (fromClause.Join) {
+
+            return this.GetFromLeaves(fromClause.Join.Left).concat(this.GetFromLeaves(fromClause.Join.Right));
+        }
+        //Over operation
+        else if (fromClause.Over) {
+            this.GetFromLeaves(fromClause.Over.Left);
+        }
+        //Leaf
+        else {
+            return [fromClause];
+        }
     }
 
     Validate(): any[]{

@@ -58,20 +58,27 @@ export interface Selectable {
     Alias?: string;
 }
 
+export interface KeyValue {
+    Key: string;
+    Value: any;
+}
+
 export interface FromClauseNode {
+    Join?: {
+        Type: string;
+        Left: FromClauseNode;
+        Right: FromClauseNode;
+        Condition: any;
+    };
+    Over?: {
+        Left: FromClauseNode;
+        Right: any;
+        Alias: string;
+    };
     Target?: any;
-    Left?: FromClauseNode;
-    Right?: FromClauseNode;
-    Expression: any;
-    Over?: FromClauseNode;
     Alias?: string;
-    KeyValues?: {
-        Key: string;
-        Value: any;
-    }[];
-    Quoted: string;
+    KeyValues?: KeyValue[];
     SubQuery: Statement;
-    Join?: string;
 }
 
 export interface GroupByClause {

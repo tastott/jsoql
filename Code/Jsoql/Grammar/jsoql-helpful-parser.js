@@ -219,33 +219,37 @@ case 74:this.$ = $$[$0-1]
 break;
 case 75:this.$ = $$[$0-1]
 break;
+case 76:this.$ = { Target: $$[$0] }
+break;
+case 77:this.$ = { Target: $$[$0].Quoted }
+break;
 case 79:this.$ = { SubQuery: $$[$0-1] }
 break;
-case 80:this.$ = {Target: $$[$0-2], Alias: $$[$0]}
+case 80:this.$ = $$[$0-2]; this.$.Alias = $$[$0]
 break;
-case 83:this.$ = { Join: 'Inner', Left: $$[$0-4], Right: $$[$0-2], Expression: $$[$0]}
+case 83:this.$ = { Join: { Type: 'Inner', Left: $$[$0-4], Right: $$[$0-2], Condition: $$[$0]}}
 break;
-case 84:this.$ = { Join: 'Inner', Left: $$[$0-5], Right: $$[$0-2], Expression: $$[$0]}
+case 84:this.$ = { Join: {Type: 'Inner', Left: $$[$0-5], Right: $$[$0-2], Condition: $$[$0]}}
 break;
-case 85:this.$ = { Join: 'Left', Left: $$[$0-5], Right: $$[$0-2], Expression: $$[$0]}
+case 85:this.$ = { Join: {Type: 'Left', Left: $$[$0-5], Right: $$[$0-2], Condition: $$[$0]}}
 break;
-case 86:this.$ = { Join: 'Left', Left: $$[$0-6], Right: $$[$0-2], Expression: $$[$0]}
+case 86:this.$ = { Join: {Type: 'Left', Left: $$[$0-6], Right: $$[$0-2], Condition: $$[$0]}}
 break;
-case 87:this.$ = { Join: 'Right', Left: $$[$0-5], Right: $$[$0-2], Expression: $$[$0]}
+case 87:this.$ = { Join: {Type: 'Right', Left: $$[$0-5], Right: $$[$0-2], Condition: $$[$0]}}
 break;
-case 88:this.$ = { Join: 'Right', Left: $$[$0-6], Right: $$[$0-2], Expression: $$[$0]}
+case 88:this.$ = { Join: {Type: 'Right', Left: $$[$0-6], Right: $$[$0-2], Condition: $$[$0]}}
 break;
-case 89:this.$ = { Join: 'Full', Left: $$[$0-6], Right: $$[$0-2], Expression: $$[$0]}
+case 89:this.$ = { Join: {Type: 'Full', Left: $$[$0-6], Right: $$[$0-2], Condition: $$[$0]}}
 break;
-case 90:this.$ = { Join: 'Cross', Left: $$[$0-3], Right: $$[$0]}
+case 90:this.$ = { Join: {Type: 'Cross', Left: $$[$0-3], Right: $$[$0]}}
 break;
-case 91:this.$ = { Left: $$[$0-4], Over: $$[$0-2], Alias: $$[$0]}
+case 91:this.$ = { Over: { Left: $$[$0-4], Right: $$[$0-2], Alias: $$[$0]}}
 break;
-case 92:this.$ = { Join: 'Inner', Left: $$[$0-3], Right: $$[$0-1], Expression: null}
+case 92:this.$ = { Join: {Type: 'Inner', Left: $$[$0-3], Right: $$[$0-1], Condition: null}}
 break;
-case 93:this.$ = { Join: 'Inner', Left: $$[$0-5], Right: $$[$0-3], Expression: null}
+case 93:this.$ = { Join: {Type: 'Inner', Left: $$[$0-5], Right: $$[$0-3], Condition: null}}
 break;
-case 94:this.$ = { Join: 'Inner', Left: $$[$0-5], Right: $$[$0-3], Expression: null}
+case 94:this.$ = { Join: {Type: 'Inner', Left: $$[$0-5], Right: $$[$0-3], Condition: null}}
 break;
 case 95:this.$ = $$[$0-3]
 break;

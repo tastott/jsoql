@@ -185,27 +185,31 @@ case 57:this.$ = [$$[$0]]
 break;
 case 58:this.$ = $$[$0-2].concat([$$[$0]])
 break;
+case 59:this.$ = { Target: $$[$0] }
+break;
+case 60:this.$ = { Target: $$[$0].Quoted }
+break;
 case 62:this.$ = { SubQuery: $$[$0-1] }
 break;
-case 63:this.$ = {Target: $$[$0-2], Alias: $$[$0]}
+case 63:this.$ = $$[$0-2]; this.$.Alias = $$[$0]
 break;
-case 66:this.$ = { Join: 'Inner', Left: $$[$0-4], Right: $$[$0-2], Expression: $$[$0]}
+case 66:this.$ = { Join: { Type: 'Inner', Left: $$[$0-4], Right: $$[$0-2], Condition: $$[$0]}}
 break;
-case 67:this.$ = { Join: 'Inner', Left: $$[$0-5], Right: $$[$0-2], Expression: $$[$0]}
+case 67:this.$ = { Join: {Type: 'Inner', Left: $$[$0-5], Right: $$[$0-2], Condition: $$[$0]}}
 break;
-case 68:this.$ = { Join: 'Left', Left: $$[$0-5], Right: $$[$0-2], Expression: $$[$0]}
+case 68:this.$ = { Join: {Type: 'Left', Left: $$[$0-5], Right: $$[$0-2], Condition: $$[$0]}}
 break;
-case 69:this.$ = { Join: 'Left', Left: $$[$0-6], Right: $$[$0-2], Expression: $$[$0]}
+case 69:this.$ = { Join: {Type: 'Left', Left: $$[$0-6], Right: $$[$0-2], Condition: $$[$0]}}
 break;
-case 70:this.$ = { Join: 'Right', Left: $$[$0-5], Right: $$[$0-2], Expression: $$[$0]}
+case 70:this.$ = { Join: {Type: 'Right', Left: $$[$0-5], Right: $$[$0-2], Condition: $$[$0]}}
 break;
-case 71:this.$ = { Join: 'Right', Left: $$[$0-6], Right: $$[$0-2], Expression: $$[$0]}
+case 71:this.$ = { Join: {Type: 'Right', Left: $$[$0-6], Right: $$[$0-2], Condition: $$[$0]}}
 break;
-case 72:this.$ = { Join: 'Full', Left: $$[$0-6], Right: $$[$0-2], Expression: $$[$0]}
+case 72:this.$ = { Join: {Type: 'Full', Left: $$[$0-6], Right: $$[$0-2], Condition: $$[$0]}}
 break;
-case 73:this.$ = { Join: 'Cross', Left: $$[$0-3], Right: $$[$0]}
+case 73:this.$ = { Join: {Type: 'Cross', Left: $$[$0-3], Right: $$[$0]}}
 break;
-case 74:this.$ = { Left: $$[$0-4], Over: $$[$0-2], Alias: $$[$0]}
+case 74:this.$ = { Over: { Left: $$[$0-4], Right: $$[$0-2], Alias: $$[$0]}}
 break;
 case 75: this.$ = {Expression: $$[$0], Asc: true}
 break;
