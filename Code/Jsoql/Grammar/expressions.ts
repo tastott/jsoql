@@ -272,6 +272,14 @@ var exp = {
             "{ Join: 'Right', Left: $1, Right: $5, Expression: $7}"
         ],
         [
+            exp.FromTargets + " " + keywords.FULL + " " + keywords.OUTER + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression,
+            "{ Join: 'Full', Left: $1, Right: $5, Expression: $7}"
+        ],
+        [
+            exp.FromTargets + " " + keywords.CROSS + " " + keywords.JOIN + " " + exp.AliasedFromTarget,
+            "{ Join: 'Cross', Left: $1, Right: $4}"
+        ],
+        [
             exp.FromTargets + " " + keywords.OVER + " " + exp.Property + " " + keywords.AS + " " + val.PlainIdentifier,
             "{ Left: $1, Over: $3, Alias: $5}"
         ]

@@ -261,8 +261,21 @@ export class JsoqlQuery {
         return sequencer.Get(ds.Value, parameters, this.queryContext, onError);
     }
 
-    private From(fromClause: any, onError: m.ErrorHandler,
+    private From(fromClause: m.FromClauseNode, onError: m.ErrorHandler,
         evaluator : evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
+
+        //Unquoted (i.e. some variable in context)
+        if (fromClause.Target) {
+            return this.dataSourceSequencers['var'].Get(fromClause.Target, {}, this.queryContext, onError);
+        }
+        //Quoted (uri shorthand)
+        else if (fromClause.Quoted) {
+            var match = fromClause.Quoted.match(JsoqlQuery.UriRegex);
+            if (!match) throw new Error(`Unrecognized format for datasource: ${fromClause.Quoted}`);
+            else if (!this.dataSourceSequencers[match[1]]) throw new Error(`Unrecognized schema for datasource: ${match[1]}`);
+
+            return this.dataSourceSequencers[match[1]].Get(match[2], {}, this.queryContext, onError);
+        }
 
         var targets = this.CollectDatasources(fromClause);
 

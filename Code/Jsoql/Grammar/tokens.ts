@@ -41,6 +41,8 @@ export var keywords = {
     RIGHT: 'RIGHT',
     INNER: 'INNER',
     OUTER: 'OUTER',
+    FULL: 'FULL',
+    CROSS: 'CROSS',
     OVER: 'OVER',
     AND: 'AND',
     OR: 'OR',
