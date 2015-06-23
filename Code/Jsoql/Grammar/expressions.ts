@@ -263,7 +263,8 @@ var exp = {
         ],
         [
             exp.FromTargets + " " + keywords.LEFT + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression,
-            "{ Join: {Type: 'Left', Left: $1, Right: $4, Condition: $6}}"
+            "{ Join: {Type: 'Left', Left: $1, Right: $4, Condition: $6}}",
+            { "prec": "JOIN" }
         ],
         [
             exp.FromTargets + " " + keywords.LEFT + " " + keywords.OUTER + " " + keywords.JOIN + " " + exp.AliasedFromTarget + " " + keywords.ON + " " + exp.Expression,

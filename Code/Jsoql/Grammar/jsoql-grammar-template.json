@@ -13,7 +13,8 @@
             "OR",
             "IS",
             "IN",
-            "UNION"
+            "UNION",
+            "JOIN"
         ],
         [
             "left",

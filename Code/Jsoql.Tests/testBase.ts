@@ -66,7 +66,9 @@ export function ExecuteAndAssertDeepEqual(query: string,
     expected: any[]): Q.Promise<any> {
 
     return ExecuteArrayQuery(query, values)
-        .then(results => setTimeout(() => assert.deepEqual(results, expected)))
+        .then(results => {
+            setTimeout(() => assert.deepEqual(results, expected))
+        })
         .fail(error => setTimeout(() => assert.fail(null, null, error)));
 }
 

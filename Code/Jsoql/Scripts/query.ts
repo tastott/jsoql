@@ -398,7 +398,12 @@ export class JsoqlQuery {
                         //defaultValue[join.RightAlias] = null;
 
                         //This relies on lazy evaluation of the filter predicate after matches have been sought in sequence B
-                        var defaultValueSequence = lazy([defaultValue]).async(0).filter(x => !hasMatches);
+                        var defaultValueSequence = lazy([defaultValue])
+                            .async(0)
+                            .filter(x => !hasMatches)
+                            .map(x => {
+                                return x;
+                            });
 
                         matches = matches.concat(<any>defaultValueSequence);
                     }

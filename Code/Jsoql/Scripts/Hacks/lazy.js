@@ -971,8 +971,12 @@
                         return false;
                     }
             });
-
-            if (handle instanceof AsyncHandle && cHandle instanceof AsyncHandle) handle.waitFor(cHandle);
+            
+            //If the concated thing is asynchronous, we'll need to wait for it
+            if (cHandle instanceof AsyncHandle) {
+                if (handle instanceof AsyncHandle) handle.waitFor(cHandle);
+                else handle = cHandle;
+            }
         }
 
         if (handle instanceof AsyncHandle) return handle;
@@ -1725,20 +1729,29 @@
 
 	//FIX BY TS - Allows flattening of an async sequence inside this sequence
 	//The handle/promise for this sequence has to wait for any async sequences
-	//within to finish before it can be treated as finished
+    //within to finish before it can be treated as finished
+    //If the parent sequence is sync but it contains an async sequence, we have to return a handle
+    var unwaitedHandles = [];
     var handle = this.parent.each(function recurseVisitor(e) {
       if (e instanceof Array) {
         return forEach(e, recurseVisitor);
       }
 
-      if (e instanceof Sequence) {
-        var subhandle = e.each(recurseVisitor);
-        if (handle instanceof AsyncHandle 
-			&& subhandle instanceof AsyncHandle) handle.waitFor(subhandle);
+        if (e instanceof Sequence) {
+            var subhandle = e.each(recurseVisitor);
+            if (subhandle instanceof AsyncHandle) {
+                if (handle instanceof AsyncHandle) handle.waitFor(subhandle);
+                else unwaitedHandles.push(subhandle);
+            }
         return subhandle;
       }
 
       return fn(e, index++);
+    });
+
+    unwaitedHandles.forEach(function (uh) {
+        if (handle instanceof AsyncHandle) handle.waitFor(uh);
+        else handle = uh;
     });
 
     return handle;

@@ -202,7 +202,8 @@ export function TwoLeftJoins() {
     var expected = [
         { CustomerId: 1, Name: 'Tim', Order: 'A', Item: 'Cuddly toy' },
         { CustomerId: 1, Name: 'Tim', Order: 'A', Item: 'Microwave oven' },
-        { CustomerId: 2, Name: 'Bob', Order: 'C', Item: null },
+        { CustomerId: 1, Name: 'Tim', Order: 'B', Item: 'Compact disc player' },
+        { CustomerId: 2, Name: 'Bob', Order: 'C', Item: null},
         { CustomerId: 3, Name: 'Genghis', Order: null, Item: null},
     ];
 
