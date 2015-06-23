@@ -251,7 +251,7 @@ export function LeftThenRightJoin() {
     var expected = [
         { Order: 'A', Item: 'Cuddly toy', CustomerId: 1, Name: 'Tim' },
         { Order: 'A', Item: 'Microwave oven', CustomerId: 1, Name: 'Tim' },
-        { Order: 'B', Item: 'Compact disc player', CustomerId: 2, Name: 'Bob'},
+        { Order: 'B', Item: 'Compact disc player', CustomerId: 1, Name: 'Tim'},
         { Order: 'D', Item: 'Package holiday', CustomerId: null, Name: null},
         { Order: null, Item: 'Family car', CustomerId: null, Name: null }
     ];
