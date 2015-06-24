@@ -286,7 +286,8 @@ export function FullOuterJoin() {
     var query =
         "SELECT o.Order AS Order, c.Name AS Customer \
         FROM 'var://Customers' AS c\
-        FULL OUTER JOIN 'var://Orders' AS o ON c.CustomerId = o.CustomerId";
+        FULL OUTER JOIN 'var://Orders' AS o ON c.CustomerId = o.CustomerId \
+        ORDER BY COALESCE(c.CustomerId, 99)";
 
     var expected = [
         { Customer: 'Tim', Order: 'A' },
@@ -323,7 +324,7 @@ export function CrossJoin() {
     ];
 
     var query =
-        "SELECT c.Colour AS Colour, s.Shape AS shape \
+        "SELECT c.Colour AS Colour, s.Shape AS Shape \
         FROM 'var://Colours' AS c\
         CROSS JOIN 'var://Shapes' AS s";
 

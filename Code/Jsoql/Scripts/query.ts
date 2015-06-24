@@ -198,7 +198,6 @@ export class JsoqlQuery {
 
     private static UriRegex = new RegExp('^([A-Za-z]+)://(.+)$', 'i');
     private queryContext: m.QueryContext;
-    //private evaluator: evl.Evaluator;
 
     constructor(private stmt: m.Statement,
         private dataSourceSequencers : ds.DataSourceSequencers,
@@ -210,34 +209,6 @@ export class JsoqlQuery {
             BaseDirectory: queryContext.BaseDirectory || process.cwd(),
             Data: queryContext.Data || {}
         };
-
-        //this.evaluator = new evl.Evaluator(this.dataSourceSequencers); 
-    }
-
-    private ToDatasource(target: any) : m.Datasource {
-        //Property
-        if (typeof target != 'string') {
-            return {
-                Type: 'var',
-                Value: target
-            };
-        }
-        else {
-            var match = target.match(JsoqlQuery.UriRegex);
-
-            if (!match) {
-                return {
-                    Type: 'var',
-                    Value: target
-                }
-            }
-            else {
-                return {
-                    Type: match[1].toLowerCase(),
-                    Value: match[2]
-                };
-            }
-        }
     }
 
     private ParseKeyValuesDatasource(keyValues: m.KeyValue[]): { Uri: string; Parameters: any; } {
@@ -364,58 +335,66 @@ export class JsoqlQuery {
         condition : any,
         evaluator: evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
-        switch (type) {
-            case 'Inner':
-            case 'Left':
-            case 'Right':
+        var seqA = type === 'Right' ? right : left;
+        var seqB = type === 'Right' ? left : right;
 
-                var seqA = type === 'Right' ? right : left;
-                var seqB = type === 'Right' ? left : right;
+        //For each item in sequence A, find 0 to many matching items in sequence B, 
+        //using the ON expression or matching all items for a CROSS join
+        var joinedSeq = seqA.map(li => {
 
-                //For each item in sequence A, find 0 to many matching items in sequence B, using the ON expression
-                return seqA.map(li => {
+            //We'll keep track of whether one or more matches is found in the B sequence (for outer joins)
+            var hasMatches = false;
 
-                    //We'll keep track of whether one or more matches is found in the B sequence (for outer joins)
-                    var hasMatches = false;
+            var matches = seqB.map(ri => {
+                //Create prospective merged item containing left and right side items
+                var merged = merge(true, li, ri);
 
-                    var matches = seqB.map(ri => {
+                //Return non-null value to indicate match
+                if (type == 'Cross') return merged;
+                else if (evaluator.Evaluate(condition, merged)) {
+                    hasMatches = true;
+                    return merged;
+                }
+                else return null;
+            })
+            .compact(); //Throw away null (non-matching) values
+
+            //For outer joins, concatenate an extra item with a null value for sequence B
+            //And filter it out if a match has been found
+            if (type === 'Left' || type === 'Right' || type == 'Full') {
+                var defaultValue = li;
+                //TODO: We don't know the alias of the unmatched table any more, so can't set it to null?
+                //defaultValue[join.RightAlias] = null;
+
+                //This relies on lazy evaluation of the filter predicate after matches have been sought in sequence B
+                var defaultValueSequence = lazy([defaultValue])
+                    .async(0)
+                    .filter(x => !hasMatches)
+                    .map(x => {
+                        return x;
+                    });
+
+                matches = matches.concat(<any>defaultValueSequence);
+            }
+
+            return matches;
+        })
+        .flatten(); //Flatten the sequence of sequences
+
+        //For full joins, concatenate unmatched items for sequence B
+        if (type == 'Full') {
+            joinedSeq = joinedSeq.concat(
+                <any>seqB.filter(b =>
+                    !seqA.some(a => {
                         //Create prospective merged item containing left and right side items
-                        var merged = merge(true, li, ri);
-
-                        //Return non-null value to indicate match
-                        if (evaluator.Evaluate(condition, merged)) {
-                            hasMatches = true;
-                            return merged;
-                        }
-                        else return null;
+                        var merged = merge(true, a, b);
+                        return evaluator.Evaluate(condition, merged);
                     })
-                    .compact(); //Throw away null (non-matching) values
-
-                    //For outer joins, concatenate an extra item with a null value for sequence B
-                    //And filter it out if a match has been found
-                    if (type === 'Left' || type === 'Right') {
-                        var defaultValue = li;
-                        //defaultValue[join.RightAlias] = null;
-
-                        //This relies on lazy evaluation of the filter predicate after matches have been sought in sequence B
-                        var defaultValueSequence = lazy([defaultValue])
-                            .async(0)
-                            .filter(x => !hasMatches)
-                            .map(x => {
-                                return x;
-                            });
-
-                        matches = matches.concat(<any>defaultValueSequence);
-                    }
-
-                    return matches;
-                })
-                    .flatten(); //Flatten the sequence of sequences
-                break;
-
-    
-            default: throw new Error(`Unrecognized join type: '${type}'`);
+                )
+            );
         }
+
+        return joinedSeq;
     }
 
     private Where(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>, whereClause: any, evaluator: evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>{
