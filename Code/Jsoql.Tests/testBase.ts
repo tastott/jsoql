@@ -152,3 +152,8 @@ export function ExecuteLazyToCompletionAndAssert(query: string, assertCallback :
         });
 
 }
+
+export function ExecuteLazy(query: string): jsoql.JsoqlQueryResult {
+
+    return Jsoql.ExecuteQuery(query, null);
+}

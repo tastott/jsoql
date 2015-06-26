@@ -85,15 +85,16 @@ IfEmptySequence.prototype.each = function (fn) {
         return fn(item, i++);
     });
 
-    var sendDefault = () => {
-        if (isEmpty) fn(this.defaultItem, 0);
+    var sendDefault = (value) => {
+        if (value && isEmpty) fn(this.defaultItem, 0);
+        return value;
     };
 
     if (handle instanceof (<any>lazy).AsyncHandle) {
         return handle.then(sendDefault);
     }
     else {
-        sendDefault();
+        sendDefault(true);
         return handle;
     }
 }

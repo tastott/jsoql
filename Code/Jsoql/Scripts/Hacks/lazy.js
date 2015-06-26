@@ -5122,12 +5122,15 @@
    *   return Lazy(array).flatten();
    * });
    */
+  var id = 0;
+
   function AsyncHandle(cancelFn) {
     this.resolveListeners = [];
     this.rejectListeners = [];
     this.state = PENDING;
     this.cancelFn = cancelFn;
     this.waitingFor = [];
+    //this['__id'] = ++id;
   }
 
   // Async handle states
@@ -5135,8 +5138,10 @@
       RESOLVED = 2,
       REJECTED = 3;
 
-  AsyncHandle.prototype.then = function then(onFulfilled, onRejected) {
+    AsyncHandle.prototype.then = function then(onFulfilled, onRejected) {
     var promise = new AsyncHandle(this.cancelFn);
+        
+        //console.log(this['__id'] + " then " + promise['__id']);    
 
     this.resolveListeners.push(function(value) {
       try {
@@ -5182,12 +5187,20 @@
     AsyncHandle.prototype.waitFor = function waitFor(handle) {
         var _this = this;
         if (this.waitingFor.indexOf(handle) == -1) {
+            //console.log(this['__id'] + " is waiting for " + handle['__id']);
             this.waitingFor.push(handle);
-            handle.then(function () {
+            handle.then(function (value) {
                 var index = _this.waitingFor.indexOf(handle);
                 if (index > -1) {
-                    _this.waitingFor.splice(index, 1);
-                    if (_this.state === RESOLVED) _this._resolve(_this.value);
+                    if (value === false) {
+                        //console.log("Awaited " + handle['__id'] + " has been cancelled. " + _this['__id'] + " is now cancelled too.");
+                        _this._resolve(false);
+                    }
+                    else {
+                        //console.log(this['__id'] + " is no longer waiting for " + handle['__id']);
+                        _this.waitingFor.splice(index, 1);
+                        if (_this.state === RESOLVED) _this._resolve(_this.value);
+                    }
                 }
             });
         }
@@ -5204,7 +5217,8 @@
     }
         
     //If handle has been cancelled, we don't need to wait
-    if (value === false) {
+        if (value === false) {
+            //console.log(this['__id'] + " cancelled");
         this.waitingFor.forEach(function (handle) { handle.cancel() });
         this.waitingFor = [];
     }  

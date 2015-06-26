@@ -159,19 +159,22 @@ class LazyJsQueryIterator implements m.QueryIterator {
     }
 
     private ProcessCallbacks() {
-        while (this.itemCallbacks.length) {
-            var callback = this.itemCallbacks[0];
-
-            if (callback.Count && this.items.length >= this.currentIndex + callback.Count) {
-                this.itemCallbacks.shift();
-                callback.Resolve(this.GetChunk(callback.Count));
+        setTimeout(() => {
+            if (this.itemCallbacks.length) {
+                if (this.itemCallbacks[0].Count && this.items.length >= this.currentIndex + this.itemCallbacks[0].Count) {
+                    var callback = this.itemCallbacks.shift();
+                    var chunk = this.GetChunk(callback.Count);
+                    callback.Resolve(chunk);
+                    this.ProcessCallbacks();
+                }
+                else if (this.isComplete) {
+                    var callback = this.itemCallbacks.shift();
+                    var chunk = this.GetChunk(callback.Count);
+                    callback.Resolve(chunk);
+                    this.ProcessCallbacks();
+                }
             }
-            else if (this.isComplete) {
-                this.itemCallbacks.shift();
-                callback.Resolve(this.GetChunk(callback.Count));
-            }
-            else break;
-        }
+        });
     }
 
     private GetChunk(count?: number): any[]{
