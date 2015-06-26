@@ -110,7 +110,7 @@ class QueryTab {
 
     QueryShareLink = () => {
         if (this.QueryText.GetValue()) {
-            return window.location.protocol + '//' + `${location.host}${location.pathname}#/home?queryText=${encodeURIComponent(this.QueryText.GetValue()) }&executeNow=true`;
+            return window.location.protocol + '//' + `${window.location.host}${window.location.pathname}#/home?queryText=${encodeURIComponent(this.QueryText.GetValue()) }&executeNow=true`;
         } else return "";
     }
 

@@ -48,6 +48,8 @@
     <Content Include="Data\baseball-players.csv" />
     <Content Include="Data\nested-orders.json" />
     <Content Include="Data\orders-bad.json" />
+    <Content Include="Data\people-small.json" />
+    <Content Include="Data\posts-big.json" />
     <Content Include="Data\single-order.json" />
     <Content Include="Data\orders.json" />
     <Content Include="Data\orders.jsonl" />

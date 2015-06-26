@@ -60,3 +60,40 @@ PromisedSequence.prototype.each = function each(fn) {
 
     return handle;
 };
+
+export function IfEmptySequence(
+    parent: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
+    defaultItem : any) {
+
+    this.parent = parent;
+    this.defaultItem = defaultItem;
+}
+
+IfEmptySequence.prototype = new (<any>lazy).Sequence();
+
+IfEmptySequence.prototype.isAsync = function isAsync() {
+    return this.parent.isAsync();
+};
+
+IfEmptySequence.prototype.each = function (fn) {
+
+    var isEmpty = true;
+    var i = 0;
+
+    var handle = this.parent.each(function (item) {
+        isEmpty = false;
+        return fn(item, i++);
+    });
+
+    var sendDefault = () => {
+        if (isEmpty) fn(this.defaultItem, 0);
+    };
+
+    if (handle instanceof (<any>lazy).AsyncHandle) {
+        return handle.then(sendDefault);
+    }
+    else {
+        sendDefault();
+        return handle;
+    }
+}

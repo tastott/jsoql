@@ -5202,6 +5202,12 @@
       this.state = RESOLVED;
       this.value = value;
     }
+        
+    //If handle has been cancelled, we don't need to wait
+    if (value === false) {
+        this.waitingFor.forEach(function (handle) { handle.cancel() });
+        this.waitingFor = [];
+    }  
 
     if(this.waitingFor.length == 0) consumeListeners(this.resolveListeners, this.value);
   };

@@ -359,22 +359,23 @@ export class JsoqlQuery {
             })
             .compact(); //Throw away null (non-matching) values
 
-            //For outer joins, concatenate an extra item with a null value for sequence B
-            //And filter it out if a match has been found
+            //For outer joins, wrap in a sequence which sends a default value if the source sequence is empty (i.e. no matches in sequence B)
             if (type === 'Left' || type === 'Right' || type == 'Full') {
                 var defaultValue = li;
                 //TODO: We don't know the alias of the unmatched table any more, so can't set it to null?
                 //defaultValue[join.RightAlias] = null;
 
-                //This relies on lazy evaluation of the filter predicate after matches have been sought in sequence B
-                var defaultValueSequence = lazy([defaultValue])
-                    .async(0)
-                    .filter(x => !hasMatches)
-                    .map(x => {
-                        return x;
-                    });
+                ////This relies on lazy evaluation of the filter predicate after matches have been sought in sequence B
+                //var defaultValueSequence = lazy([defaultValue])
+                //    .async(0)
+                //    .filter(x => !hasMatches)
+                //    .map(x => {
+                //        return x;
+                //    });
 
-                matches = matches.concat(<any>defaultValueSequence);
+                //matches = matches.concat(<any>defaultValueSequence);
+
+                matches = new lazyExt.IfEmptySequence(matches, defaultValue);
             }
 
             return matches;

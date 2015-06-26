@@ -115,10 +115,12 @@ class CsvStream {
 
 class OboeStream {
     private oboeObj: oboe.Oboe;
+    private oboePattern: string;
 
-    constructor(private stream: _stream.Readable, private path: string) {
+    constructor(private stream: _stream.Readable, path: string) {
         OboeStream.FudgeStreamForOboe(stream);
         this.oboeObj = oboe(stream);
+        this.oboePattern = path ? `${path}.*` : '!.*';
     }
 
     //Oboe checks for the presence of these methods to determine whether or not
@@ -137,17 +139,15 @@ class OboeStream {
     removeListener = (event: string, listener: StreamListener) => {
         if (event !== 'data') throw new Error('Event type not recognized by Oboe Stream: ' + event);
 
-        this.oboeObj.removeListener('node', listener);
+        this.oboeObj.removeListener('node', this.oboePattern, listener);
     }
 
     on = (event: string, listener: StreamListener) => {
         switch (event) {
             case 'data':
-                var pattern = this.path
-                    ? `${this.path}.*`
-                    : '!.*';
+               
                // pattern = '!.contents.*';
-                this.oboeObj.node(pattern, listener);
+                this.oboeObj.node(this.oboePattern, listener);
                 break;
 
             case 'end':
