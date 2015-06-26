@@ -46,7 +46,10 @@
     <Content Include="Content\Themes\dark.css" />
     <Content Include="Data\orders.json" />
     <Content Include="Data\customers.json" />
+    <Content Include="Data\people-small.json" />
+    <Content Include="Data\people-big.json" />
     <Content Include="Data\people.json" />
+    <Content Include="Data\posts-big.json" />
     <Content Include="index.html" />
     <Content Include="index-nw.html" />
     <Content Include="README.md" />
