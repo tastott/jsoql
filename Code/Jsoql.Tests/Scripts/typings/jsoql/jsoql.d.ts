@@ -14,6 +14,7 @@ declare module 'jsoql' {
     export interface JsoqlQueryContext {
         BaseDirectory?: string;
         Data?: { [key: string]: any[] };
+        UseCache?: boolean;
     }
 
     export interface JsoqlQueryIterator {

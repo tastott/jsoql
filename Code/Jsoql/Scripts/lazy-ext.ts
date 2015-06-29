@@ -98,3 +98,50 @@ IfEmptySequence.prototype.each = function (fn) {
         return handle;
     }
 }
+
+function CachedSequence(parent: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>) {
+    
+    this.parent = parent;
+}
+
+CachedSequence.prototype = new (<any>lazy).Sequence();
+
+CachedSequence.prototype.each = function each(fn) {
+
+    var items: any[] = this.items;
+
+    if (items) {
+        items.forEach(fn);
+        return true;
+    }
+    else {
+
+        var i = 0;
+        items = [];
+
+        var handle = this.parent.each(function (item) {
+            items.push(item);
+            var _continue = fn(item, i++);
+            if (_continue === false) items = null;
+        });
+
+        if (handle instanceof (<any>lazy).AsyncHandle) {
+            return handle
+                .then(result => {
+                    this.items = items;
+                    return result;
+                })
+                //.fail(() => this.items = null);
+        }
+        else {
+            this.items = items;
+            return handle;
+        }
+   }
+
+}
+
+var anyLazy = (<any>lazy);
+anyLazy.Sequence.prototype.withCaching = function () {
+    return new CachedSequence(this);
+}

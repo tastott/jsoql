@@ -177,6 +177,8 @@ declare module LazyJS {
         toObject(): Object;
 
         tap(each: ValueCallback<T>): Sequence<T>;
+
+        withCaching(): Sequence<T>;
     }
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

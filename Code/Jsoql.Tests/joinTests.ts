@@ -384,3 +384,37 @@ export function OuterJoinAsync() {
     return testBase.ExecuteAndAssertDeepEqual(query, {}, expected);
 
 }
+
+export function OuterJoinFilesWithCache() {
+ 
+    var query =
+        "SELECT person.id AS personId, post.guid AS postId \
+        FROM 'file://Data/people-small.json' AS person \
+        LEFT JOIN 'file://Data/posts-big.json' AS post ON person.id = post.personId";
+
+    var expected = [
+        {
+            "personId": 2,
+            "postId": "e4f20376-c202-4d59-b098-cf389ea6ca5c"
+        },
+        {
+            "personId": 2,
+            "postId": "3dfa00f7-ff9a-4819-846b-ce73c142ee03"
+        },
+        {
+            "personId": 2,
+            "postId": "62944ff7-7fc2-4d55-89c3-2cb3e6d622c1"
+        },
+        {
+            "personId": 0,
+            "postId": null
+        },
+        {
+            "personId": 1,
+            "postId": null
+        },
+    ];
+
+    return testBase.ExecuteAndAssertDeepEqual(query, {UseCache: true}, expected);
+
+}

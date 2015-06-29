@@ -206,12 +206,10 @@ export class JsoqlQuery {
         private dataSourceSequencers : ds.DataSourceSequencers,
         queryContext?: m.QueryContext) {
 
-        queryContext = queryContext || {};
+        this.queryContext = queryContext || {};
 
-        this.queryContext = {
-            BaseDirectory: queryContext.BaseDirectory || process.cwd(),
-            Data: queryContext.Data || {}
-        };
+        this.queryContext.BaseDirectory = queryContext.BaseDirectory || process.cwd();
+        this.queryContext.Data = queryContext.Data || {};
     }
 
     private ParseKeyValuesDatasource(keyValues: m.KeyValue[]): { Uri: string; Parameters: any; } {
@@ -340,6 +338,11 @@ export class JsoqlQuery {
 
         var seqA = type === 'Right' ? right : left;
         var seqB = type === 'Right' ? left : right;
+     
+        //We'll be doing full passes of sequence B so use cache if specified
+        if (this.queryContext.UseCache) {
+            seqB = seqB.withCaching();
+        }
 
         //For each item in sequence A, find 0 to many matching items in sequence B, 
         //using the ON expression or matching all items for a CROSS join

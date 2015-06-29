@@ -1,6 +1,7 @@
 ﻿export interface QueryContext {
     BaseDirectory?: string;
     Data?: { [key: string]: any[] };
+    UseCache?: boolean;
 }
 
 export interface Group {

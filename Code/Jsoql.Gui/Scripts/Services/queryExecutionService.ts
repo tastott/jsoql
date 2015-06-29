@@ -22,7 +22,8 @@ export class QueryExecutionService {
 
     ExecuteQuery(query: string, baseDirectory: string): QueryResult {
         var context: jsoql.JsoqlQueryContext = {
-            BaseDirectory: baseDirectory
+            BaseDirectory: baseDirectory,
+            UseCache: true
         };
 
         return this.jsoqlEngine.ExecuteQuery(query, context);
