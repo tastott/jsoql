@@ -177,6 +177,10 @@ var exp = {
         [
             exp.Identifier + " : " + exp.Expression,
             "{Key: $1, Value: $3}"
+        ],
+        [
+            exp.Quoted + " : " + exp.Expression,
+            "{Key: $1.Quoted, Value: $3}"
         ]
     ],
     KeyValueList: () => [
@@ -217,6 +221,10 @@ var exp = {
         [
             exp.Expression + " " + keywords.AS + " " + exp.Quoted,
             "{ Expression: $1, Alias: $3.Quoted}"
+        ],
+        [
+            exp.KeyValue,
+            "{ Expression: $1.Value, Alias: $1.Key}"
         ]
     ],
     SelectList: () => [

@@ -11,10 +11,15 @@ export function ExpressionAlias() {
         { Value: 1 }
     ];
     var expected = [{ Blah: 1}];
-    return testBase.ExecuteArrayQuery("SELECT Value AS Blah FROM 'var://Test'", data)
-        .then(results => {
-            setTimeout(() => assert.deepEqual(results, expected));
-        }); 
+    return testBase.ExecuteAndAssertDeepEqual("SELECT Value AS Blah FROM 'var://Test'", data, expected);
+}
+
+export function JsonPropertySyntax() {
+    var data = [
+        { Value: 1 }
+    ];
+    var expected = [{ Blah: 1 }];
+    return testBase.ExecuteAndAssertDeepEqual("SELECT \"Blah\": Value FROM 'var://Test'", data, expected);
 }
 
 export function NestedProperty() {
@@ -30,10 +35,7 @@ export function NestedProperty() {
         { "Thing.Value": 2 },
         { "Thing.Value": 3 }
     ];
-    return testBase.ExecuteArrayQuery("SELECT Thing.Value FROM 'var://Test'", data)
-        .then(results => {
-        setTimeout(() => assert.deepEqual(results, expected));
-    });
+    return testBase.ExecuteAndAssertDeepEqual("SELECT Thing.Value FROM 'var://Test'", data, expected);
 }
 
 export function NonUniversalProperty() {
@@ -45,10 +47,7 @@ export function NonUniversalProperty() {
         { Thing: 1 },
         { Thing: undefined }
     ];
-    return testBase.ExecuteArrayQuery("SELECT Thing FROM 'var://Test'", data)
-        .then(results => {
-        setTimeout(() => assert.deepEqual(results, expected));
-    });
+    return testBase.ExecuteAndAssertDeepEqual("SELECT Thing FROM 'var://Test'", data, expected);
 }
 
 export function NonUniversalParentProperty() {
@@ -72,10 +71,7 @@ export function NonUniversalChildProperty() {
         { "Thing.A": 1 },
         { "Thing.A": undefined }
     ];
-    return testBase.ExecuteArrayQuery("SELECT Thing.A FROM 'var://Test'", data)
-        .then(results => {
-        setTimeout(() => assert.deepEqual(results, expected));
-    });
+    return testBase.ExecuteAndAssertDeepEqual("SELECT Thing.A FROM 'var://Test'", data, expected);
 }
 
 export function SelectObject() {
@@ -91,10 +87,7 @@ export function SelectObject() {
         { Thing: { Value: 2 } },
         { Thing: { Value: 3} }
     ];
-    return testBase.ExecuteArrayQuery("SELECT Thing FROM 'var://Test'", data)
-        .then(results => {
-        setTimeout(() => assert.deepEqual(results, expected));
-    });
+    return testBase.ExecuteAndAssertDeepEqual("SELECT Thing FROM 'var://Test'", data, expected);
 }
 
 export function ArrayProperty() {
@@ -110,10 +103,7 @@ export function ArrayProperty() {
         { "Thing.Value[1]": 2.1 },
         { "Thing.Value[1]": 3.1 }
     ];
-    return testBase.ExecuteArrayQuery("SELECT Thing.Value[1] FROM 'var://Test'", data)
-        .then(results => {
-        setTimeout(() => assert.deepEqual(results, expected));
-    });
+    return testBase.ExecuteAndAssertDeepEqual("SELECT Thing.Value[1] FROM 'var://Test'", data, expected);
 }
 
 
@@ -124,10 +114,7 @@ export function SelectStar() {
         { Value: 'C' , Children: [1,2,3]}
     ];
     
-    return testBase.ExecuteArrayQuery("SELECT * FROM 'var://Test'", data)
-        .then(results => {
-        setTimeout(() => assert.deepEqual(results, data));
-    });
+    return testBase.ExecuteAndAssertDeepEqual("SELECT * FROM 'var://Test'", data, data);
 }
 
 export function SelectNestedStar() {
@@ -143,10 +130,7 @@ export function SelectNestedStar() {
         {}
     ];
 
-    return testBase.ExecuteArrayQuery("SELECT Child.* FROM 'var://Test'", data)
-        .then(results => {
-        setTimeout(() => assert.deepEqual(results, expected));
-    });
+    return testBase.ExecuteAndAssertDeepEqual("SELECT Child.* FROM 'var://Test'", data, expected);
 }
 
 export function SelectTopX() {
@@ -158,10 +142,7 @@ export function SelectTopX() {
 
     var expected = data.slice(0, 3);
 
-    return testBase.ExecuteArrayQuery("SELECT TOP 3 Value FROM 'var://Test'", data)
-        .then(results => {
-        setTimeout(() => assert.deepEqual(results, expected));
-    });
+    return testBase.ExecuteAndAssertDeepEqual("SELECT TOP 3 Value FROM 'var://Test'", data, expected);
 }
 
 export function SelectNumericExpression() {
