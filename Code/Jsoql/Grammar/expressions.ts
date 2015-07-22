@@ -1,5 +1,5 @@
 ﻿import tokens = require('./tokens')
-import utils = require('../Scripts/utilities')
+import utils = require('../utilities')
 var lazy: LazyJS.LazyStatic = require('../Scripts/Hacks/lazy.js')
 
 var val = tokens.values;

@@ -24,10 +24,8 @@ declare module LazyJS {
 
         on<T>(eventType: string): Sequence<T>;
 
-        readFile(path: string, encoding? : string): FileStreamSequence;
+        readFile(path: string, encoding?:string): StringLikeSequence;
         makeHttpRequest(path: string): StringLikeSequence;
-
-        createWrapper(initFunc: any): () => Sequence<any>;
     }
 
     interface ArrayLike<T> {
@@ -56,7 +54,7 @@ declare module LazyJS {
     }
 
     interface MapCallback<T, U> {
-        (value: T, index? : number): U;
+        (value: T, lineNo?:number): U;
     }
 
     interface MapStringCallback {
@@ -140,7 +138,7 @@ declare module LazyJS {
         find(predicateFn: TestCallback<T>): T;
         findWhere(properties: Object): Sequence<T>;
 
-        flatten(): Sequence<any>;
+        flatten(): Sequence<T>;
         groupBy(keyFn: GetKeyCallback<T>): ObjectLikeSequence<T>;
         initial(count?: number): Sequence<T>;
         intersection(var_args: T[]): Sequence<T>;
@@ -164,7 +162,7 @@ declare module LazyJS {
         sortBy(sortFn: NumberCallback<T>, descending?: boolean): Sequence<T>;
         sortedIndex(value: T): Sequence<T>;
         size(): number;
-        sum(valueFn?: NumberCallback<T>): T;
+        sum(valueFn?: NumberCallback<T>): number;
         takeWhile(predicateFn: TestCallback<T>): Sequence<T>;
         union(var_args: T[]): Sequence<T>;
         uniq(): Sequence<T>;
@@ -175,10 +173,8 @@ declare module LazyJS {
 
         toArray(): T[];
         toObject(): Object;
-
-        tap(each: ValueCallback<T>): Sequence<T>;
-
-        withCaching(): Sequence<T>;
+        
+        withCaching() : Sequence<T>;
     }
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -257,14 +253,9 @@ declare module LazyJS {
         toLowerCase(): StringLikeSequence;
         toUpperCase(): StringLikeSequence;
     }
-
-    interface SplitStreamSequence extends Sequence<string> {
-    }
-
-    interface FileStreamSequence extends Sequence<any> {
-        lines(): SplitStreamSequence;
-        split(delimiter: string): SplitStreamSequence;
-        split(regex: RegExp): SplitStreamSequence;
+    
+    interface FileStreamSequence extends Sequence<string>{
+        split(delimeter : RegExp): StringLikeSequence;
     }
 }
 

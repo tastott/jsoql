@@ -1,8 +1,8 @@
 ﻿import jsoql = require('./jsoql')
 import http = require('http');
 import fs = require('fs')
-import m = require('./Scripts/models')
-import yargs = require('yargs')
+import m = require('./models')
+var yargs = require('yargs')
 import path = require('path')
 
 var argv = yargs
@@ -51,7 +51,7 @@ function GetUsageText() : string{
     return asciiArt;
 }
 
-function DoQueryCommand(argv: yargs.Argv) {
+function DoQueryCommand(argv: any) {
 
     var query = argv['query'];
 

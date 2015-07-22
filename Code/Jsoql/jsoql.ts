@@ -1,10 +1,10 @@
-﻿///<reference path="Scripts/typings/q/Q.d.ts"/>
+﻿///<reference path="typings/q/Q.d.ts"/>
 import Q = require('q')
-import p = require('./Scripts/parse')
-import q = require('./Scripts/query')
-import m = require('./Scripts/models')
-import ds = require('./Scripts/datasource')
-import qh = require('./Scripts/query-help')
+import p = require('./parse')
+import q = require('./query')
+import m = require('./models')
+import ds = require('./datasource')
+import qh = require('./query-help')
 
 export class JsoqlEngineBase implements m.JsoqlEngine {
     private queryHelper: qh.QueryHelper;
