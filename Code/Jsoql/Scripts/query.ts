@@ -208,8 +208,8 @@ export class JsoqlQuery {
 
         this.queryContext = queryContext || {};
 
-        this.queryContext.BaseDirectory = queryContext.BaseDirectory || process.cwd();
-        this.queryContext.Data = queryContext.Data || {};
+        this.queryContext.BaseDirectory = this.queryContext.BaseDirectory || process.cwd();
+        this.queryContext.Data = this.queryContext.Data || {};
     }
 
     private ParseKeyValuesDatasource(keyValues: m.KeyValue[]): { Uri: string; Parameters: any; } {
