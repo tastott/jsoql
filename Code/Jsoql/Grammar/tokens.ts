@@ -1,4 +1,4 @@
-﻿var lazy : LazyJS.LazyStatic = require('../Scripts/Hacks/lazy.js')
+﻿var lazy : LazyJS.LazyStatic = require('../Hacks/lazy.js')
 
 var selfNamedTokens = [
     '.',

@@ -1,6 +1,6 @@
 ﻿import m = require('./models')
-var fullParser = require('../Grammar/jsoql-full-parser').parser;
-var helpfulParser = require('../Grammar/jsoql-helpful-parser').parser;
+var fullParser = require('./Grammar/jsoql-full-parser').parser;
+var helpfulParser = require('./Grammar/jsoql-helpful-parser').parser;
 
 export function ParseFull(source: string): m.Statement {
     var stmt : m.Statement = fullParser.parse(source);

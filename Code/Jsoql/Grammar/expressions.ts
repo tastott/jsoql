@@ -1,6 +1,6 @@
 ﻿import tokens = require('./tokens')
 import utils = require('../utilities')
-var lazy: LazyJS.LazyStatic = require('../Scripts/Hacks/lazy.js')
+var lazy: LazyJS.LazyStatic = require('../Hacks/lazy.js')
 
 var val = tokens.values;
 var keywords = tokens.keywords;
