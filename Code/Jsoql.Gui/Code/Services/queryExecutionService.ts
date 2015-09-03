@@ -1,8 +1,8 @@
 ﻿import Q = require('q')
 import m = require('../Models/models')
 import dshs = require('./datasourceHistoryService')
-import models = require('../../node_modules/jsoql/models')
-import engine = require('../../node_modules/jsoql/jsoql')
+import models = require('jsoql/models')
+import engine = require('jsoql/jsoql')
 
 export interface QueryResult extends models.QueryResult {
 }

@@ -18,7 +18,7 @@ import prefServ =require('./Code/Services/preferencesService')
 import repo = require('./Code/Services/typedRepository')
 import d = require('./Code/models/dictionary')
 import m = require('./Code/models/models')
-var jsoql = require('./node_modules/jsoql/jsoql')
+var jsoql = require('jsoql/jsoql')
 
 var config = new m.Configuration(process['browser'] ? m.Environment.Online : m.Environment.Desktop);
 
