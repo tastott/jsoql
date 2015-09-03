@@ -1,24 +1,24 @@
-﻿///<reference path="Scripts/typings/angularjs/angular.d.ts" />
-///<reference path="Scripts/typings/angularjs/angular-route.d.ts" />
+﻿///<reference path="Code/typings/angularjs/angular.d.ts" />
+///<reference path="Code/typings/angularjs/angular-route.d.ts" />
 
-import appCtrl = require('./Scripts/Controllers/appController')
-import qrDir = require('./Scripts/Directives/queryResult')
-import qeDir = require('./Scripts/Directives/queryEditor/queryEditor')
-import fiDir = require('./Scripts/Directives/folderInput')
-import fdbDir = require('./Scripts/Directives/fileDialogButton')
-import fdDir = require('./Scripts/Directives/fileDrop')
-import pjDir = require('./Scripts/Directives/prettyJson')
-import lsDir = require('./Scripts/Directives/lazyScroll')
-import prDir = require('./Scripts/Directives/periodicRefresh')
-import fServ = require('./Scripts/Services/fileService')
-import qServ = require('./Scripts/Services/queryStorageService')
-import qeServ = require('./Scripts/Services/queryExecutionService')
-import dshServ = require('./Scripts/Services/datasourceHistoryService')
-import prefServ =require('./Scripts/Services/preferencesService')
-import repo = require('./Scripts/Services/typedRepository')
-import d = require('./Scripts/models/dictionary')
-import m = require('./Scripts/models/models')
-var jsoql = require('jsoql')
+import appCtrl = require('./Code/Controllers/appController')
+import qrDir = require('./Code/Directives/queryResult')
+import qeDir = require('./Code/Directives/queryEditor/queryEditor')
+import fiDir = require('./Code/Directives/folderInput')
+import fdbDir = require('./Code/Directives/fileDialogButton')
+import fdDir = require('./Code/Directives/fileDrop')
+import pjDir = require('./Code/Directives/prettyJson')
+import lsDir = require('./Code/Directives/lazyScroll')
+import prDir = require('./Code/Directives/periodicRefresh')
+import fServ = require('./Code/Services/fileService')
+import qServ = require('./Code/Services/queryStorageService')
+import qeServ = require('./Code/Services/queryExecutionService')
+import dshServ = require('./Code/Services/datasourceHistoryService')
+import prefServ =require('./Code/Services/preferencesService')
+import repo = require('./Code/Services/typedRepository')
+import d = require('./Code/models/dictionary')
+import m = require('./Code/models/models')
+var jsoql = require('./node_modules/jsoql/jsoql')
 
 var config = new m.Configuration(process['browser'] ? m.Environment.Online : m.Environment.Desktop);
 

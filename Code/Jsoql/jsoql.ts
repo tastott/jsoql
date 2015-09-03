@@ -1,5 +1,4 @@
-﻿///<reference path="typings/q/Q.d.ts"/>
-import Q = require('q')
+﻿import Q = require('q')
 import p = require('./parse')
 import q = require('./query')
 import m = require('./models')

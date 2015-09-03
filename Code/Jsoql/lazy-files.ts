@@ -1,5 +1,5 @@
 ﻿var lazy: LazyJS.LazyStatic = require('./Hacks/lazy.node')
-import oboe = require('oboe')
+var oboe = require('oboe')
 import fs = require('fs')
 
 

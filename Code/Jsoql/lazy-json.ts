@@ -1,5 +1,5 @@
 ﻿var lazy: LazyJS.LazyStatic = require('./Hacks/lazy.node')  
-import oboe = require('oboe')
+var oboe = require('oboe')
 import fs = require('fs')
 import http = require('http')
 import _url = require('url')
@@ -114,7 +114,7 @@ class CsvStream {
 }
 
 class OboeStream {
-    private oboeObj: oboe.Oboe;
+    private oboeObj: any;
     private oboePattern: string;
 
     constructor(private stream: _stream.Readable, path: string) {

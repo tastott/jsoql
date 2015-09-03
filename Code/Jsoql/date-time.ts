@@ -1,4 +1,5 @@
-﻿import moment = require('moment')
+﻿///<reference path="typings/moment/moment.d.ts" />
+import moment = require('moment')
 
 export function DatePart(part: string, dateString: string, keepOffset?: boolean) {
 

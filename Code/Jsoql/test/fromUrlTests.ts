@@ -6,7 +6,7 @@ import Q = require('q')
 var readFilePromised: (filename: string, encoding: string) => Q.Promise<string> = Q.denodeify<string>(fs.readFile);
 
 describe('fromUrlTests', function(){
-    this.timeout(5000);
+    //this.timeout(2000);
     it('FromUrl', () => {
 
 
