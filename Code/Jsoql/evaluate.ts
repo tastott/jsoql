@@ -55,7 +55,8 @@ var scalarFunctions: FunctionMappings = {
     'in': args => !!lazy(args[1]).some(item => deepEqual(args[0], item)),
     'datepart': args => dateTime.DatePart(args[0], args[1], args[2]),
     'datediff': args => dateTime.DateDiff(args[0], args[1], args[2], args[3]),
-    'getdate': (args, context) => context.CurrentDate.toISOString()
+    'getdate': (args, context) => context.CurrentDate.toISOString(),
+    'floor': args => Math.floor(args[0])
 }
 
 var aggregateFunctions: FunctionMappings = {

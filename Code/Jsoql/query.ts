@@ -299,7 +299,7 @@ export class JsoqlQuery {
             var left = this.From(fromClause.Join.Left, onError, evaluator);
             var right = this.From(fromClause.Join.Right, onError, evaluator);
 
-            return this.Join(fromClause.Join.Type, left, right, fromClause.Join.Condition, evaluator);
+            return this.Join(fromClause.Join.Type, left, right, fromClause.Join.Right.Alias, fromClause.Join.Condition, evaluator);
         }
         //Over operation
         else if (fromClause.Over) {
@@ -333,6 +333,7 @@ export class JsoqlQuery {
     private Join(type: string,
         left: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
         right: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
+        rightAlias: string,
         condition : any,
         evaluator: evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
@@ -368,8 +369,8 @@ export class JsoqlQuery {
             //For outer joins, wrap in a sequence which sends a default value if the source sequence is empty (i.e. no matches in sequence B)
             if (type === 'Left' || type === 'Right' || type == 'Full') {
                 var defaultValue = li;
-                //TODO: We don't know the alias of the unmatched table any more, so can't set it to null?
-                //defaultValue[join.RightAlias] = null;
+                
+                defaultValue[rightAlias] = null;
 
                 ////This relies on lazy evaluation of the filter predicate after matches have been sought in sequence B
                 //var defaultValueSequence = lazy([defaultValue])

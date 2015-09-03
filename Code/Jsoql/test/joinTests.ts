@@ -71,21 +71,22 @@ describe('joinTests', () => {
         return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
     })
 
-    it('JoinHttpDatasources', () => {
+    it('JoinHttpDatasources')
+    //() => {
 
 
-        var data = [1, 2, 3, 4, 5, 6, 7, 8].map(i => {
-            return { Id: i };
-        });
-        var query = "SELECT a.Id AS A, b.Id AS B FROM 'http://localhost:8000' AS a JOIN 'http://localhost:8000' AS b ON a.Id = b.Id + 1";
-        var expected = [1, 2, 3, 4, 5, 6, 7].map(i => {
-            return { A: i + 1, B: i };
-        });
+    //     var data = [1, 2, 3, 4, 5, 6, 7, 8].map(i => {
+    //         return { Id: i };
+    //     });
+    //     var query = "SELECT a.Id AS A, b.Id AS B FROM 'http://localhost:8000' AS a JOIN 'http://localhost:8000' AS b ON a.Id = b.Id + 1";
+    //     var expected = [1, 2, 3, 4, 5, 6, 7].map(i => {
+    //         return { A: i + 1, B: i };
+    //     });
 
-        return testBase.ExecuteAndAssertWithServer(query, data, 8000, results => {
-            assert.deepEqual(results, expected);
-        });
-    })
+    //     return testBase.ExecuteAndAssertWithServer(query, data, 8000, results => {
+    //         assert.deepEqual(results, expected);
+    //     });
+    // })
 
 
     function _LeftJoin(joinTokens: string) {

@@ -180,4 +180,18 @@ describe('expressionTests', () => {
 
         return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
     })
+    
+    it('Floor', () => {
+        
+        var data = [
+            { Value: 1.4 },
+            { Value: -2.6 },
+            { Value: 3.55525267 }
+        ];
+        var query = "SELECT FLOOR(Value) AS Value FROM 'var://Test'";
+        var expected = [1, -3, 3].map(v => {return {Value: v}});
+
+        return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+        
+    })
 })

@@ -65,9 +65,8 @@ export function ExecuteAndAssertDeepEqual(query: string,
 
     return ExecuteArrayQuery(query, values)
         .then(results => {
-            assert.deepEqual(results, expected)
-        })
-        .fail(error => assert.fail(null, null, error));
+            expect(results).to.be.deep.equal(expected)
+        });
 }
 
 export function GetHelpAndAssertDeepEqual(query: string,
