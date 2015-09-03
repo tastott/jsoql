@@ -1,6 +1,6 @@
 {
   "name": "jsoql-pad",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "GUI for running and managing JSOQL queries",
   "main": "index-nw.html",
   "scripts": {
