@@ -36,7 +36,7 @@ export class LocalStorageRepository<T> implements TypedRepository<T>{
 export class JsonLocalStorageRepository<T> extends LocalStorageRepository<T> {
 
     constructor(storageKey: string) {
-        super(storageKey, new JsonSerializer());
+        super(storageKey, new JsonSerializer<T>());
     }
 
 }

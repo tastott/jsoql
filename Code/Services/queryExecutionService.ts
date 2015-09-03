@@ -1,19 +1,20 @@
 ﻿import Q = require('q')
 import m = require('../Models/models')
 import dshs = require('./datasourceHistoryService')
-import jsoql = require('jsoql')
+import models = require('../../node_modules/jsoql/models')
+import engine = require('../../node_modules/jsoql/jsoql')
 
-export interface QueryResult extends jsoql.JsoqlQueryResult {
+export interface QueryResult extends models.QueryResult {
 }
 
 export class QueryExecutionService {
 
-    constructor(private jsoqlEngine: jsoql.JsoqlEngine,
+    constructor(private jsoqlEngine: engine.JsoqlEngineBase,
         private datasourceHistoryService: dshs.DatasourceHistoryService) {
     }
 
-    GetQueryHelp(query: string, cursor: jsoql.JsoqlPosition, baseDirectory: string): Q.Promise<jsoql.JsoqlQueryHelpResult> {
-        var context: jsoql.JsoqlQueryContext = {
+    GetQueryHelp(query: string, cursor: models.Position, baseDirectory: string): Q.Promise<models.HelpResult> {
+        var context: models.QueryContext = {
             BaseDirectory: baseDirectory
         };
 
@@ -21,7 +22,7 @@ export class QueryExecutionService {
     }
 
     ExecuteQuery(query: string, baseDirectory: string): QueryResult {
-        var context: jsoql.JsoqlQueryContext = {
+        var context: models.QueryContext = {
             BaseDirectory: baseDirectory,
             UseCache: false
         };
