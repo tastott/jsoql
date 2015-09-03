@@ -34,22 +34,26 @@
 
 {
 	"version": "0.1.0",
-	
-	// The command is tsc. Assumes that tsc has been installed using npm install -g typescript
-	"command": "tsc",
-	
-	// The command is a shell script
+	"command": "npm",
 	"isShellCommand": true,
 
-	// Show the output window only if unrecognized errors occur. 
-	"showOutput": "silent",
-	
-	// Tell the tsc compiler to use the tsconfig.json from the open folder.
-	"args": ["-p", "."],
-	
-	// use the standard tsc problem matcher to find compile problems
-	// in the output.
-	"problemMatcher": "$tsc"
+	"tasks": [
+		{
+			"taskName": "Build",
+			"isBuildCommand": true,
+			"suppressTaskName": true,
+			"showOutput": "silent",
+			"args": ["run", "build"],
+			"problemMatcher": "$tsc"
+		},
+		{
+			"taskName": "Test",
+			"isTestCommand": true,
+			"suppressTaskName": true,
+			"showOutput": "silent",
+			"args": ["test", "--silent"]
+		}
+	]
 }
 
 

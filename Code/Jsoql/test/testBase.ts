@@ -1,12 +1,10 @@
 ﻿import http = require('http');
 import assert = require('assert');
-import query = require('../query')
-import m = require('../models')
+import m= require('../models')
 import jsoql = require('../jsoql')
 import Q = require('q')
-
-//Have to assert inside setTimeout to get the async test to work
-//https://nodejstools.codeplex.com/discussions/550545
+import chai = require('chai')
+var expect = chai.expect;
 
 var Jsoql = new jsoql.DesktopJsoqlEngine();
 
@@ -43,11 +41,11 @@ export function ExecuteAndAssertResult(query: string,
     try {
         Jsoql.ExecuteQuery(query, context)
             .GetAll()
-            .then(results => setTimeout(() => assertCallback(results)))
-            .fail(error => setTimeout(() => assert.fail(null, null, error)));
+            .then(results => assertCallback(results))
+            .fail(error => assert.fail(null, null, error));
     }
     catch (ex) {
-        setTimeout(() => assert.fail(null, null, ex));
+        assert.fail(null, null, ex);
         return Q.reject<any[]>(ex);
     }
 }
@@ -57,8 +55,8 @@ export function ExecuteAndAssertItems(query: string,
     assertCallback: (results : any[]) => void) : Q.Promise<any> {
 
     return ExecuteArrayQuery(query, values)
-        .then(results => setTimeout(() => assertCallback(results)))
-        .fail(error => setTimeout(() => assert.fail(null, null, error)));
+        .then(results => assertCallback(results))
+        .fail(error => assert.fail(null, null, error));
 }
 
 export function ExecuteAndAssertDeepEqual(query: string,
@@ -67,9 +65,9 @@ export function ExecuteAndAssertDeepEqual(query: string,
 
     return ExecuteArrayQuery(query, values)
         .then(results => {
-            setTimeout(() => assert.deepEqual(results, expected))
+            assert.deepEqual(results, expected)
         })
-        .fail(error => setTimeout(() => assert.fail(null, null, error)));
+        .fail(error => assert.fail(null, null, error));
 }
 
 export function GetHelpAndAssertDeepEqual(query: string,
@@ -87,8 +85,8 @@ export function GetHelpAndAssertDeepEqual(query: string,
 
     try {
         return Jsoql.GetQueryHelp(query, cursor, context)
-            .then(results => setTimeout(() => assert.deepEqual(results, expected)))
-            .fail(error => setTimeout(() => assert.fail(null, null, error)));
+            .then(results => assert.deepEqual(results, expected))
+            .fail(error => assert.fail(null, null, error));
     }
     catch (ex) {
         return Q.reject<any[]>(ex);
@@ -96,13 +94,14 @@ export function GetHelpAndAssertDeepEqual(query: string,
 }
 
 export function ExecuteAndAssertFail(query: string,
-    values: any[]| m.QueryContext): Q.Promise<any>  {
+    values: any[]| m.QueryContext,
+    done : MochaDone): void {
 
-    return ExecuteArrayQuery(query, values)
-        .then(results => setTimeout(() => assert.fail(null, null, 'Expected query to fail')));
-        //.fail(error => setTimeout(() => assert.fail(error)));
-
-
+    ExecuteArrayQuery(query, values)
+        .done(
+            results => done(new Error('Expected query to fail')),
+            error => done()
+        );
 }
 
 export function ExecuteAndAssertWithServer(query: string, data : any[], port : number,
@@ -116,8 +115,8 @@ export function ExecuteAndAssertWithServer(query: string, data : any[], port : n
     server.listen(port);
 
     return ExecuteArrayQuery(query, {})
-        .then(results => setTimeout(() => assertCallback(results)))
-        .fail(error => setTimeout(() => assert.fail(null, null, error)))
+        .then(results => assertCallback(results))
+        .fail(error => assert.fail(null, null, error))
         .finally(() => server.close());
 }
 
@@ -145,10 +144,10 @@ export function ExecuteLazyToCompletionAndAssert(query: string, assertCallback :
    
     return ExecuteLazyToCompletion(query)
         .then(result => {
-            setTimeout(() => assertCallback(result));
+            assertCallback(result);
         })
         .fail(err => {
-            setTimeout(() => assert.fail(err))
+            assert.fail(err)
         });
 
 }
