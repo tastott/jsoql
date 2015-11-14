@@ -55,7 +55,7 @@ PromisedSequence.prototype.each = function each(fn) {
         });
 
         if (parentHandle['onComplete']) parentHandle['onComplete'](() => handle._resolve());
-
+        else handle._resolve();
     });
 
     return handle;
