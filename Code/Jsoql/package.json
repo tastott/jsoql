@@ -17,7 +17,7 @@
   "scripts": {
     "prepublish": "node prepublish.js",
     "test": "npm run build && cd test && ..\\node_modules\\.bin\\mocha ./ --recursive",
-    "build": "tsc -p ./"
+    "build": "tsc -p ./ && node grammar/parser-build.js"
   },
   "preferGlobal": true,
   "dependencies": {

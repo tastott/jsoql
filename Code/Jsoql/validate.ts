@@ -11,9 +11,9 @@ interface ErrorCondition<T> {
 export function Validate(statement: m.Statement): any[] {
 
     var selectableErrors : ErrorCondition<m.Selectable>[] = [
-        s => s.Expression.SubQuery && s.Expression.SubQuery.Select.SelectList.length > 1
-                ? 'Sub-query in SELECT clause can only have column'
-                : null
+        // s => s.Expression.SubQuery && s.Expression.SubQuery.Select.SelectList.length > 1
+        //         ? 'Sub-query in SELECT clause can only have column'
+        //         : null
     ];
 
     return lazy(selectableErrors)

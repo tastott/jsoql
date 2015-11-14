@@ -29,5 +29,5 @@ var jisonTokens = tokens.GetJisonTokens();
 MakeParser(jisonTokens, exp.GetJisonExpressionsFull(), path.join(__dirname, "./jsoql-full-parser.js"));
 
 //Helpful parser
-MakeParser(jisonTokens, exp.GetJisonExpressionsHelpful(), path.join(__dirname, "./jsoql-helpful-parser.js"), true);
+MakeParser(jisonTokens, exp.GetJisonExpressionsHelpful(), path.join(__dirname, "./jsoql-helpful-parser.js"));
 

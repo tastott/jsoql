@@ -43,6 +43,28 @@ describe('groupByTests', () => {
                 setTimeout(() => assert.deepEqual(results, expected));
             });
     })
+    
+    it('First', () => {
+
+        var data = [
+            { Value: 1 },
+            { Value: 2 },
+            { Value: 3 }
+        ];
+        var expected = [{ FIRST: 1 }];
+        return testBase.ExecuteAndAssertDeepEqual("SELECT FIRST(Value) FROM 'var://Test'", data, expected);
+    })
+    
+    it('$', () => {
+
+        var data = [
+            1,
+            2,
+            3
+        ];
+        var expected = [{ MAX: 3 }];
+        return testBase.ExecuteAndAssertDeepEqual("SELECT MAX($) FROM 'var://Test'", data, expected);
+    })
 
     it('GroupBy', () => {
 

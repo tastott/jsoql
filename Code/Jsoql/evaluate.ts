@@ -67,10 +67,12 @@ var aggregateFunctions: FunctionMappings = {
     'avg': items => {
         var count = items.length;
         if (count) return lazy(items).sum() / count;
-        else return undefined;
+        else return null;
     },
-    'first': items => items[0]
+    'first': items => items[0] || null
 };
+
+var itemRef = '$';
 
 export class Evaluator implements EvaluationContext {
 
@@ -86,6 +88,9 @@ export class Evaluator implements EvaluationContext {
             return this.DoOperation(expression.Operator, args);
         }
         else if (expression.Property) {
+            
+            if(expression.Property == itemRef) return target;
+            
             var propTarget;
 
             if (target[expression.Property] === undefined) return undefined;
@@ -163,7 +168,9 @@ export class Evaluator implements EvaluationContext {
             });
         }
         else if (expression.Property) {
-
+            
+            if(expression.Property == itemRef) return [{Alias: alias || itemRef, Value: target}];
+            
             var aliasPrefix = alias ? alias + '.' : '';
             var propAlias = expression.Index != undefined
                 ? aliasPrefix + expression.Property + '[' + expression.Index + ']'
@@ -195,8 +202,19 @@ export class Evaluator implements EvaluationContext {
             })) return [{ Alias: alias, Value: null }]
             else {
                 var results = subquery.ExecuteSync();
-
-                return [{ Alias: alias, Value: util.MonoProp(results[0]) }];
+                //Return either single value or array depending on cardinality of query
+                var value:any;
+                
+                if(subquery.Cardinality() == query.Cardinality.One){
+                    //Wrap multi-field queries in object
+                    if(subquery.ColumnCount() == 1) value = util.MonoProp(results[0]);
+                    else value = results[0];
+                }
+                else {
+                    value = results;
+                }
+                
+                return [{Alias: alias, Value: value}];
             }
         }
         else if (expression.Call) {

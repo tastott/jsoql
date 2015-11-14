@@ -204,6 +204,25 @@ describe('selectTests', () => {
         return testBase.ExecuteAndAssertDeepEqual(query, data, data);
     })
     
+     it('Select $', () => {
+    
+        var data = [
+            { Value: 1 },
+            { Value: 2 }
+        ];
+        var query = "SELECT $ FROM 'var://Test'";
+        var expected = [
+            {
+                $: { Value: 1 }
+            },
+            {
+                $: { Value: 2 }
+            }
+        ]
+    
+        return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+    })
+    
     it('SelectUsingSquareBracketAccessorOnTableAlias', () => {
     
         var data = [

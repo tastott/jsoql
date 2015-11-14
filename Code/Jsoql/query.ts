@@ -197,6 +197,11 @@ export class JsoqlQueryResult implements m.QueryResult {
     }
 }
 
+export enum Cardinality {
+    One,
+    Many
+}
+
 export class JsoqlQuery {
 
     private static UriRegex = new RegExp('^([A-Za-z]+)://(.+)$', 'i');
@@ -489,6 +494,17 @@ export class JsoqlQuery {
         });
     }
 
+    Cardinality(): Cardinality {
+        if(!this.stmt.GroupBy && lazy(this.stmt.Select.SelectList)
+            .some(selectable => evl.Evaluator.IsAggregate(selectable.Expression))){
+            return Cardinality.One;
+        }
+        else return Cardinality.Many;
+    }
+    
+    ColumnCount(): number {
+        return this.stmt.Select.SelectList.length;
+    }
 
     ExecuteSync(): any[]{
         var evaluator = new evl.Evaluator(this.dataSourceSequencers); 
@@ -509,7 +525,7 @@ export class JsoqlQuery {
             results = JsoqlQuery.SequenceToArraySync(seq);
         }
         //Implicitly
-        else if (lazy(this.stmt.Select.SelectList).some(selectable => evl.Evaluator.IsAggregate(selectable.Expression))) {
+        else if (this.Cardinality() == Cardinality.One) {
 
             var items = JsoqlQuery.SequenceToArraySync(seq);
             results = this.SelectMonoGroup(items, evaluator);
@@ -613,7 +629,7 @@ export class JsoqlQuery {
                 .then(groups => this.SelectGrouped(groups, this.stmt.GroupBy.Having, evaluator));
         }
         //Implicitly
-        else if (lazy(this.stmt.Select.SelectList).some(selectable => evl.Evaluator.IsAggregate(selectable.Expression))) {
+        else if (this.Cardinality() == Cardinality.One) {
 
             seqP = JsoqlQuery.SequenceToArray(seq)
                 .then(items => lazy(this.SelectMonoGroup(items, evaluator)));
