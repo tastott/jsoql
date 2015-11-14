@@ -5,7 +5,6 @@
 	"files":[
 		"app.ts",
 		"Code/typings/tsd.d.ts",
-		"cmd.ts",
-		"prepublish.ts"
+		"cmd.ts"
 	]
 }
