@@ -58,7 +58,7 @@ describe('selectTests', () => {
         ];
         var expected = [
             { "Thing.A": 1 },
-            { "Thing.A": undefined }
+            { "Thing.A": null}
         ];
         return testBase.ExecuteAndAssertDeepEqual("SELECT Thing.A FROM 'var://Test'", data, expected);
     })

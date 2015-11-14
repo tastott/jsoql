@@ -21,7 +21,7 @@ describe('fromUrlTests', function(){
             .fail(error => setTimeout(() => assert.fail(null, null, error)));
     })
 
-    xit('FromUrlWithExplicitRoot', () => {
+    it('FromUrlWithExplicitRoot', () => {
 
 
         var jsoql = "SELECT * FROM {uri: 'http://localhost:8000/whatever.json', root: 'SomeProperty'}";
@@ -32,7 +32,7 @@ describe('fromUrlTests', function(){
             .fail(error => setTimeout(() => assert.fail(null, null, error)));
     })
 
-    xit('FromUrlWithObjectRoot', () => {
+    it('FromUrlWithObjectRoot', () => {
 
 
         var jsoql = "SELECT * FROM 'http://localhost:8000/whatever.json'";
@@ -43,13 +43,13 @@ describe('fromUrlTests', function(){
             .fail(error => setTimeout(() => assert.fail(null, null, error)));
     })
 
-    xit('ErrorReturnedForNonExistentDomain', done => {
+    it('ErrorReturnedForNonExistentDomain', done => {
 
         var query = "SELECT * FROM 'http://669b40f7-41a4-4aa9-90fb-dab6b0c1844f.com/some.json'";
         testBase.ExecuteAndAssertFail(query, null, done);
     })
 
-    xit('ErrorReturnedFor404', done => {
+    it('ErrorReturnedFor404', done => {
 
         var query = "SELECT * FROM 'http://www.google.com/669b40f7-41a4-4aa9-90fb-dab6b0c1844f.json'";
         testBase.ExecuteAndAssertFail(query, null, done);

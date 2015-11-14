@@ -298,8 +298,12 @@ export class JsoqlQuery {
 
             var left = this.From(fromClause.Join.Left, onError, evaluator);
             var right = this.From(fromClause.Join.Right, onError, evaluator);
-
-            return this.Join(fromClause.Join.Type, left, right, fromClause.Join.Right.Alias, fromClause.Join.Condition, evaluator);
+            
+            return this.Join(fromClause.Join.Type, left, right, 
+                fromClause.Join.Left.Alias, 
+                fromClause.Join.Right.Alias,
+                fromClause.Join.Condition, evaluator
+            );
         }
         //Over operation
         else if (fromClause.Over) {
@@ -333,6 +337,7 @@ export class JsoqlQuery {
     private Join(type: string,
         left: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
         right: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
+        leftAlias: string,
         rightAlias: string,
         condition : any,
         evaluator: evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
@@ -340,6 +345,9 @@ export class JsoqlQuery {
         var seqA = type === 'Right' ? right : left;
         var seqB = type === 'Right' ? left : right;
      
+        var aliasA = type === 'Right' ? rightAlias : leftAlias;
+        var aliasB = type === 'Right' ? leftAlias : rightAlias;
+        
         //We'll be doing full passes of sequence B so use cache if specified
         if (this.queryContext.UseCache) {
             seqB = seqB.withCaching();
@@ -368,9 +376,9 @@ export class JsoqlQuery {
 
             //For outer joins, wrap in a sequence which sends a default value if the source sequence is empty (i.e. no matches in sequence B)
             if (type === 'Left' || type === 'Right' || type == 'Full') {
-                var defaultValue = li;
+                var defaultValue = clone(li, false, 1); //Shallow copy
                 
-                defaultValue[rightAlias] = null;
+                defaultValue[aliasB] = null;
 
                 ////This relies on lazy evaluation of the filter predicate after matches have been sought in sequence B
                 //var defaultValueSequence = lazy([defaultValue])
@@ -399,6 +407,10 @@ export class JsoqlQuery {
                         return evaluator.Evaluate(condition, merged);
                     })
                 )
+                .map(bi => {
+                    bi[aliasA] = null;
+                    return bi;
+                })
             );
         }
 

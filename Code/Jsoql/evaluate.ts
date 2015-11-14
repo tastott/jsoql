@@ -170,11 +170,11 @@ export class Evaluator implements EvaluationContext {
                 : propAlias = aliasPrefix + expression.Property;
 
 
-            var propTarget = target != undefined
+            var propTarget = target !== null && target !== undefined
                 ? expression.Index != undefined
                     ? propTarget = target[expression.Property][expression.Index]
                     : propTarget = target[expression.Property]
-                : undefined; //Keep passing 'undefineds' down to get full alias
+                : null; //Keep passing nulls down to get full alias
            
 
             if (expression.Child) return this.EvaluateAliased(expression.Child, propTarget, propAlias);
