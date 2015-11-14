@@ -394,3 +394,5 @@ FakesAssemblies/
 /Code/Jsoql/typings/node/node.d.ts
 /Code/Jsoql/typings/q/Q.d.ts
 /Code/Jsoql/typings/yargs/yargs.d.ts
+/Code/Jsoql.Gui/Code/typings/lazy.js/lazy.js.d.ts
+/Code/Jsoql.Gui/Code/typings/tsd.d.ts

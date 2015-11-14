@@ -1,9 +1,11 @@
 cd Jsoql
-npm run build
-npm install
+call tsd update
+call tsd rebundle
+call npm run build
+call npm install
 cd ../Jsoql.Gui/Code
-tsd install
+call tsd install
 cd ../
-npm link ../Jsoql
-npm run build
-npm install
+call npm link ../Jsoql
+call npm run build
+call npm install
