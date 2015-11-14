@@ -20,8 +20,8 @@
   "scripts": {
     "prepublish": "node prepublish.js",
     "test": "npm run build && cd test && ..\\node_modules\\.bin\\mocha ./ --recursive",
-    "build": "node_modules\\.bin\\tsc -p ./",
-	"grammar-build": "node grammar/parser-build.js"
+    "build": "npm run grammar-build && node_modules\\.bin\\tsc -p ./",
+	"grammar-build": "tsc grammar/parser-build.ts typings/tsd.d.ts --module commonjs && node grammar/parser-build.js"
   },
   "preferGlobal": true,
   "dependencies": {
