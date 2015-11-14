@@ -1,14 +1,5 @@
 ﻿# Jsoql.Gui
 
-##Setup
-`> npm link ../Jsoql` to use local build of JSOQL instead of published version
-
-## Browser-mode hacks
-
-### Oboe.js
-
-* `package.json` *browser* property must be set to `oboe.node.js`
-
 ### Git
 * use `> git subtree push --prefix Code/Jsoql.Gui origin gh-pages` to publish to GitHub pages
 * when the subtree push goes wrong with all the "pushed branch tip is behind" nonsense, the nuclear solution is to delete and recreate the *gh-pages* branch locally and remotely
