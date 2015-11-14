@@ -7,33 +7,45 @@ import m = require('./models')
 import util = require('./utilities')
 import _stream = require('stream')
 var csv = require('csv-string')
+import Q = require('q')
 var XhrStream = require('buffered-xhr-stream')
 
 //Basically a copy of StreamedSequence from lazy.node.js because I don't know how to extend that "class"
-function LazyStreamedSequence(openStream: (callback: (stream: _stream.Readable, err? : string) => void) => void) {
+function LazyStreamedSequence(openStream: (onError: m.ErrorHandler) => Q.Promise<_stream.Readable>) {
+        
     this.openStream = openStream;
+    this.error = null;
 }
 
 LazyStreamedSequence.prototype = new (<any>lazy).StreamLikeSequence();
 
 LazyStreamedSequence.prototype.each = function(fn) {
     var cancelled = false;
-
     var handle = new (<any>lazy).AsyncHandle(function cancel() { cancelled = true; });
-
-    this.openStream(function (stream: _stream.Readable, err: string) {
-
-        //Abort if there's an error already
-        if (err) {
-            handle._reject(err);
-        } else {
-
+    
+    var onError : m.ErrorHandler = error => {
+        handle._reject(error);
+    }
+    
+    var streamP: Q.Promise<_stream.Readable>;
+    
+    try {
+        streamP = this.openStream(onError);
+    }
+    catch(err) {
+        handle._reject(err);
+        return;
+    }
+    
+    streamP
+        .done((stream : _stream.Readable) => {
+ 
             if (stream.setEncoding) {
                 stream.setEncoding(this.encoding || 'utf8');
             }
-
+        
             stream.resume();
-
+        
             var listener = function (e) {
                 try {
                     if (cancelled || fn(e) === false) {
@@ -44,19 +56,20 @@ LazyStreamedSequence.prototype.each = function(fn) {
                     handle._reject(err);
                 }
             };
-
+        
             stream.on("data", listener);
-
+        
             stream.on("end", function () {
                 handle._resolve(true);
             });
-
+        
             stream.on("error", error => {
                 handle._reject(error);
             });
-        }
-    });
 
+        },
+        onError);
+         
     return handle;
 }
 
@@ -118,6 +131,7 @@ class OboeStream {
     private oboePattern: string;
 
     constructor(private stream: _stream.Readable, path: string) {
+        stream.pause();
         OboeStream.FudgeStreamForOboe(stream);
         this.oboeObj = oboe(stream);
         this.oboePattern = path ? `${path}.*` : '!.*';
@@ -258,28 +272,30 @@ class EnsureJsonArrayStream {
     resume = () => {
         if (this.jsonStream.resume) this.jsonStream.resume();
     }
+    
+    pause = () => {
+        this.jsonStream.pause();
+    }
 }
 
 export function lazyOboeHttp(options: {
     url: string;
     nodePath: string;
-    onError: m.ErrorHandler;
+    //onError: m.ErrorHandler;
     noCredentials?: boolean;
     streamTransform?: (stream: _stream.Readable) => _stream.Readable
 }): LazyJS.AsyncSequence<any>  {
 
-    var errorHandler: m.ErrorHandler = err => options.onError(`Request to '${options.url}' failed. ${err.message}`);
+    //var errorHandler: m.ErrorHandler = err => options.onError(`Request to '${options.url}' failed. ${err.message}`);
 
-    var sequence = new LazyStreamedSequence(callback => {
+    var sequence = new LazyStreamedSequence(errorHandler => {
 
         //Create an XHR manually if we need to omit credentials (i.e. to avoid issues with CORS)
         if (options.noCredentials) {
 
             var xhr = new XMLHttpRequest();
 
-            if (options.onError) {
-                xhr.onerror = errorHandler;
-            }
+            xhr.onerror = errorHandler;
 
             xhr.withCredentials = false;
             xhr.open('GET', options.url, true);
@@ -294,13 +310,15 @@ export function lazyOboeHttp(options: {
             sourceStream = new EnsureJsonArrayStream(sourceStream);
 
             var oboeStream = new OboeStream(sourceStream, options.nodePath);
-            callback(<any>oboeStream);
+            return Q(<any>oboeStream);
 
         } else {
+            var deferred = Q.defer<_stream.Readable>();
+            
             var req = http.get(options.url,(res) => {
 
                 if (res.statusCode !== 200) {
-                    callback(null, `Bad response status: ${res.statusMessage} (${res.statusCode})`);
+                    deferred.reject(`Bad response status: ${res.statusMessage} (${res.statusCode})`);
                 } else {
 
                     var sourceStream: _stream.Readable = res;
@@ -314,10 +332,16 @@ export function lazyOboeHttp(options: {
 
                     var oboeStream = new OboeStream(sourceStream, options.nodePath);
 
-                    callback(<any>oboeStream);
+                   deferred.resolve(<any>oboeStream);
                 }
             });
-            if (options.onError) req.on('error', errorHandler);
+            
+            req.on('error', error => {
+                errorHandler(error);
+                deferred.reject(error);
+            });
+            
+            return deferred.promise;
         }
     });
 
@@ -326,12 +350,12 @@ export function lazyOboeHttp(options: {
 
 export function lazyOboeFromStream(stream : _stream.Readable, nodePath: string): LazyJS.AsyncSequence<any> {
    
-    var sequence = new LazyStreamedSequence(callback => {
+    var sequence = new LazyStreamedSequence(errorHandler => {
         //Wrap an object root as an array
         stream = <any>new EnsureJsonArrayStream(stream);
 
         var oboeStream = new OboeStream(stream, nodePath);
-        callback(<any>oboeStream);
+        return Q(<any>oboeStream);
     });
 
     return <any>sequence;
@@ -339,9 +363,9 @@ export function lazyOboeFromStream(stream : _stream.Readable, nodePath: string):
 
 export function lazyCsvFromStream(stream: _stream.Readable, headers: string[], skip : number = 0): LazyJS.AsyncSequence<any>  {
 
-    var sequence = new LazyStreamedSequence(callback => {
+    var sequence = new LazyStreamedSequence(errorHandler => {
         var csvStream = new CsvStream(stream, headers, skip);
-        callback(<any>csvStream);
+        return Q(<any>csvStream);
     });
 
     return <any>sequence;

@@ -43,20 +43,24 @@ PromisedSequence.prototype.each = function each(fn) {
     });
 
 
-    this.promise.then(function (parent) {
-        var i = 0;
-        var parentHandle = parent.each(function (item) {
-            try {
-                if (cancelled || fn(item, i++) === false) handle._resolve();
-            }
-            catch (ex) {
-                handle._reject(ex);
-            }
+    this.promise
+        .done(parent => {
+            var i = 0;
+            var parentHandle = parent.each(function (item) {
+                try {
+                    if (cancelled || fn(item, i++) === false) handle._resolve();
+                }
+                catch (ex) {
+                    handle._reject(ex);
+                }
+            });
+    
+            if (parentHandle['onComplete']) parentHandle['onComplete'](() => handle._resolve());
+            else handle._resolve();
+        },
+        error => {
+            handle._reject(error);
         });
-
-        if (parentHandle['onComplete']) parentHandle['onComplete'](() => handle._resolve());
-        else handle._resolve();
-    });
 
     return handle;
 };
