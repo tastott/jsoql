@@ -1,10 +1,10 @@
 {
   "name": "jsoql",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "description": "Library and command line tool for querying JSON data using a SQL-like language (JSOQL)",
   "main": "jsoql.js",
   "browser": {
-    "oboe": ".\\node_modules\\oboe\\dist\\oboe-node"  
+    "oboe": ".\\node_modules\\oboe\\dist\\oboe-node"
   },
   "author": {
     "name": "Tim Stott",
@@ -20,7 +20,7 @@
   "scripts": {
     "test": "npm run build && cd test && ..\\node_modules\\.bin\\mocha ./ --recursive",
     "build": "node_modules\\.bin\\tsc -p ./",
-	"grammar-build": "tsc grammar/parser-build.ts typings/tsd.d.ts --module commonjs && node grammar/parser-build.js"
+    "grammar-build": "tsc grammar/parser-build.ts typings/tsd.d.ts --module commonjs && node grammar/parser-build.js"
   },
   "preferGlobal": true,
   "dependencies": {
