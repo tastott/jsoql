@@ -216,10 +216,12 @@ export class AppController {
         else {
             this.GetInitialTabs()
                 .then(tabs => {
-                if (!tabs || !tabs.length) this.AddTab();
-                else tabs.forEach(tab => this.AddTab(tab));
-                $scope.SelectedTab = $scope.Tabs[0];
-            });
+                    $scope.$apply(() => 
+                        {if (!tabs || !tabs.length) this.AddTab();
+                        else tabs.forEach(tab => this.AddTab(tab));
+                        $scope.SelectedTab = $scope.Tabs[0];
+                    }) 
+                });
         }
     }
 

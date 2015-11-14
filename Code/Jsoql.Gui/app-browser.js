@@ -30577,11 +30577,13 @@ var AppController = (function () {
         else {
             this.GetInitialTabs()
                 .then(function (tabs) {
-                if (!tabs || !tabs.length)
-                    _this.AddTab();
-                else
-                    tabs.forEach(function (tab) { return _this.AddTab(tab); });
-                $scope.SelectedTab = $scope.Tabs[0];
+                $scope.$apply(function () {
+                    if (!tabs || !tabs.length)
+                        _this.AddTab();
+                    else
+                        tabs.forEach(function (tab) { return _this.AddTab(tab); });
+                    $scope.SelectedTab = $scope.Tabs[0];
+                });
             });
         }
     }
