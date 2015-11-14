@@ -18,9 +18,8 @@
     "jsoql": "cmd.js"
   },
   "scripts": {
-    "prepublish": "node prepublish.js",
     "test": "npm run build && cd test && ..\\node_modules\\.bin\\mocha ./ --recursive",
-    "build": "npm run grammar-build && node_modules\\.bin\\tsc -p ./",
+    "build": "node_modules\\.bin\\tsc -p ./",
 	"grammar-build": "tsc grammar/parser-build.ts typings/tsd.d.ts --module commonjs && node grammar/parser-build.js"
   },
   "preferGlobal": true,

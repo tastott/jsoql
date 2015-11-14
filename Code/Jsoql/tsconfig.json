@@ -5,9 +5,7 @@
 		"sourceMap": true,
 		"declaration": true
 	},
-	"files":[
-		"cmd.ts",
-		"typings/tsd.d.ts",
-		"prepublish.ts"
+	"exclude": [
+		"node_modules"
 	]
 }

@@ -1,4 +1,6 @@
-﻿import jsoql = require('./jsoql')
+﻿#!/usr/bin/env node
+
+import jsoql = require('./jsoql')
 import http = require('http');
 import fs = require('fs')
 import m = require('./models')
