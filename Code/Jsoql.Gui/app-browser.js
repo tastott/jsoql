@@ -9492,7 +9492,6 @@ var oboe = require('oboe');
 var http = require('http');
 var util = require('./utilities');
 var csv = require('csv-string');
-var Q = require('q');
 var XhrStream = require('buffered-xhr-stream');
 //Basically a copy of StreamedSequence from lazy.node.js because I don't know how to extend that "class"
 function LazyStreamedSequence(openStream) {
@@ -9501,45 +9500,41 @@ function LazyStreamedSequence(openStream) {
 }
 LazyStreamedSequence.prototype = new lazy.StreamLikeSequence();
 LazyStreamedSequence.prototype.each = function (fn) {
-    var _this = this;
     var cancelled = false;
     var handle = new lazy.AsyncHandle(function cancel() { cancelled = true; });
     var onError = function (error) {
         handle._reject(error);
     };
-    var streamP;
+    var stream;
     try {
-        streamP = this.openStream(onError);
+        stream = this.openStream(onError);
     }
     catch (err) {
         handle._reject(err);
         return;
     }
-    streamP
-        .done(function (stream) {
-        if (stream.setEncoding) {
-            stream.setEncoding(_this.encoding || 'utf8');
+    if (stream.setEncoding) {
+        stream.setEncoding(this.encoding || 'utf8');
+    }
+    stream.resume();
+    var listener = function (e) {
+        try {
+            if (cancelled || fn(e) === false) {
+                stream.removeListener("data", listener);
+                handle._resolve(false);
+            }
         }
-        stream.resume();
-        var listener = function (e) {
-            try {
-                if (cancelled || fn(e) === false) {
-                    stream.removeListener("data", listener);
-                    handle._resolve(false);
-                }
-            }
-            catch (err) {
-                handle._reject(err);
-            }
-        };
-        stream.on("data", listener);
-        stream.on("end", function () {
-            handle._resolve(true);
-        });
-        stream.on("error", function (error) {
-            handle._reject(error);
-        });
-    }, onError);
+        catch (err) {
+            handle._reject(err);
+        }
+    };
+    stream.on("data", listener);
+    stream.on("end", function () {
+        handle._resolve(true);
+    });
+    stream.on("error", function (error) {
+        handle._reject(error);
+    });
     return handle;
 };
 var CsvStream = (function () {
@@ -9600,7 +9595,9 @@ var OboeStream = (function () {
             switch (event) {
                 case 'data':
                     // pattern = '!.contents.*';
-                    _this.oboeObj.node(_this.oboePattern, listener);
+                    _this.oboeObj.node(_this.oboePattern, function (data) {
+                        listener(data);
+                    });
                     break;
                 case 'end':
                     _this.oboeObj.done(listener);
@@ -9619,8 +9616,6 @@ var OboeStream = (function () {
             if (_this.stream.resume)
                 _this.stream.resume();
         };
-        if (stream.pause)
-            stream.pause();
         OboeStream.FudgeStreamForOboe(stream);
         this.oboeObj = oboe(stream);
         this.oboePattern = path ? path + ".*" : '!.*';
@@ -9674,10 +9669,6 @@ var EnsureJsonArrayStream = (function () {
             if (_this.jsonStream.resume)
                 _this.jsonStream.resume();
         };
-        this.pause = function () {
-            if (_this.jsonStream.pause)
-                _this.jsonStream.pause();
-        };
         this.onData = new util.CallbackSet();
         this.onEnd = new util.CallbackSet();
         this.onError = new util.CallbackSet();
@@ -9715,6 +9706,58 @@ var EnsureJsonArrayStream = (function () {
     }
     return EnsureJsonArrayStream;
 })();
+var HttpStream = (function () {
+    function HttpStream(url, transformStream) {
+        var _this = this;
+        this.on = function (event, listener) {
+            if (_this.stream) {
+                _this.stream.on(event, listener);
+                return;
+            }
+            switch (event) {
+                case 'data':
+                    _this.dataCallbacks.Add(listener);
+                    break;
+                case 'end':
+                    _this.endCallbacks.Add(listener);
+                    break;
+                case 'error':
+                    _this.errorCallbacks.Add(listener);
+                    break;
+                default:
+                    throw new Error("Unrecognized event type for stream: " + event);
+            }
+        };
+        this.resume = function () {
+            if (_this.stream && _this.stream.resume)
+                _this.stream.resume();
+        };
+        this.dataCallbacks = new util.CallbackSet();
+        this.errorCallbacks = new util.CallbackSet();
+        this.endCallbacks = new util.CallbackSet();
+        this.stream = null;
+        var req = http.get(url, function (res) {
+            if (res.statusCode !== 200) {
+                _this.errorCallbacks.DoAll("Bad response status: " + res.statusMessage + " (" + res.statusCode + ")", true);
+            }
+            else {
+                _this.stream = transformStream ? transformStream(res) : res;
+                _this.RegisterCallbacks('data', _this.stream, _this.dataCallbacks);
+                _this.RegisterCallbacks('end', _this.stream, _this.endCallbacks);
+                _this.RegisterCallbacks('error', _this.stream, _this.errorCallbacks);
+            }
+        });
+        req.on('error', function (error) {
+            _this.errorCallbacks.DoAll(error, true);
+        });
+    }
+    HttpStream.prototype.RegisterCallbacks = function (event, stream, callbacks) {
+        var _this = this;
+        callbacks.GetAll().forEach(function (callback) { return _this.stream.on(event, callback); });
+        callbacks.RemoveAll();
+    };
+    return HttpStream;
+})();
 function lazyOboeHttp(options) {
     //var errorHandler: m.ErrorHandler = err => options.onError(`Request to '${options.url}' failed. ${err.message}`);
     var sequence = new LazyStreamedSequence(function (errorHandler) {
@@ -9731,30 +9774,18 @@ function lazyOboeHttp(options) {
             //Wrap an object root as an array
             sourceStream = new EnsureJsonArrayStream(sourceStream);
             var oboeStream = new OboeStream(sourceStream, options.nodePath);
-            return Q(oboeStream);
+            return oboeStream;
         }
         else {
-            var deferred = Q.defer();
-            var req = http.get(options.url, function (res) {
-                if (res.statusCode !== 200) {
-                    deferred.reject("Bad response status: " + res.statusMessage + " (" + res.statusCode + ")");
+            return new HttpStream(options.url, function (sourceStream) {
+                if (options.streamTransform) {
+                    sourceStream = options.streamTransform(sourceStream);
                 }
-                else {
-                    var sourceStream = res;
-                    if (options.streamTransform) {
-                        sourceStream = options.streamTransform(sourceStream);
-                    }
-                    //Wrap an object root as an array
-                    sourceStream = new EnsureJsonArrayStream(sourceStream);
-                    var oboeStream = new OboeStream(sourceStream, options.nodePath);
-                    deferred.resolve(oboeStream);
-                }
+                //Wrap an object root as an array
+                sourceStream = new EnsureJsonArrayStream(sourceStream);
+                var oboeStream = new OboeStream(sourceStream, options.nodePath);
+                return oboeStream;
             });
-            req.on('error', function (error) {
-                errorHandler(error);
-                deferred.reject(error);
-            });
-            return deferred.promise;
         }
     });
     return sequence;
@@ -9765,7 +9796,7 @@ function lazyOboeFromStream(stream, nodePath) {
         //Wrap an object root as an array
         stream = new EnsureJsonArrayStream(stream);
         var oboeStream = new OboeStream(stream, nodePath);
-        return Q(oboeStream);
+        return oboeStream;
     });
     return sequence;
 }
@@ -9774,13 +9805,13 @@ function lazyCsvFromStream(stream, headers, skip) {
     if (skip === void 0) { skip = 0; }
     var sequence = new LazyStreamedSequence(function (errorHandler) {
         var csvStream = new CsvStream(stream, headers, skip);
-        return Q(csvStream);
+        return csvStream;
     });
     return sequence;
 }
 exports.lazyCsvFromStream = lazyCsvFromStream;
 
-},{"./Hacks/lazy.node":4,"./utilities":45,"buffered-xhr-stream":13,"csv-string":15,"http":58,"oboe":37,"q":39}],12:[function(require,module,exports){
+},{"./Hacks/lazy.node":4,"./utilities":45,"buffered-xhr-stream":13,"csv-string":15,"http":58,"oboe":37}],12:[function(require,module,exports){
 (function (process,global){
 module.exports = process.hrtime || hrtime
 
@@ -22571,6 +22602,9 @@ var CallbackSet = (function () {
     };
     CallbackSet.prototype.RemoveAll = function () {
         this.callbacks = [];
+    };
+    CallbackSet.prototype.GetAll = function () {
+        return this.callbacks;
     };
     return CallbackSet;
 })();

@@ -11,7 +11,7 @@ import Q = require('q')
 var XhrStream = require('buffered-xhr-stream')
 
 //Basically a copy of StreamedSequence from lazy.node.js because I don't know how to extend that "class"
-function LazyStreamedSequence(openStream: (onError: m.ErrorHandler) => Q.Promise<_stream.Readable>) {
+function LazyStreamedSequence(openStream: (onError: m.ErrorHandler) => _stream.Readable) {
         
     this.openStream = openStream;
     this.error = null;
@@ -27,49 +27,43 @@ LazyStreamedSequence.prototype.each = function(fn) {
         handle._reject(error);
     }
     
-    var streamP: Q.Promise<_stream.Readable>;
+    var stream: _stream.Readable;
     
     try {
-        streamP = this.openStream(onError);
+        stream = this.openStream(onError);
     }
     catch(err) {
         handle._reject(err);
         return;
     }
     
-    streamP
-        .done((stream : _stream.Readable) => {
- 
-            if (stream.setEncoding) {
-                stream.setEncoding(this.encoding || 'utf8');
-            }
-        
-            stream.resume();
-        
-            var listener = function (e) {
-                try {
-                    if (cancelled || fn(e) === false) {
-                        stream.removeListener("data", listener);
-                        handle._resolve(false);
-                    }
-                } catch (err) {
-                    handle._reject(err);
-                }
-            };
-        
-            stream.on("data", listener);
-        
-            stream.on("end", function () {
-                handle._resolve(true);
-            });
-        
-            stream.on("error", error => {
-                handle._reject(error);
-            });
+    if (stream.setEncoding) {
+        stream.setEncoding(this.encoding || 'utf8');
+    }
 
-        },
-        onError);
-         
+    stream.resume();
+
+    var listener = function (e) {
+        try {
+            if (cancelled || fn(e) === false) {
+                stream.removeListener("data", listener);
+                handle._resolve(false);
+            }
+        } catch (err) {
+            handle._reject(err);
+        }
+    };
+
+    stream.on("data", listener);
+
+    stream.on("end", function () {
+        handle._resolve(true);
+    });
+
+    stream.on("error", error => {
+        handle._reject(error);
+    });
+     
     return handle;
 }
 
@@ -131,7 +125,6 @@ class OboeStream {
     private oboePattern: string;
 
     constructor(private stream: _stream.Readable, path: string) {
-        if(stream.pause) stream.pause();
         OboeStream.FudgeStreamForOboe(stream);
         this.oboeObj = oboe(stream);
         this.oboePattern = path ? `${path}.*` : '!.*';
@@ -161,7 +154,9 @@ class OboeStream {
             case 'data':
                
                // pattern = '!.contents.*';
-                this.oboeObj.node(this.oboePattern, listener);
+                this.oboeObj.node(this.oboePattern, data => {
+                    listener(data);
+                });
                 break;
 
             case 'end':
@@ -272,11 +267,73 @@ class EnsureJsonArrayStream {
     resume = () => {
         if (this.jsonStream.resume) this.jsonStream.resume();
     }
+  
+}
+
+class HttpStream {
     
-    pause = () => {
-        if(this.jsonStream.pause) this.jsonStream.pause();
+    private dataCallbacks: util.CallbackSet<any>;
+    private errorCallbacks: util.CallbackSet<any>;
+    private endCallbacks: util.CallbackSet<any>;
+    
+    private stream: _stream.Readable;
+    
+    constructor(url:string, transformStream: (source: _stream.Readable) => _stream.Readable){
+        this.dataCallbacks = new util.CallbackSet<any>();
+        this.errorCallbacks = new util.CallbackSet<any>();
+        this.endCallbacks = new util.CallbackSet<any>();
+        this.stream = null;
+        
+        var req = http.get(url,(res) => {
+    
+            if (res.statusCode !== 200) {
+                this.errorCallbacks.DoAll(`Bad response status: ${res.statusMessage} (${res.statusCode})`, true);
+            } else {
+                 this.stream = transformStream ? transformStream(res) : res;
+                
+                this.RegisterCallbacks('data', this.stream, this.dataCallbacks);
+                this.RegisterCallbacks('end', this.stream, this.endCallbacks);
+                this.RegisterCallbacks('error', this.stream, this.errorCallbacks);
+            }
+        });
+    
+        req.on('error', error => {
+            this.errorCallbacks.DoAll(error, true);
+        });
+    }
+    
+    private RegisterCallbacks(event:string, stream: _stream.Readable, callbacks: util.CallbackSet<any>) {
+        callbacks.GetAll().forEach(callback => this.stream.on(event, callback));
+        callbacks.RemoveAll();
+    }
+    
+    on = (event: string, listener: StreamListener) => {
+        if(this.stream){
+            this.stream.on(event, listener);
+            return;
+        }
+        
+        switch(event){
+            case 'data':
+                this.dataCallbacks.Add(listener);
+                break;
+            case 'end':
+                this.endCallbacks.Add(listener);
+                break;
+            case 'error':
+                this.errorCallbacks.Add(listener);
+                break;
+                
+            default:
+                throw new Error(`Unrecognized event type for stream: ${event}`);
+        }
+    }
+    
+    resume = () => {
+        if(this.stream && this.stream.resume) this.stream.resume();
     }
 }
+
 
 export function lazyOboeHttp(options: {
     url: string;
@@ -310,38 +367,23 @@ export function lazyOboeHttp(options: {
             sourceStream = new EnsureJsonArrayStream(sourceStream);
 
             var oboeStream = new OboeStream(sourceStream, options.nodePath);
-            return Q(<any>oboeStream);
+            return <any>oboeStream;
 
         } else {
-            var deferred = Q.defer<_stream.Readable>();
-            
-            var req = http.get(options.url,(res) => {
-
-                if (res.statusCode !== 200) {
-                    deferred.reject(`Bad response status: ${res.statusMessage} (${res.statusCode})`);
-                } else {
-
-                    var sourceStream: _stream.Readable = res;
-
-                    if (options.streamTransform) {
-                        sourceStream = options.streamTransform(sourceStream);
-                    }
-
-                    //Wrap an object root as an array
-                    sourceStream = <any>new EnsureJsonArrayStream(sourceStream);
-
-                    var oboeStream = new OboeStream(sourceStream, options.nodePath);
-
-                   deferred.resolve(<any>oboeStream);
-                }
-            });
-            
-            req.on('error', error => {
-                errorHandler(error);
-                deferred.reject(error);
-            });
-            
-            return deferred.promise;
+            return new HttpStream(options.url,
+                    sourceStream => {
+    
+                        if (options.streamTransform) {
+                            sourceStream = options.streamTransform(sourceStream);
+                        }
+    
+                        //Wrap an object root as an array
+                        sourceStream = <any>new EnsureJsonArrayStream(sourceStream);
+    
+                        var oboeStream = new OboeStream(sourceStream, options.nodePath);
+    
+                        return <any>oboeStream;
+                });
         }
     });
 
@@ -355,7 +397,7 @@ export function lazyOboeFromStream(stream : _stream.Readable, nodePath: string):
         stream = <any>new EnsureJsonArrayStream(stream);
 
         var oboeStream = new OboeStream(stream, nodePath);
-        return Q(<any>oboeStream);
+        return <any>oboeStream;
     });
 
     return <any>sequence;
@@ -365,7 +407,7 @@ export function lazyCsvFromStream(stream: _stream.Readable, headers: string[], s
 
     var sequence = new LazyStreamedSequence(errorHandler => {
         var csvStream = new CsvStream(stream, headers, skip);
-        return Q(<any>csvStream);
+        return <any>csvStream;
     });
 
     return <any>sequence;

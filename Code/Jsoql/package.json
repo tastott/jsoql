@@ -3,6 +3,9 @@
   "version": "0.0.21",
   "description": "Library and command line tool for querying JSON data using a SQL-like language (JSOQL)",
   "main": "jsoql.js",
+  "browser": {
+    "oboe": ".\\node_modules\\oboe\\dist\\oboe-node"  
+  },
   "author": {
     "name": "Tim Stott",
     "email": ""

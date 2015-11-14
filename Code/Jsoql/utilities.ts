@@ -59,5 +59,9 @@ export class CallbackSet<T> {
     public RemoveAll() {
         this.callbacks = [];
     }
+    
+    public GetAll() {
+        return this.callbacks;
+    }
 
 }
