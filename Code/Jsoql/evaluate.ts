@@ -10,7 +10,7 @@ import dateTime = require('./date-time')
 var clone = require('clone')
 var deepEqual : (a,b) => boolean = require('deep-equal')
 
-interface EvaluationContext {
+export interface EvaluationContext {
     CurrentDate: Date
 };
 
