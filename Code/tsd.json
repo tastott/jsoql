@@ -22,9 +22,6 @@
     },
     "ace/ace.d.ts": {
       "commit": "7c228c09302f51d19b6b93fcfc5decaf8e8bbaa2"
-    },
-    "lazy.js/lazy.js.d.ts": {
-      "commit": "7c228c09302f51d19b6b93fcfc5decaf8e8bbaa2"
     }
   }
 }
