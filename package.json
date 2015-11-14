@@ -4,7 +4,7 @@
   "description": "GUI for running and managing JSOQL queries",
   "main": "index-nw.html",
   "scripts": {
-    "start": "node_modules\\.bin\\nw .",
+    "start": "npm run build && node_modules\\.bin\\nw .",
     "start-web": "npm run browserify && node_modules\\.bin\\http-server ./ -p 8081 -o",
     "prepublish": "node prepublish.js",
     "build": "node_modules\\.bin\\tsc -p ./",
