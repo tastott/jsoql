@@ -4,7 +4,7 @@
   "description": "GUI for running and managing JSOQL queries",
   "main": "index-nw.html",
   "scripts": {
-    "start": "node_modules\\.bin\\nw",
+    "start": "node_modules\\.bin\\nw .",
     "start-web": "npm run browserify && node_modules\\.bin\\http-server ./ -p 8081 -o",
     "prepublish": "node prepublish.js",
     "build": "node_modules\\.bin\\tsc -p ./",
@@ -30,11 +30,11 @@
     "debounce": "^1.0.0",
     "font-awesome": "^4.3.0",
     "glob": "^5.0.5",
-    "jquery": "^2.1.3",
+    "jquery": "^2.1.4",
     "jsoql": "^0.0.21",
-    "lazy.js": "^0.4.0",
+    "lazy.js": "^0.4.2",
     "nw": "^0.12.1",
-    "q": "^1.2.0"
+    "q": "^1.4.1"
   },
   "window": {
     "width": 1200,

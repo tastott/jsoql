@@ -131,7 +131,7 @@ class OboeStream {
     private oboePattern: string;
 
     constructor(private stream: _stream.Readable, path: string) {
-        stream.pause();
+        if(stream.pause) stream.pause();
         OboeStream.FudgeStreamForOboe(stream);
         this.oboeObj = oboe(stream);
         this.oboePattern = path ? `${path}.*` : '!.*';
@@ -274,7 +274,7 @@ class EnsureJsonArrayStream {
     }
     
     pause = () => {
-        this.jsonStream.pause();
+        if(this.jsonStream.pause) this.jsonStream.pause();
     }
 }
 
