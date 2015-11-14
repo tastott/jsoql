@@ -384,3 +384,13 @@ FakesAssemblies/
 /Code/Jsoql/query.js
 /Code/Jsoql/utilities.js
 /Code/Jsoql/validate.js
+/Code/Jsoql/Grammar/jsoql-full-parser.js
+/Code/Jsoql/Grammar/jsoql-helpful-parser.js
+/Code/Jsoql/Grammar/parser-build.js
+/Code/Jsoql/typings/chai/chai.d.ts
+/Code/Jsoql/typings/mocha/mocha.d.ts
+/Code/Jsoql/typings/moment/moment-node.d.ts
+/Code/Jsoql/typings/moment/moment.d.ts
+/Code/Jsoql/typings/node/node.d.ts
+/Code/Jsoql/typings/q/Q.d.ts
+/Code/Jsoql/typings/yargs/yargs.d.ts

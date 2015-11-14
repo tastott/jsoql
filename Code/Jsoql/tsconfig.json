@@ -4,5 +4,9 @@
 		"target": "ES5",
 		"sourceMap": true,
 		"declaration": true
-	}
+	},
+	"files":[
+		"cmd.ts",
+		"typings/tsd.d.ts"
+	]
 }

@@ -360,8 +360,7 @@ export class StreamingHttpSequencer implements DataSourceSequencer {
         var url = 'http://' + value;
         return lazyJson.lazyOboeHttp({
             url: url,
-            nodePath: parameters.root,
-            onError: onError
+            nodePath: parameters.root
         });
     }
 }
@@ -378,7 +377,6 @@ export class WhateverOriginStreamingHttpDataSource implements DataSourceSequence
         return lazyJson.lazyOboeHttp({
             url: url,
             nodePath: parameters['path'],
-            onError: onError,
             streamTransform: stream => stream
                     .pipe(replaceStream(/^callback\({"contents":"/, ''))
                     .pipe(replaceStream(/","status":.+$/, ''))
@@ -398,8 +396,7 @@ export class YqlStreamingHttpSequencer implements DataSourceSequencer {
         return lazyJson.lazyOboeHttp({
             url: url,
             nodePath: parameters['root'] ? `query.results.json.${parameters['root']}` : 'query.results.json',
-            noCredentials: true,
-            onError: onError
+            noCredentials: true
         });
     }
 }
