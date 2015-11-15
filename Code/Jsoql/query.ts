@@ -440,16 +440,25 @@ export class JsoqlQuery {
         lazy(this.stmt.OrderBy || []).reverse().each(orderByExp => {
             groups = groups.sortBy(group => evaluator.EvaluateGroup(orderByExp.Expression, group), !orderByExp.Asc);
         });
+        
+        //Apply any row limit
+        groups = groups.first(this.stmt.Select.Limit || Number.MAX_VALUE);
 
-        return groups.map(group =>
-            lazy(this.stmt.Select.SelectList)
-                .map(selectable => [
-                selectable.Alias || evl.Evaluator.Alias(selectable.Expression),
-                evaluator.EvaluateGroup(selectable.Expression, group)
-            ])
-                .toObject()
-            )
-            .first(this.stmt.Select.Limit || Number.MAX_VALUE);
+        //Apply PROMOTE if applicable
+        if(this.stmt.Select.Promote){
+            return groups.map(item => evaluator.EvaluateGroup(this.stmt.Select.SelectList[0].Expression, item));
+        }
+        else 
+        { 
+           return groups.map(group =>
+                lazy(this.stmt.Select.SelectList)
+                    .map(selectable => [
+                        selectable.Alias || evl.Evaluator.Alias(selectable.Expression),
+                        evaluator.EvaluateGroup(selectable.Expression, group)
+                    ])
+                    .toObject()
+                )
+        }
     }
     private SelectMonoGroup(items: any[], evaluator: evl.Evaluator): any[] {
         
@@ -457,15 +466,22 @@ export class JsoqlQuery {
             Key: {},
             Items: items
         };
-
-        return [
-            lazy(this.stmt.Select.SelectList)
-                .map(selectable => [
-                selectable.Alias || evl.Evaluator.Alias(selectable.Expression),
-                evaluator.EvaluateGroup(selectable.Expression, group)
-            ])
-            .toObject()
-        ];
+        
+         //Apply PROMOTE if applicable
+        if(this.stmt.Select.Promote){
+            return [evaluator.EvaluateGroup(this.stmt.Select.SelectList[0].Expression, group)];
+        }
+        else 
+        { 
+            return [
+                lazy(this.stmt.Select.SelectList)
+                    .map(selectable => [
+                    selectable.Alias || evl.Evaluator.Alias(selectable.Expression),
+                    evaluator.EvaluateGroup(selectable.Expression, group)
+                ])
+                .toObject()
+            ];
+        }
     }
 
     private SelectUngrouped(seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>,
@@ -474,24 +490,28 @@ export class JsoqlQuery {
             seq = seq.sortBy(item => evaluator.Evaluate(orderByExp.Expression, item), !orderByExp.Asc);
         });
 
-        //Select
-        return seq
-            .first(this.stmt.Select.Limit || Number.MAX_VALUE)
-            .map(item => {
-            return lazy(this.stmt.Select.SelectList)
-                .map(selectable =>
-                    evaluator.EvaluateAliased(selectable.Expression, item)
-                        .map(aliasValue => {
-                        return {
-                            Alias: selectable.Alias || aliasValue.Alias,
-                            Value: aliasValue.Value
-                        };
-                    })
-                )
-                .flatten()
-                .map((aliasValue: any) => [aliasValue.Alias, aliasValue.Value])
-                .toObject();
-        });
+        //Apply any row limit
+        seq = seq.first(this.stmt.Select.Limit || Number.MAX_VALUE);
+        
+        //Apply PROMOTE if applicable
+        if(this.stmt.Select.Promote){
+            return seq.map(item => evaluator.Evaluate(this.stmt.Select.SelectList[0].Expression, item));
+        }
+        else return seq.map(item => 
+                lazy(this.stmt.Select.SelectList)
+                    .map(selectable =>
+                        evaluator.EvaluateAliased(selectable.Expression, item)
+                            .map(aliasValue => {
+                            return {
+                                Alias: selectable.Alias || aliasValue.Alias,
+                                Value: aliasValue.Value
+                            };
+                        })
+                    )
+                    .flatten()
+                    .map((aliasValue: any) => [aliasValue.Alias, aliasValue.Value])
+                    .toObject()
+            );
     }
 
     Cardinality(): Cardinality {

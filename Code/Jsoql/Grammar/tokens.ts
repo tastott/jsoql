@@ -54,7 +54,8 @@ export var keywords = {
     WHEN: 'WHEN',
     THEN: 'THEN',
     ELSE: 'ELSE',
-    END: 'END'
+    END: 'END',
+    PROMOTE: 'PROMOTE'
 };
 
 var keywordPatterns = {};

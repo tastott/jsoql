@@ -349,6 +349,10 @@ var exp = {
         [
             keywords.SELECT + " " + exp.SelectList,
             "{ SelectList: $2}"
+        ],
+        [
+            keywords.SELECT + " " + keywords.PROMOTE + " " + exp.SelectList,
+            { SelectList: "$3", Promote: true}
         ]
     ],
     GroupByClause: () => [

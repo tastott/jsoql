@@ -106,6 +106,7 @@ export interface Statement {
     Select: {
         SelectList: Selectable[];
         Limit: number;
+        Promote?: boolean;
     }
     From: FromClauseNode;
     Where?: any;
