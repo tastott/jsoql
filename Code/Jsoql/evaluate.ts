@@ -56,7 +56,8 @@ var scalarFunctions: FunctionMappings = {
     'datepart': args => dateTime.DatePart(args[0], args[1], args[2]),
     'datediff': args => dateTime.DateDiff(args[0], args[1], args[2], args[3]),
     'getdate': (args, context) => context.CurrentDate.toISOString(),
-    'floor': args => Math.floor(args[0])
+    'floor': args => Math.floor(args[0]),
+    'trim': args => args[0] && typeof args[0] === 'string' ? args[0].trim() : null 
 }
 
 var aggregateFunctions: FunctionMappings = {
@@ -69,7 +70,8 @@ var aggregateFunctions: FunctionMappings = {
         if (count) return lazy(items).sum() / count;
         else return null;
     },
-    'first': items => items[0] || null
+    'first': items => items[0] || null,
+    'items': items => items
 };
 
 var itemRef = '$';
