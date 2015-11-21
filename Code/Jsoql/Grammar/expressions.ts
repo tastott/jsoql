@@ -255,6 +255,10 @@ var exp = {
             exp.Identifier + " ( )",
             "{Target: { Call: $1, Args: []}}"
         ],
+        [
+            '[ ' + exp.ExpressionList + ' ]',
+            "{ Target: {Inline: $2}}"
+        ],
     ],
     AliasedFromTarget: () => [
         [

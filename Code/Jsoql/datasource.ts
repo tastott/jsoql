@@ -339,7 +339,8 @@ export class VariableDataSourceSequencer implements DataSourceSequencer {
             Call: 'ITEMS',
             Args: []
         };
-
+        var inlineData: any;
+        
         if (!context.Data) {
             throw new Error("No context data");
         }
@@ -348,6 +349,10 @@ export class VariableDataSourceSequencer implements DataSourceSequencer {
                 throw new Error("Target variable not found in context: '" + value + "'");
             }
             data = context.Data[value];
+        }
+        else if(inlineData = value['Inline']){
+            if(!util.IsArray(inlineData)) throw new Error('Expected array of inline data');
+            return lazy(inlineData).map(x => evl.Evaluator.Evaluate(x, null));
         }
         else if(deepEqual(value, fromItems)){
             if(!context.Data['Items']) throw new Error('ITEMS() with a grouped result set');
