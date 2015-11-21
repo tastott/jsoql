@@ -1,6 +1,6 @@
 {
   "name": "jsoql",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "description": "Library and command line tool for querying JSON data using a SQL-like language (JSOQL)",
   "main": "jsoql.js",
   "browser": {
