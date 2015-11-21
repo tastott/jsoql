@@ -250,7 +250,11 @@ var exp = {
         [
             '( ' + exp.Stmt + ' )',
             "{ SubQuery: $2 }"
-        ] 
+        ],
+        [
+            exp.Identifier + " ( )",
+            "{Target: { Call: $1, Args: []}}"
+        ],
     ],
     AliasedFromTarget: () => [
         [

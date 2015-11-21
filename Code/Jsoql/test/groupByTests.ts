@@ -202,4 +202,31 @@ describe('groupByTests', () => {
         ];
         return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
     })
+    
+     it('GroupByItems', () => {
+
+        var data = [
+            { FirstName: 'Herbert', LastName: 'Hoskins'},
+            { FirstName: 'David', LastName: 'Davies'},
+            { FirstName: 'David', LastName: 'Dickens'}
+        ];
+        var query = "SELECT FirstName, ITEMS() AS Items FROM 'var://Test' GROUP BY FirstName";
+
+        var expected = [
+            {
+                 FirstName:  'Herbert',
+                 Items:[
+                        {FirstName: 'Herbert', LastName: 'Hoskins'},
+                 ]
+            },
+            {
+                 FirstName:  'David',
+                 Items:[
+                        { FirstName: 'David', LastName: 'Davies'},
+                        { FirstName: 'David', LastName: 'Dickens'}
+                 ]
+            }
+        ];
+        return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+    })
 })

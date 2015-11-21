@@ -79,7 +79,7 @@ export interface FromClauseNode {
     Target?: any;
     Alias?: string;
     KeyValues?: KeyValue[];
-    SubQuery: Statement;
+    SubQuery?: Statement;
 }
 
 export interface GroupByClause {

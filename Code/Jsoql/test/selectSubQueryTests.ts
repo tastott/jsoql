@@ -284,5 +284,32 @@ describe('Select sub-query tests', function() {
             return testBase.ExecuteAndAssertItems(query, data,
                 results => assert.deepEqual(results, expected));
         })
+        
+        it('From ITEMS()', () => {
+
+            var data = [
+                { FirstName: 'Herbert', LastName: 'Hoskins'},
+                { FirstName: 'David', LastName: 'Davies'},
+                { FirstName: 'David', LastName: 'Dickens'}
+            ];
+            var query = "SELECT FirstName, (SELECT LastName FROM ITEMS()) AS LastNames FROM 'var://Test' GROUP BY FirstName";
+    
+            var expected = [
+                {
+                    FirstName:  'Herbert',
+                    LastNames:[
+                        {LastName: 'Hoskins'},
+                    ]
+                },
+                {
+                    FirstName:  'David',
+                    LastNames:[
+                        { LastName: 'Davies'},
+                        { LastName: 'Dickens'}
+                    ]
+                }
+            ];
+            return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
+        })
     })
 })

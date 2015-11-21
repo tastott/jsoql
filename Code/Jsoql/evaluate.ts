@@ -154,6 +154,36 @@ export class Evaluator implements EvaluationContext {
         return new Evaluator().Evaluate(expression, target);
     }
 
+    private EvaluateSubQuery(statement: m.Statement, target: any, checkDatasources: boolean = true) {
+        var context: m.QueryContext = {
+            Data: target
+        };
+        var subquery = new query.JsoqlQuery(statement, this.datasources, context);
+
+        //A variable datasource for the sub-query can legitimately not exist (i.e. this item doesn't have the referenced property)
+        //To cater for this, we have to check for such a datasource now and return a null value
+        var variableDatasources = subquery.GetDatasources().filter(ds => ds.Type === 'var');
+        if (checkDatasources && variableDatasources.some(vds => {
+            return !this.Evaluate(vds.Value, target);
+        })) return null;
+        else {
+            var results = subquery.ExecuteSync();
+            //Return either single value or array depending on cardinality of query
+            var value:any;
+            
+            if(subquery.Cardinality() == query.Cardinality.One){
+                //Wrap multi-field queries in object
+                if(subquery.ColumnCount() == 1) value = util.MonoProp(results[0]);
+                else value = results[0];
+            }
+            else {
+                value = results;
+            }
+            
+            return value;
+        }
+    }
+    
     public EvaluateAliased(expression: any, target: any, alias?: string): { Alias: string; Value: any }[] {
         if (expression.Operator) {
             var args = expression.Args.map(arg => this.Evaluate(arg, target));
@@ -191,33 +221,8 @@ export class Evaluator implements EvaluationContext {
         }
         else if (expression.Quoted !== undefined) return [{ Alias: expression.Quoted, Value: expression.Quoted }];
         else if (expression.SubQuery) {
-            var context: m.QueryContext = {
-                Data: target
-            };
-            var subquery = new query.JsoqlQuery(expression.SubQuery, this.datasources, context);
-
-            //A variable datasource for the sub-query can legitimately not exist (i.e. this item doesn't have the referenced property)
-            //To cater for this, we have to check for such a datasource now and return a null value
-            var variableDatasources = subquery.GetDatasources().filter(ds => ds.Type === 'var');
-            if (variableDatasources.some(vds => {
-                return !this.Evaluate(vds.Value, target);
-            })) return [{ Alias: alias, Value: null }]
-            else {
-                var results = subquery.ExecuteSync();
-                //Return either single value or array depending on cardinality of query
-                var value:any;
-                
-                if(subquery.Cardinality() == query.Cardinality.One){
-                    //Wrap multi-field queries in object
-                    if(subquery.ColumnCount() == 1) value = util.MonoProp(results[0]);
-                    else value = results[0];
-                }
-                else {
-                    value = results;
-                }
-                
-                return [{Alias: alias, Value: value}];
-            }
+            var value = this.EvaluateSubQuery(expression.SubQuery, target);
+            return [{Alias: alias, Value: value}];
         }
         else if (expression.Call) {
             var args = expression.Args.map(arg => this.Evaluate(arg, target));
@@ -296,6 +301,10 @@ export class Evaluator implements EvaluationContext {
             if (firstMatch) return this.EvaluateGroup(firstMatch.Then, group);
             else if (expression.Else !== undefined) return this.EvaluateGroup(expression.Else, group);
             else return null;
+        }
+        else if (expression.SubQuery) {
+            var value = this.EvaluateSubQuery(expression.SubQuery, group, false);
+            return value;
         }
         else return expression;
     }

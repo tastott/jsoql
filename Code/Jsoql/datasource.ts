@@ -10,7 +10,7 @@ import evl = require('./evaluate')
 import _stream = require('stream')
 var glob = require('glob')
 var replaceStream = require('replaceStream')
-
+var deepEqual : (a,b) => boolean = require('deep-equal')
 
 export interface DataSourceParameters {
     format?: string;
@@ -335,6 +335,10 @@ export class VariableDataSourceSequencer implements DataSourceSequencer {
     Get(value: string, parameters: any, context: m.QueryContext): LazyJS.Sequence<any> {
 
         var data: any[];
+         var fromItems =  {
+            Call: 'ITEMS',
+            Args: []
+        };
 
         if (!context.Data) {
             throw new Error("No context data");
@@ -344,6 +348,10 @@ export class VariableDataSourceSequencer implements DataSourceSequencer {
                 throw new Error("Target variable not found in context: '" + value + "'");
             }
             data = context.Data[value];
+        }
+        else if(deepEqual(value, fromItems)){
+            if(!context.Data['Items']) throw new Error('ITEMS() with a grouped result set');
+            data = context.Data['Items'];
         }
         else {
             data = evl.Evaluator.Evaluate(value, context.Data);
