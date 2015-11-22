@@ -450,17 +450,20 @@ export class JsoqlQuery {
         }
         else 
         { 
-           return groups.map(group =>
+           return groups.mapAsync(group =>
                 lazy(this.stmt.Select.SelectList)
-                    .map(selectable => [
-                        selectable.Alias || evl.Evaluator.Alias(selectable.Expression),
-                        evaluator.EvaluateGroup(selectable.Expression, group)
-                    ])
+                    .mapAsync(selectable => {
+                        var alias = selectable.Alias || evl.Evaluator.Alias(selectable.Expression);
+                        var value =  evaluator.EvaluateGroup(selectable.Expression, group);
+                        
+                        if(typeof value.then === 'function') return value.then(result => [alias, result]);
+                        else return [alias, value];
+                    })
                     .toObject()
                 )
         }
     }
-    private SelectMonoGroup(items: any[], evaluator: evl.Evaluator): any[] {
+    private SelectMonoGroup(items: any[], evaluator: evl.Evaluator): LazyJS.AsyncSequence<any> {
         
         var group: m.Group = {
             Key: {},
@@ -469,18 +472,23 @@ export class JsoqlQuery {
         
          //Apply PROMOTE if applicable
         if(this.stmt.Select.Promote){
-            return [evaluator.EvaluateGroup(this.stmt.Select.SelectList[0].Expression, group)];
+            return lazy([evaluator.EvaluateGroup(this.stmt.Select.SelectList[0].Expression, group)])
+                .mapAsync(x => x);
         }
         else 
         { 
-            return [
+            return lazy([
                 lazy(this.stmt.Select.SelectList)
-                    .map(selectable => [
-                    selectable.Alias || evl.Evaluator.Alias(selectable.Expression),
-                    evaluator.EvaluateGroup(selectable.Expression, group)
-                ])
-                .toObject()
-            ];
+                    .mapAsync(selectable => {
+                        var alias = selectable.Alias || evl.Evaluator.Alias(selectable.Expression);
+                        var value =  evaluator.EvaluateGroup(selectable.Expression, group);
+                        
+                        if(typeof value.then === 'function') return value.then(result => [alias, result]);
+                        else return [alias, value];
+                    })
+                    .toObject()
+            ])
+            .mapAsync(x => x);
         }
     }
 
@@ -495,18 +503,26 @@ export class JsoqlQuery {
         
         //Apply PROMOTE if applicable
         if(this.stmt.Select.Promote){
-            return seq.map(item => evaluator.Evaluate(this.stmt.Select.SelectList[0].Expression, item));
+            return seq.mapAsync(item => evaluator.Evaluate(this.stmt.Select.SelectList[0].Expression, item));
         }
-        else return seq.map(item => 
+        else return seq.mapAsync(item => 
                 lazy(this.stmt.Select.SelectList)
-                    .map(selectable =>
-                        evaluator.EvaluateAliased(selectable.Expression, item)
-                            .map(aliasValue => {
-                            return {
-                                Alias: selectable.Alias || aliasValue.Alias,
-                                Value: aliasValue.Value
-                            };
-                        })
+                    .mapAsync(selectable =>
+                        lazy(evaluator.EvaluateAliased(selectable.Expression, item))
+                            .mapAsync(aliasValue => {
+                                var alias = selectable.Alias || aliasValue.Alias;
+                                var value = aliasValue.Value
+                                if(typeof value.then === 'function') {
+                                    return value.then(result => ({
+                                        Alias: alias,
+                                        Value: value
+                                    }));
+                                }
+                                else return {
+                                    Alias: alias,
+                                    Value: value
+                                }
+                            })
                     )
                     .flatten()
                     .map((aliasValue: any) => [aliasValue.Alias, aliasValue.Value])
@@ -548,7 +564,7 @@ export class JsoqlQuery {
         else if (this.Cardinality() == Cardinality.One) {
 
             var items = JsoqlQuery.SequenceToArraySync(seq);
-            results = this.SelectMonoGroup(items, evaluator);
+            results = JsoqlQuery.SequenceToArraySync(this.SelectMonoGroup(items, evaluator));
         }
         //No grouping
         else {
@@ -652,7 +668,7 @@ export class JsoqlQuery {
         else if (this.Cardinality() == Cardinality.One) {
 
             seqP = JsoqlQuery.SequenceToArray(seq)
-                .then(items => lazy(this.SelectMonoGroup(items, evaluator)));
+                .then(items => this.SelectMonoGroup(items, evaluator));
         }
         //No grouping
         else {

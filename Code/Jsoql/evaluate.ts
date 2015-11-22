@@ -167,20 +167,22 @@ export class Evaluator implements EvaluationContext {
             return !this.Evaluate(vds.Value, target);
         })) return null;
         else {
-            var results = subquery.ExecuteSync();
-            //Return either single value or array depending on cardinality of query
-            var value:any;
-            
-            if(subquery.Cardinality() == query.Cardinality.One){
-                //Wrap multi-field queries in object
-                if(subquery.ColumnCount() == 1) value = util.MonoProp(results[0]);
-                else value = results[0];
-            }
-            else {
-                value = results;
-            }
-            
-            return value;
+            return subquery.Execute().GetAll()
+                .then(results => {
+                    //Return either single value or array depending on cardinality of query
+                    var value:any;
+                    
+                    if(subquery.Cardinality() == query.Cardinality.One){
+                        //Wrap multi-field queries in object
+                        if(subquery.ColumnCount() == 1) value = util.MonoProp(results[0]);
+                        else value = results[0];
+                    }
+                    else {
+                        value = results;
+                    }
+                    
+                    return value;
+                });
         }
     }
     

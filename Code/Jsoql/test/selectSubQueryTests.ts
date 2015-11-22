@@ -311,5 +311,24 @@ describe('Select sub-query tests', function() {
             ];
             return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
         })
+        
+        it('Sub-query from async data source', () => {
+
+            var data = [
+                {
+                    Blah: "Thing"
+                }
+            ];
+            var query = "SELECT Blah, (SELECT COUNT() FROM 'file://Data/orders.json') AS Count FROM 'var://Test'";
+            var expected = [
+                {
+                    Blah: "Thing",
+                    Count: 19
+                }
+            ];
+
+            return testBase.ExecuteAndAssertItems(query, data,
+                results => assert.deepEqual(results, expected));
+        })
     })
 })

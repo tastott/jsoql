@@ -146,6 +146,7 @@ declare module LazyJS {
         isEmpty(): boolean;
         join(delimiter?: string): string;
         map<U>(mapFn: MapCallback<T, U>): Sequence<U>;
+        mapAsync<U>(mapFn: (item: T) => U|PromiseLike<U>): AsyncSequence<U>;
 
         max(valueFn?: NumberCallback<T>): T;
         min(valueFn?: NumberCallback<T>): T;
