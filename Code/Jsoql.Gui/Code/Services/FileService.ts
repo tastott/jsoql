@@ -4,6 +4,7 @@ import path = require('path')
 import repo = require('./typedRepository')
 import d = require('../models/dictionary')
 import fs = require('fs')
+import {CsvExporter} from 'jsoql/export'
 
 export interface FileSaveOptions {
     Extensions?: string[];
@@ -21,7 +22,7 @@ export interface FileService {
     LoadSync(id: string): string;
     Save(data: string, id : string): Q.Promise<SavedFile>;
     SaveAs(data: string, options: FileSaveOptions): Q.Promise<SavedFile>;
-    Download(data: string, filename: string): Q.Promise<boolean>;
+    Download(data: any[], filename: string): Q.Promise<boolean>;
 }
 
 export class BaseFileService {
@@ -77,7 +78,7 @@ export class OnlineFileService extends BaseFileService implements FileService {
         throw new Error("Not implemented in Online version");
     }
 
-    Download(data: string, filename: string): Q.Promise<boolean> {
+    Download(data: any[], filename: string): Q.Promise<boolean> {
         throw new Error("Not implemented yet");
     }
 }
@@ -120,11 +121,18 @@ export class DesktopFileService extends BaseFileService implements FileService {
             });
     }
 
-    Download(data: string, filename: string): Q.Promise<boolean> {
+    Download(data: any[], filename: string): Q.Promise<boolean> {
         return utilities.ShowSaveFileDialog({ InitialFilename: filename })
             .then(path => {
-                return Q.denodeify(require('fs').writeFile)(path, data)
-                    .then(() => true);
+                if(path.match(/\.csv$/i)){
+                    var exporter = new CsvExporter();
+                    return exporter.Export(data, fs.createWriteStream(path, {encoding: 'utf8'}));
+                }
+                else {
+                    var json = JSON.stringify(data, null, 4);
+                    return Q.denodeify(require('fs').writeFile)(path, json)
+                        .then(() => true);
+                }
             });
     }
 }

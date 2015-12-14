@@ -138,9 +138,9 @@ class QueryTab {
         if (this.SaveResultsEnabled()) {
             this.CurrentQuery.GetAll()
                 .then(results => {
-                    var json = JSON.stringify(results, null, 4);
+                    
 
-                    return this.queryFileService.Download(json, 'results.json')
+                    return this.queryFileService.Download(results, 'results.json')
                         .fail(error => {
                         console.log(error);
                     })
