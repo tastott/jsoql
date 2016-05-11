@@ -9,6 +9,7 @@ import query = require('./query')
 import dateTime = require('./date-time')
 var clone = require('clone')
 var deepEqual : (a,b) => boolean = require('deep-equal')
+import {InternalQueryContext} from "./query-context";
 
 export interface EvaluationContext {
     CurrentDate: Date
@@ -80,7 +81,8 @@ export class Evaluator implements EvaluationContext {
 
     public CurrentDate: Date;
 
-    constructor(private datasources: ds.DataSourceSequencers = null) {
+    constructor(private datasources: ds.DataSourceSequencers = null, 
+    private queryContext: InternalQueryContext = null) {
         this.CurrentDate = new Date();
     }
 
@@ -117,9 +119,9 @@ export class Evaluator implements EvaluationContext {
                 .toObject();
         }
         else if (expression.SubQuery) {
-            var context: m.QueryContext = {
-                Data: target
-            };
+            var context = this.queryContext
+                ? this.queryContext.Spawn({Data: target})
+                : new InternalQueryContext(null, target);
             var subquery = new query.JsoqlQuery(expression.SubQuery, this.datasources, context);
             var results = subquery.ExecuteSync();
 
@@ -155,9 +157,10 @@ export class Evaluator implements EvaluationContext {
     }
 
     private EvaluateSubQuery(statement: m.Statement, target: any, checkDatasources: boolean = true) {
-        var context: m.QueryContext = {
-            Data: target
-        };
+        var context = this.queryContext
+            ? this.queryContext.Spawn({Data: target})
+            : new InternalQueryContext(null, target);
+            
         var subquery = new query.JsoqlQuery(statement, this.datasources, context);
 
         //A variable datasource for the sub-query can legitimately not exist (i.e. this item doesn't have the referenced property)

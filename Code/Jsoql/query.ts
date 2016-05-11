@@ -8,6 +8,8 @@ import qstring = require('./query-string')
 import util = require('./utilities')
 import evl = require('./evaluate')
 import val = require('./validate')
+import {InternalQueryContext} from "./query-context";
+
 var clone = require('clone')
 var merge = require('merge')
 
@@ -202,27 +204,6 @@ export enum Cardinality {
     Many
 }
 
-class InternalQueryContext implements m.QueryContext {
-    constructor(public BaseDirectory: string = null,
-        public Data: {[key:string]: any[]} = {},
-        public UseCache: boolean = false,
-        public TableFunctions: {[key:string]: m.Statement} = {},
-        public TableArguments: m.FromClauseNode[] = []){
-            
-    }
-    
-    public Spawn(additions: { TableFunctions?: {[key:string]: m.Statement}, TableArgument?: m.FromClauseNode}){
-        let tableFunctions = additions.TableFunctions
-            ? merge(true, this.TableFunctions, additions.TableFunctions)
-            : this.TableFunctions;
-            
-        let tableArguments = additions.TableArgument 
-            ? [additions.TableArgument] 
-            : this.TableArguments;
-            
-        return new InternalQueryContext(this.BaseDirectory, this.Data, this.UseCache, tableFunctions, tableArguments);
-    }
-}
 
 export class JsoqlQuery {
 
@@ -231,17 +212,9 @@ export class JsoqlQuery {
 
     constructor(private stmt: m.Statement,
         private dataSourceSequencers : ds.DataSourceSequencers,
-        queryContext?: m.QueryContext) {
+        queryContext: InternalQueryContext) {
 
-        queryContext = queryContext || {};
-       
-        this.queryContext = new InternalQueryContext(queryContext.BaseDirectory,
-            queryContext.Data,
-            queryContext.UseCache,
-            queryContext.TableFunctions,
-            queryContext.TableArguments
-        )
-        .Spawn({TableFunctions: stmt.With || {}}); //Merge any table functions from parent context with any in WITH clause
+        this.queryContext = queryContext.Spawn({TableFunctions: stmt.With || {}}); //Merge any table functions from parent context with any in WITH clause
 
         this.queryContext.BaseDirectory = this.queryContext.BaseDirectory || process.cwd();
         this.queryContext.Data = this.queryContext.Data || {};
@@ -288,6 +261,15 @@ export class JsoqlQuery {
         return this.dataSourceSequencers[parsed.Schema].Get(parsed.Value, parameters, this.queryContext, onError);
     }
 
+    private GetTableFunctionQuery(name: string, argument: m.FromClauseNode): JsoqlQuery {
+        let tableFunction = this.queryContext.TableFunctions[name];
+        if(!tableFunction) throw new Error(`Table function '${name}' does not exist`);
+        
+        let subContext = this.queryContext.Spawn({TableFunctions: this.stmt.With, TableArgument: argument});
+        var subQuery = new JsoqlQuery(tableFunction, this.dataSourceSequencers, subContext);
+        return subQuery;
+    }
+    
     private FromLeaf(fromClause: m.FromClauseNode, onError: m.ErrorHandler,
         evaluator: evl.Evaluator): LazyJS.Sequence<any>|LazyJS.AsyncSequence<any> {
 
@@ -300,11 +282,7 @@ export class JsoqlQuery {
         }
         //Table function call 
         else if(fromClause.TableFunctionCall){
-            let tableFunction = this.queryContext.TableFunctions[fromClause.TableFunctionCall.Name];
-            if(!tableFunction) throw new Error(`Table function '${fromClause.TableFunctionCall.Name}' does not exist`);
-            
-            let subContext = this.queryContext.Spawn({TableFunctions: this.stmt.With, TableArgument: fromClause.TableFunctionCall.Argument});
-            var subQuery = new JsoqlQuery(tableFunction, this.dataSourceSequencers, subContext);
+            var subQuery = this.GetTableFunctionQuery(fromClause.TableFunctionCall.Name, fromClause.TableFunctionCall.Argument);
             seq = new lazyExt.PromisedSequence(subQuery.GetResultsSequence());
         }
         //Object literal (uri + parameters)
@@ -571,7 +549,7 @@ export class JsoqlQuery {
     }
 
     ExecuteSync(): any[]{
-        var evaluator = new evl.Evaluator(this.dataSourceSequencers); 
+        var evaluator = new evl.Evaluator(this.dataSourceSequencers, this.queryContext); 
 
         //From
         var seq = this.From(this.stmt.From,() => { }, evaluator);
@@ -634,6 +612,10 @@ export class JsoqlQuery {
                         Value: parsedUri.Value
                     }];
                 }
+                else if(fromClause.TableFunctionCall){
+                    var subQuery = this.GetTableFunctionQuery(fromClause.TableFunctionCall.Name, fromClause.TableFunctionCall.Argument);
+                    return subQuery.GetDatasources();
+                }
                 //Unquoted (i.e. some variable in context)
                 else return [{
                     Type: 'var',
@@ -675,7 +657,7 @@ export class JsoqlQuery {
     }
 
     private GetResultsSequence(): Q.Promise<LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>> {
-        var evaluator = new evl.Evaluator(this.dataSourceSequencers); 
+        var evaluator = new evl.Evaluator(this.dataSourceSequencers, this.queryContext); 
         var deferred = Q.defer<LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>>();
 
         var seqP: Q.Promise<LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>>;

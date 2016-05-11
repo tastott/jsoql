@@ -4,6 +4,7 @@ import q = require('./query')
 import m = require('./models')
 import ds = require('./datasource')
 import qh = require('./query-help')
+import {InternalQueryContext} from "./query-context";
 
 export class JsoqlEngineBase implements m.JsoqlEngine {
     private queryHelper: qh.QueryHelper;
@@ -21,7 +22,8 @@ export class JsoqlEngineBase implements m.JsoqlEngine {
             if (typeof statement === 'string') parsedStatement = p.ParseFull(statement);
             else parsedStatement = statement;
 
-            var query = new q.JsoqlQuery(parsedStatement, this.datasources, context);
+            context = context || {};
+            var query = new q.JsoqlQuery(parsedStatement, this.datasources, new InternalQueryContext(context.BaseDirectory, context.Data));
             var validationErrors = query.Validate();
 
             if (validationErrors.length) return new q.JsoqlQueryResult(null, query.GetDatasources(), validationErrors);
