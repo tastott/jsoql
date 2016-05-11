@@ -2,6 +2,10 @@
     BaseDirectory?: string;
     Data?: { [key: string]: any[] };
     UseCache?: boolean;
+    TableFunctions?: {
+        [key: string]: Statement;
+    };
+    TableArguments?: FromClauseNode[];
 }
 
 export interface Group {
@@ -80,6 +84,10 @@ export interface FromClauseNode {
     Alias?: string;
     KeyValues?: KeyValue[];
     SubQuery?: Statement;
+    TableFunctionCall?: {
+        Name: string;
+        Argument: FromClauseNode;
+    };
 }
 
 export interface GroupByClause {
@@ -116,7 +124,10 @@ export interface Statement {
         Asc: boolean
     }[];
     Union?: Statement;
-    Positions?: Positions
+    Positions?: Positions;
+    With?: {
+        [key: string]: Statement;
+    }
 }
 
 export interface JsoqlEngine {

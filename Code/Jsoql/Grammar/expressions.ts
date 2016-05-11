@@ -134,7 +134,7 @@ var exp = {
             "parseFloat($1)"
         ],
         [
-            "( " + exp.Stmt + " )",
+            "( " + exp.SelectStatement + " )",
             "{SubQuery: $2}"
         ],
         [
@@ -248,7 +248,7 @@ var exp = {
         ],
         exp.Object,
         [
-            '( ' + exp.Stmt + ' )',
+            '( ' + exp.SelectStatement + ' )',
             "{ SubQuery: $2 }"
         ],
         [
@@ -259,6 +259,10 @@ var exp = {
             '[ ' + exp.ExpressionList + ' ]',
             "{ Target: {Inline: $2}}"
         ],
+        [
+            exp.Identifier + ' ( ' + exp.FromTarget + ' )',
+            { TableFunctionCall: {Name: "$1", Argument: "$3"}}
+        ]
     ],
     AliasedFromTarget: () => [
         [
@@ -373,7 +377,7 @@ var exp = {
             "{ Groupings: $2, Having: $4}"
         ]
     ],
-    Stmt: () => [
+    SelectStatement: () => [
         [
             exp.SelectClause + " " + exp.FromClause,
             { Select: "$1", From: "$2", Positions: { Select: "@1", From: "@2" } }
@@ -407,9 +411,19 @@ var exp = {
             { Select: "$1", From: "$2", Where: "$3", GroupBy: "$4", OrderBy: "$5", Positions: { Select: "@1", From: "@2", Where: "@3", GroupBy: "@4", OrderBy: "@5" } }
         ],
         [
-            exp.Stmt + " " + keywords.UNION + " " + exp.Stmt,
+            exp.SelectStatement + " " + keywords.UNION + " " + exp.SelectStatement,
             "{ $1.Union = $3; $$ = $1 }"
         ]
+    ],
+    WithStatement: () => [
+        [
+            keywords.WITH + ' ( ' + exp.SelectStatement + ' ) ' + keywords.AS + ' ' + exp.Identifier + ' ' + exp.SelectStatement,
+            "{ $7.With = {}; $7.With[$6] = $3; $$ = $7}"
+        ]
+    ],
+    Root: () => [
+        exp.WithStatement,
+        exp.SelectStatement
     ]
 }
 

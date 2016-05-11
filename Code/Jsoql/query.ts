@@ -202,16 +202,46 @@ export enum Cardinality {
     Many
 }
 
+class InternalQueryContext implements m.QueryContext {
+    constructor(public BaseDirectory: string = null,
+        public Data: {[key:string]: any[]} = {},
+        public UseCache: boolean = false,
+        public TableFunctions: {[key:string]: m.Statement} = {},
+        public TableArguments: m.FromClauseNode[] = []){
+            
+    }
+    
+    public Spawn(additions: { TableFunctions?: {[key:string]: m.Statement}, TableArgument?: m.FromClauseNode}){
+        let tableFunctions = additions.TableFunctions
+            ? merge(true, this.TableFunctions, additions.TableFunctions)
+            : this.TableFunctions;
+            
+        let tableArguments = additions.TableArgument 
+            ? [additions.TableArgument] 
+            : this.TableArguments;
+            
+        return new InternalQueryContext(this.BaseDirectory, this.Data, this.UseCache, tableFunctions, tableArguments);
+    }
+}
+
 export class JsoqlQuery {
 
     private static UriRegex = new RegExp('^([A-Za-z]+)://(.+)$', 'i');
-    private queryContext: m.QueryContext;
+    private queryContext: InternalQueryContext;
 
     constructor(private stmt: m.Statement,
         private dataSourceSequencers : ds.DataSourceSequencers,
         queryContext?: m.QueryContext) {
 
-        this.queryContext = queryContext || {};
+        queryContext = queryContext || {};
+       
+        this.queryContext = new InternalQueryContext(queryContext.BaseDirectory,
+            queryContext.Data,
+            queryContext.UseCache,
+            queryContext.TableFunctions,
+            queryContext.TableArguments
+        )
+        .Spawn({TableFunctions: stmt.With || {}}); //Merge any table functions from parent context with any in WITH clause
 
         this.queryContext.BaseDirectory = this.queryContext.BaseDirectory || process.cwd();
         this.queryContext.Data = this.queryContext.Data || {};
@@ -268,6 +298,15 @@ export class JsoqlQuery {
             var subQuery = new JsoqlQuery(fromClause.SubQuery, this.dataSourceSequencers, this.queryContext);
             seq = new lazyExt.PromisedSequence(subQuery.GetResultsSequence());
         }
+        //Table function call 
+        else if(fromClause.TableFunctionCall){
+            let tableFunction = this.queryContext.TableFunctions[fromClause.TableFunctionCall.Name];
+            if(!tableFunction) throw new Error(`Table function '${fromClause.TableFunctionCall.Name}' does not exist`);
+            
+            let subContext = this.queryContext.Spawn({TableFunctions: this.stmt.With, TableArgument: fromClause.TableFunctionCall.Argument});
+            var subQuery = new JsoqlQuery(tableFunction, this.dataSourceSequencers, subContext);
+            seq = new lazyExt.PromisedSequence(subQuery.GetResultsSequence());
+        }
         //Object literal (uri + parameters)
         else if (fromClause.KeyValues) {
             var parsed = this.ParseKeyValuesDatasource(fromClause.KeyValues);
@@ -277,6 +316,11 @@ export class JsoqlQuery {
         //Quoted (uri shorthand)
         else if (typeof fromClause.Target === 'string') {
             seq = this.GetSequence(fromClause.Target, {}, onError);
+        }
+        //Special table argument (inside table function)
+        else if(fromClause.Target.Property === '@@Table'){
+            if(!this.queryContext.TableArguments.length) throw new Error(`Table argument '${fromClause.Target.Property}' is not valid in this context`);
+            seq = this.FromLeaf(this.queryContext.TableArguments[0], onError, evaluator);
         }
         //Unquoted (i.e. some variable in context)
         else {
