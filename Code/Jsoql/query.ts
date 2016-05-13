@@ -276,14 +276,14 @@ export class JsoqlQuery {
         var seq: LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>;
 
         //Sub-query
-        if (fromClause.SubQuery) {
-            var subQuery = new JsoqlQuery(fromClause.SubQuery, this.dataSourceSequencers, this.queryContext);
-            seq = new lazyExt.PromisedSequence(subQuery.GetResultsSequence());
-        }
-        //Table function call 
-        else if(fromClause.TableFunctionCall){
-            var subQuery = this.GetTableFunctionQuery(fromClause.TableFunctionCall.Name, fromClause.TableFunctionCall.Argument);
-            seq = new lazyExt.PromisedSequence(subQuery.GetResultsSequence());
+        if (fromClause.SubQuery || fromClause.TableFunctionCall) {
+            var subQuery = fromClause.SubQuery
+                ? new JsoqlQuery(fromClause.SubQuery, this.dataSourceSequencers, this.queryContext)
+                : this.GetTableFunctionQuery(fromClause.TableFunctionCall.Name, fromClause.TableFunctionCall.Argument);
+                
+             seq = subQuery.IsAsync() 
+                ?  new lazyExt.PromisedSequence(subQuery.GetResultsSequence())
+                : lazy(subQuery.ExecuteSync());
         }
         //Object literal (uri + parameters)
         else if (fromClause.KeyValues) {
@@ -585,43 +585,50 @@ export class JsoqlQuery {
     }
 
     GetDatasources(): m.Datasource[] {
-        return <any>lazy(this.GetFromLeaves(this.stmt.From))
-            .map(fromClause => {
-                //Sub-query
-                if (fromClause.SubQuery) {
-                    var subQuery = new JsoqlQuery(fromClause.SubQuery, this.dataSourceSequencers, this.queryContext);
-                    return subQuery.GetDatasources();
-                }
-                //Object literal (uri + parameters)
-                else if (fromClause.KeyValues) {
-                    var parsed = this.ParseKeyValuesDatasource(fromClause.KeyValues);
-                    var parsedUri = this.ParseUri(parsed.Uri);
+        let mapFromClause = (fromClause: m.FromClauseNode): m.Datasource[] => {
+            //Sub-query
+            if (fromClause.SubQuery) {
+                var subQuery = new JsoqlQuery(fromClause.SubQuery, this.dataSourceSequencers, this.queryContext);
+                return subQuery.GetDatasources();
+            }
+            //Object literal (uri + parameters)
+            else if (fromClause.KeyValues) {
+                var parsed = this.ParseKeyValuesDatasource(fromClause.KeyValues);
+                var parsedUri = this.ParseUri(parsed.Uri);
 
-                    return [{
-                        Type: parsedUri.Schema,
-                        Value: parsedUri.Value
-                    }];
-
-                }
-                //Quoted (uri shorthand)
-                else if (typeof fromClause.Target === 'string') {
-                    var parsedUri = this.ParseUri(fromClause.Target);
-
-                    return [{
-                        Type: parsedUri.Schema,
-                        Value: parsedUri.Value
-                    }];
-                }
-                else if(fromClause.TableFunctionCall){
-                    var subQuery = this.GetTableFunctionQuery(fromClause.TableFunctionCall.Name, fromClause.TableFunctionCall.Argument);
-                    return subQuery.GetDatasources();
-                }
-                //Unquoted (i.e. some variable in context)
-                else return [{
-                    Type: 'var',
-                    Value: fromClause.Target
+                return [{
+                    Type: parsedUri.Schema,
+                    Value: parsedUri.Value
                 }];
-            })
+
+            }
+            //Quoted (uri shorthand)
+            else if (typeof fromClause.Target === 'string') {
+                var parsedUri = this.ParseUri(fromClause.Target);
+
+                return [{
+                    Type: parsedUri.Schema,
+                    Value: parsedUri.Value
+                }];
+            }
+            else if(fromClause.TableFunctionCall){
+                var subQuery = this.GetTableFunctionQuery(fromClause.TableFunctionCall.Name, fromClause.TableFunctionCall.Argument);
+                return subQuery.GetDatasources();
+            }
+            else if(fromClause.Target.Property == "@@Table"){
+                if(!this.queryContext.TableArguments.length) throw new Error(`Table argument '${fromClause.Target.Property}' is not valid in this context`);
+                return mapFromClause(this.queryContext.TableArguments[0]);
+            }
+            //Unquoted (i.e. some variable in context)
+            else return [{
+                Type: 'var',
+                Value: fromClause.Target
+            }];
+   
+        }
+        
+        return <any>lazy(this.GetFromLeaves(this.stmt.From))
+            .map(mapFromClause)
             .flatten();
     }
 
@@ -654,6 +661,10 @@ export class JsoqlQuery {
         var iterator = new LazyJsQueryIterator(this.GetResultsSequence());
 
         return new JsoqlQueryResult(iterator, datasources, []);
+    }
+    
+    IsAsync(): boolean {
+        return this.GetDatasources().some(datasource => datasource.Type != 'var');
     }
 
     private GetResultsSequence(): Q.Promise<LazyJS.Sequence<any>|LazyJS.AsyncSequence<any>> {

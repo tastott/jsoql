@@ -14,7 +14,7 @@ describe('table functions', () => {
         return testBase.ExecuteAndAssertDeepEqual(query, data, data);
     })
     
-    it.only('Should apply recursively', () => {
+    it('Should apply recursively', () => {
 
         var data = [
             { 
@@ -44,17 +44,17 @@ describe('table functions', () => {
             {
                 Blah: 2,
                 SubNodes: [
-                    { Blah: 2.1},
+                    { Blah: 2.1, SubNodes: null},
                     { 
                         Blah: 2.2,
                         SubNodes: [
-                            {Blah: 2.21}
+                            {Blah: 2.21, SubNodes: null}
                         ]
                     }
                 ]
             },
-            { Blah: 3},
-            { Blah: 4}
+            { Blah: 3, SubNodes: null},
+            { Blah: 4, SubNodes: null}
         ];
         return testBase.ExecuteAndAssertDeepEqual(query, data, expected);
     })
