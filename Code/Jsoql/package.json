@@ -19,8 +19,10 @@
   },
   "scripts": {
     "test": "npm run build && cd test && ..\\node_modules\\.bin\\mocha ./ --recursive",
-    "build": "node_modules\\.bin\\tsc -p ./",
-    "grammar-build": "tsc grammar/parser-build.ts typings/tsd.d.ts --module commonjs && node grammar/parser-build.js"
+    "build": "npm run grammar-build && node_modules\\.bin\\tsc -p ./",
+    "build-watch": "node_modules\\.bin\\tsc -p ./ -w",
+    "grammar-build": "tsc grammar/parser-build.ts typings/tsd.d.ts --module commonjs && node grammar/parser-build.js",
+    "develop": "node_modules\\.bin\\concurrently -k \"npm run build-watch\""
   },
   "preferGlobal": true,
   "dependencies": {
@@ -42,9 +44,10 @@
   "devDependencies": {
     "assert": "^1.3.0",
     "chai": "^3.2.0",
+    "concurrently": "^2.0.0",
     "jison": "0.4.13",
     "mocha": "^2.2.5",
-    "typescript": "^1.6.2"
+    "typescript": "^1.8.10"
   },
   "repository": {
     "type": "git",

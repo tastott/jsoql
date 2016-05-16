@@ -171,7 +171,6 @@ export class QueryHelper {
                         });
                 }
                 else return Q({ PropertiesInScope: {} });
-                break;
 
             case Scope.Grouped:
                 //Find "straight up" property chains (i.e. not part of an expression) in the GROUP BY clause
@@ -183,7 +182,6 @@ export class QueryHelper {
                     
 
                 return Q({ PropertiesInScope: groupProperties});
-                break;
 
             default:
                 throw new Error("Scope not supported: " + Scope[scope]);
