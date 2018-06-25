@@ -1,4 +1,3 @@
-///<reference path="../typings/mocha/mocha.d.ts" /> 
 import testBase = require('./testBase')
 
 var data = [

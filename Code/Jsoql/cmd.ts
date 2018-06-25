@@ -57,6 +57,9 @@ function DoQueryCommand(argv: any) {
 
     var query = argv['query'];
 
+    if (fs.existsSync(query)) {
+        query = fs.readFileSync(query, {encoding: "utf8"} );
+    }
     var engine = new jsoql.DesktopJsoqlEngine();
     //var engine = new eng.OnlineJsoqlEngine();
 
@@ -82,7 +85,13 @@ function DoQueryCommand(argv: any) {
             .GetAll()
             .then(results => {
                 var indent = argv['indent'] ? 4 : null;
-                process.stdout.write(JSON.stringify(results, null, indent));
+                const json = JSON.stringify(results, null, indent);
+                
+                if (argv["output"]) {
+                    fs.writeFileSync(argv["output"], json);
+                } else {
+                    process.stdout.write(json);
+                }
             })
             .fail(error => {
                 var message = '\nError encountered while executing query.';

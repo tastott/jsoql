@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "module": "commonjs"
+    },
+    "include": [
+        "parser-build.ts",
+        "../typings/lazy.js/lazy.js.d.ts"
+    ]
+}

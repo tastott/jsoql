@@ -1,4 +1,3 @@
-///<reference path="../typings/mocha/mocha.d.ts" /> 
 import jsoql = require('../models')
 import assert = require('assert');
 import testBase = require('./testBase');

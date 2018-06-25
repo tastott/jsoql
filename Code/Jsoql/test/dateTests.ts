@@ -1,4 +1,4 @@
-///<reference path="../typings/mocha/mocha.d.ts" /> 
+
 import assert = require('assert');
 import testBase = require('./testBase');
 

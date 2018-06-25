@@ -1,5 +1,4 @@
-﻿///<reference path="typings/moment/moment.d.ts" />
-import moment = require('moment')
+﻿import moment = require('moment')
 
 export function DatePart(part: string, dateString: string, keepOffset?: boolean) {
 
@@ -41,20 +40,17 @@ export function DateDiff(part: string, dateStringA: string, dateStringB: string,
     //}
 
     //if (elapsedTime) {
-        var unitIndex: number;
+        let unit: moment.unitOfTime.Diff;
         switch (part.toLowerCase()) {
-            case 'year': unitIndex = 0; break;
-            case 'month': unitIndex = 1; break;
-            case 'day': unitIndex = 2; break;
-            case 'hour': unitIndex = 3; break;
-            case 'minute': unitIndex = 4; break;
-            case 'second': unitIndex = 5; break;
+            case 'year': unit = "year"; break;
+            case 'month': unit = "month"; break;
+            case 'day': unit = "day"; break;
+            case 'hour': unit = "hour"; break;
+            case 'minute': unit = "minute"; break;
+            case 'second': unit = "second"; break;
             default:
                 throw new Error(`Unrecognized date part: '${part}'`);
         }
-
-        var momentUnits = ['years', 'months', 'days', 'hours', 'minutes', 'seconds', 'milliseconds'];
-        var unit = momentUnits[unitIndex];
 
         var result = dateB.diff(dateA, unit);
         if (elapsedTime) return result;

@@ -140,7 +140,7 @@ class OboeStream {
             }
         });
 
-        if (!stream['resume']) stream['resume'] = () => { };
+        if (!stream['resume']) (<any>stream)['resume'] = () => { };
     }
 
     removeListener = (event: string, listener: StreamListener) => {
@@ -205,7 +205,7 @@ class EnsureJsonArrayStream {
         if(jsonStream.setEncoding) jsonStream.setEncoding('utf8');
 
         jsonStream.on('data', data => {
-            if (this.state == EnsureJsonArrayState.RootTypeNotKnownYet) {
+            if (typeof data === "string" && this.state == EnsureJsonArrayState.RootTypeNotKnownYet) {
                 var nonWhiteSpaceMatch = data.match(/\S/);
 
                 //Root is array, no need to fiddle with source stream
