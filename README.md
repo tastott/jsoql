@@ -1,5 +1,7 @@
 ![JSOQL logo](https://raw.githubusercontent.com/tastott/jsoql/master/Images/jsoql-300-100.png)
 ##*JavaScript Object Query Language*
+
+[![Join the chat at https://gitter.im/tastott/jsoql](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tastott/jsoql?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 A SQL-like language for querying JSON data.
 
 **Please note:** it may have a cool logo, but **this project is very much a work in progress.**
